@@ -1,0 +1,476 @@
+# liste des repas et ingrédients pour calcul rapide des quantités avec le script qui va bien
+# WiP !
+recipes:
+  taboulé:
+    ingredients:
+      semoule:
+        quantity: 50
+        unit: g
+      tomate: 100g
+      concombre: 0.2
+      échalote: 0.33
+      poivron: 0.1
+      citron: 0.2
+      #raisin sec: 0.1 paquet
+      menthe: 2 feuille
+      huile d'olive: 1cs
+      avocat: 0.2
+
+  piperade poivrons:
+    ingredients:
+      boulgour: 60g
+      poivron: 0.5
+      oignon: 0.5
+      piment doux: 0.2
+      ail: 0.5 gousse
+      herbes de provence: 0.5cc
+      sucre: 0.5cc
+      tomate: 100g
+      huile d'olive: 1cc
+      piment d'espelette: 0.5cc
+
+
+  chèvres chauds:
+    # 2 chèvres par personne, plutôt une entrée quoi
+    ingredients:
+      chèvre coulant: 1
+      pain: 80g
+      herbe de provence: 0.5cc
+      huile d'olive: 1cc
+
+  salade de tomates:
+    ingredients:
+      tomate: 200g
+      huile d'olive: 1cs
+      vinaigre balsamique: 1.5cc
+      moutarde: 1cc
+
+  ratatouille:
+    ingredients:
+      #riz: 60g # XXX ou semoule???
+      ebly: 60g
+      tomate: 125g
+      aubergine: 90g
+      courgette: 90g
+      oignon: 0.33
+      ail: 0.7 gousse
+      huile d'olive: 0.5cs
+      laurier: 0.5 feuille
+      thym: 1 petit peu
+
+  salade de pommes de terres:
+    ingredients:
+      pomme de terre: 200g
+      oeuf: 0.5
+      tomate: 50g
+      oignon: 0.25
+      échalote: 0.25
+      cornichon: 0.05 pot
+      olive noire: 0.05 pot
+      feta: 0.1 paquet
+
+  chili végé:
+    ingredients:
+      riz: 60g
+      haricot rouge sec: 50g
+      tomate: 125g #ou grosse boîte tomate pelée: 0.25u (Nanou)
+      mais en boîte: 30g
+      oignon: 50g
+      lentilles: 20g
+      poivron: 0.2
+      ail: 0.5 gousse
+      cumin: 1cc
+      paprika: 1cc
+      piment poudre: 0.5cc
+      chocolat: 0.33 carré
+      origan: 1cc
+
+  entrée melon:
+    ingredients:
+      melon: 0.2
+
+  salade:
+    ingredients:
+      salade: 0.2
+
+  purée patate carotte:
+    ingredients:
+      pomme de terre: 200g
+      carotte: 150g
+      lait: 10cl
+  camembert au four:
+    ingredients:
+      camembert: 0.333
+      pain: 50g
+      miel: 1cc
+
+  chorba:
+    ingredients:
+      pois chiches: 50g
+      lentilles: 50g
+      pois cassés: 50g
+      vermicelle: 50g
+      concassé tomate: 100g
+      cumin: 0.5cc
+      harissa: 0.5cc
+      paprika: 0.5cc
+      herbes de provence: 0.5cc
+      ail: 0.33 gousse
+      oignon: 0.25
+      courgette: 0.25
+      pomme de terre: 0.33
+
+  aubergine curry:
+    ingredients:
+      ebly: 60g
+      # ou riz: 50g ?
+      aubergine: 0.5
+      lait de coco: 50ml
+      concassé tomates: 100g
+      pois chiches: 65g
+      oignon: 0.25
+      curry: 1.4cc
+      gingembre poudre: 0.4cc
+      huile d'olive: 1cc
+
+  malak panner:
+    ingredients:
+      riz: 60g
+      petits pois boite: 150g
+      oignon: 0.25
+      ail: 0.25 gousse
+      noix de cajou: 15g
+      lait: 10cl
+      gingembre poudre: 0.5cc
+      curcuma: 0.5cc
+      paprika: 0.5cc
+      kiri: 1
+
+  salade de pates:
+    ingredients:
+      pates tortillis: 100g
+      poivron: 0.5
+      échalote: 0.5
+      courgette: 0.33
+      tomate: 0.5
+      feta: 20g
+      ail: 0.33 gousse
+      moutarde: 1.3cc
+      huile d'olive: 1.4cc
+      basilic: 2 feuille
+      zataar: 1cc
+      herbes de provence: 0.5cc
+
+
+  pates champignon roquefort:
+    ingredients:
+      spaghettis: 120g
+      champignon de paris: 50g
+      roquefort: 50g
+      oignon: 0.5
+      crème fraîche: 80ml
+      persil: 3 feuille
+      huile d'olive: 1.5cc
+      ail: 0.25 gousse
+
+  velouté de courgette:
+    ingredients:
+      courgette: 150g
+      pomme de terre: 80g
+      oignon: 0.5
+      ail: 0.25 gousse
+      herbe de provence: 0.5cc
+      huile d'olive: 0.5cc
+      persil: 1 feuille
+      yaourt nature: 0.25
+      bouillon cube légume: 0.15
+
+
+  omelette:
+    ingredients:
+      oeuf: 1.5
+      poivron: 0.15
+      oignon: 0.25
+      parmesan: 10g
+
+
+  couscous:
+    ingredients:
+      semoule: 60g
+      oignon: 0.5
+      tomate: 1
+      courgette: 80g
+      carotte: 1
+      pois chiche: 50g
+      huile d'olive: 1cs
+      épices à couscous: 0.5cc
+      harissa: 0.05 tube
+
+  pates à l'oignon:
+    ingredients:
+      pates: 150g
+      oignon: 75g
+      beurre: 30g
+      vin blanc: 3cl
+      parmesan: 20g
+      laurier: 0.15 feuille
+      bouillon cube légume: 0.25
+
+  tapenade:
+    ingredients:
+      olive noire: 40g
+      huile d'olive: 3cl
+      ail: 2 gousse
+
+
+
+  base journée:
+    # petit dej, grignotage, pain, etc..
+    ingredients:
+      pain: 100g
+      # TODO le reste, fromage, fruits, café, confiture
+
+meals:
+  - name: Mardi midi
+    portions:
+      15
+    recipes:
+      - base journée
+      - pates champignon roquefort
+  - name: Mardi soir
+    portions:
+      40
+    recipes:
+      - velouté de courgette
+      - omelette
+
+  - name: Mercredi midi
+    portions:
+      40
+    recipes:
+      - base journée
+      - purée patate carotte
+      - camembert au four
+  - name: Mercredi soir
+    portions:
+      45
+    recipes:
+      - piperade poivrons
+
+  - name: Jeudi midi
+    portions:
+      45
+    recipes:
+      - base journée
+      - chèvres chauds
+      - salade de tomates
+  - name: Jeudi soir
+    portions:
+      60
+    recipes:
+      - ratatouille
+
+  - name: Vendredi midi
+    portions:
+      65
+    recipes:
+      - base journée
+      - malak panner
+  - name: Vendredi soir
+    portions:
+      80
+    recipes:
+      - chorba
+
+  - name: Samedi midi
+    recipes:
+      - base journée
+      - taboulé
+    portions:
+      80
+  - name: Samedi soir
+    portions:
+      80
+    recipes:
+      - aubergine curry
+
+  - name: Dimanche midi
+    portions:
+      80
+    recipes:
+      - base journée
+      - salade de pates
+  - name: Dimanche soir
+    portions:
+      45
+    recipes:
+      - chili végé
+
+  - name: Lundi midi
+    portions:
+      40
+    recipes:
+      - base journée
+      - couscous
+  - name: Lundi soir
+    portions:
+      35
+    recipes:
+      - pates à l'oignon
+      - tapenade
+
+  - name: Re-Mardi midi
+    portions:
+      30
+    # les restes
+  - name: Re-Mardi soir
+    portions:
+      15
+    # les restes
+
+
+
+   
+# additional spec for some ingredients
+ingredients:
+  semoule:
+    type: Sec
+  tomate:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 120 }
+  concombre:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 300 }
+  courgette:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 200 }
+  carotte:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 80 }
+
+  aubergine:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 400 }
+  ail:
+    type: Fruits et légumes
+    preferred: tête
+    convert:
+      tête: {gousse: 0.167}
+  oignon:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 150 }
+
+  poivron:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 150 }
+  pomme de terre:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 150 }
+
+  avocat:
+    type: Fruits et légumes
+
+  champignon de paris:
+    type: Fruits et légumes
+
+  concassé tomates:
+    type: Sec
+
+
+  huile d'olive:
+    type: Autre
+    preferred: L
+    convert:
+      L: { cl: 0.01, cs: 0.015, cc: 0.005 }
+  
+
+  chèvre coulant:
+    type: Fromage local
+  camembert:
+    type: Fromage supermarché
+
+  citron:
+    type: Fruits et légumes
+
+  crème fraîche:
+    type: Frais
+  beurre:
+    type: Frais
+  lait:
+    type: Frais
+  oeuf:
+    type: Frais
+  
+
+  ebly:
+    type: Sec
+  boulgour:
+    type: Sec
+  lentilles:
+    type: Sec
+  pates:
+    type: Sec
+  pates tortillis:
+    type: Sec
+  spaghettis:
+    type: Sec
+
+  cornichon:
+    type: Sec
+  feta:
+    type: Fromage
+  olive noire:
+    type: Sec
+  raisin sec:
+    type: Sec
+  concassé tomate:
+    type: Sec
+  haricot rouge sec:
+    type: Sec
+  mais en boite:
+    type: Sec
+  petits pois boite:
+    type: Sec
+  moutarde:
+    type: Sec
+
+  pain:
+    type: Boulangerie
+
+
+  chocolat:
+    type: Sec
+
+
+
+  échalote:
+    type: Fruits et légumes
+
+  salade:
+    type: Fruits et légumes
+
+  melon:
+    type: Fruits et légumes
+
+  cumin:
+    type: Épices
+    preferred: g
+  
+
+
