@@ -9,7 +9,8 @@
 <body>
   <header>
     <h1>Recette</h1>
-    <nav>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">☰</button>
+    <nav id="nav-menu">
       <a href="index.html">Menu</a>
       <a href="courses.html">Liste de courses</a>
     </nav>
@@ -30,6 +31,7 @@
   <script src="js/popover.js"></script>
   <script src="js/recipe.js"></script>
   <script src="js/qr.js"></script>
+  <script src="js/nav.js"></script>
   <script>
     App.loadData()
       .then(Recipe.renderRecipe)

@@ -184,8 +184,12 @@ function showConversions(ingrName, spec, anchorEl, parts, unitScales) {
   currentBackdrop = backdrop;
   document.addEventListener('keydown', onKey);
 
-  // Position below the anchor when possible.
-  if (anchorEl) {
+  // Position below the anchor when possible (or as a bottom sheet on small screens).
+  const isSheet = window.matchMedia('(max-width: 480px)').matches;
+  if (isSheet) {
+    pop.classList.add('popover--sheet');
+    backdrop.classList.add('popover-backdrop--sheet');
+  } else if (anchorEl) {
     const r = anchorEl.getBoundingClientRect();
     const top = window.scrollY + r.bottom + 6;
     let left = window.scrollX + r.left;

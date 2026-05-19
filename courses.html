@@ -9,7 +9,8 @@
 <body>
   <header>
     <h1>Liste de courses</h1>
-    <nav>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">☰</button>
+    <nav id="nav-menu">
       <a href="index.html">Menu</a>
       <a href="courses.html" class="active">Liste de courses</a>
     </nav>
@@ -34,6 +35,7 @@
   <script src="js/popover.js"></script>
   <script src="js/courses.js"></script>
   <script src="js/qr.js"></script>
+  <script src="js/nav.js"></script>
   <script>
     App.loadData()
       .then(Courses.renderCourses)

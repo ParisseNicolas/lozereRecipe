@@ -9,7 +9,8 @@
 <body>
   <header>
     <h1>Éditer une recette</h1>
-    <nav>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">☰</button>
+    <nav id="nav-menu">
       <a href="index.html">Menu</a>
       <a href="courses.html">Liste de courses</a>
     </nav>
@@ -31,8 +32,10 @@
   <script src="js/app.js"></script>
   <script src="js/shopping.js"></script>
   <script src="js/popover.js"></script>
+  <script src="js/new-ingr.js"></script>
   <script src="js/edit.js"></script>
   <script src="js/qr.js"></script>
+  <script src="js/nav.js"></script>
   <script>
     App.loadData()
       .then(Edit.renderEdit)
