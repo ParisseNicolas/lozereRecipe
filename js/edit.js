@@ -9,7 +9,17 @@ function getParams() {
   return { slot: p.get('slot') || '', nom: p.get('nom') || '' };
 }
 
-// Collect units seen across the YAML for the unit autocomplete.
+const STEP_MARKER = '--- cuisson ---';
+const MARKER_RE = /^\s*-{2,}\s*cuisson\s*-{2,}\s*$/i;
+
+function collectKnownTypes(data) {
+  const types = new Set();
+  for (const spec of Object.values(data.ingredients || {})) {
+    if (spec.type) types.add(spec.type);
+  }
+  return Array.from(types).sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
 function collectKnownUnits(data) {
   const units = new Set(['g', 'kg', 'mg', 'ml', 'cl', 'L', 'u', 'cs', 'cc']);
   for (const spec of Object.values(data.ingredients || {})) {
@@ -25,12 +35,71 @@ function collectKnownUnits(data) {
   return Array.from(units).sort();
 }
 
-function collectKnownTypes(data) {
-  const types = new Set();
-  for (const spec of Object.values(data.ingredients || {})) {
-    if (spec.type) types.add(spec.type);
+function unitsForSpec(spec) {
+  const set = new Set();
+  if (!spec) return [];
+  if (spec.preferred) set.add(spec.preferred);
+  if (spec.purchase) set.add(spec.purchase);
+  if (spec.convert) {
+    for (const [t, srcs] of Object.entries(spec.convert)) {
+      set.add(t);
+      for (const s of Object.keys(srcs || {})) set.add(s);
+    }
   }
-  return Array.from(types).sort((a, b) => a.localeCompare(b, 'fr'));
+  return Array.from(set);
+}
+
+function findSpec(name, data, customIngredients) {
+  if (!name) return null;
+  return (data.ingredients && data.ingredients[name]) || customIngredients[name] || null;
+}
+
+// Returns the factor X such that 1 purchase = X preferred, derived from unitScales.
+// Also bridges cc/cs ↔ g (1 cc = 5 g, 1 cs = 15 g), chaining through unitScales for kg/mg.
+// Returns null if no chain exists.
+function deriveConvertFactor(preferred, purchase, unitScales) {
+  if (!preferred || !purchase || preferred === purchase || !unitScales) return null;
+  const walk = (start, target) => {
+    let unit = start;
+    let factor = 1;
+    const seen = new Set([unit]);
+    while (unitScales[unit]) {
+      const step = unitScales[unit];
+      factor *= step.factor;
+      unit = step.upper;
+      if (seen.has(unit)) break;
+      seen.add(unit);
+      if (unit === target) return factor;
+    }
+    return null;
+  };
+  // 1 purchase = factor preferred via walk preferred → ... → purchase.
+  let f = walk(preferred, purchase);
+  if (f != null) return f;
+  // Or walk purchase → ... → preferred, inverted.
+  f = walk(purchase, preferred);
+  if (f != null) return 1 / f;
+  // Bridge via grams for spoon units.
+  const SPOON_G = { cc: 5, cs: 15 };
+  const inGrams = (u) => {
+    if (u === 'g') return 1;
+    const a = walk('g', u);
+    if (a != null) return a;
+    const b = walk(u, 'g');
+    if (b != null) return 1 / b;
+    return null;
+  };
+  if (SPOON_G[purchase]) {
+    const grams = SPOON_G[purchase];
+    const prefInG = preferred === 'g' ? 1 : inGrams(preferred);
+    if (prefInG != null && prefInG > 0) return grams / prefInG;
+  }
+  if (SPOON_G[preferred]) {
+    const gramsPerSpoon = SPOON_G[preferred];
+    const purInG = purchase === 'g' ? 1 : inGrams(purchase);
+    if (purInG != null) return purInG / gramsPerSpoon;
+  }
+  return null;
 }
 
 function renderEdit(data) {
@@ -43,7 +112,7 @@ function renderEdit(data) {
   const knownTypes = collectKnownTypes(data);
   const customIngredients = Store.loadCustomIngredients();
 
-  // Hidden datalists.
+  // Datalists.
   const dlIngr = document.createElement('datalist');
   dlIngr.id = 'dl-ingredients';
   for (const n of knownIngredients) {
@@ -113,19 +182,16 @@ function renderEdit(data) {
   });
   root.appendChild(addIngrBtn);
 
-  // --- Steps section
+  // --- Steps : Découpe + Cuisson
   const h2s = document.createElement('h2');
-  h2s.textContent = 'Étapes de préparation *';
+  h2s.textContent = 'Préparation';
   root.appendChild(h2s);
-  const stepsHint = document.createElement('p');
-  stepsHint.className = 'edit-hint';
-  stepsHint.textContent = 'Une étape par ligne. Obligatoire.';
-  root.appendChild(stepsHint);
-  const stepsTa = document.createElement('textarea');
-  stepsTa.id = 'recipe-steps';
-  stepsTa.rows = 8;
-  stepsTa.required = true;
-  root.appendChild(stepsTa);
+
+  const decoupeWrap = buildStepsBlock('Découpe', 'decoupe-list');
+  root.appendChild(decoupeWrap.section);
+
+  const cuissonWrap = buildStepsBlock('Cuisson', 'cuisson-list');
+  root.appendChild(cuissonWrap.section);
 
   // --- Prefill if editing
   if (nom) {
@@ -135,22 +201,37 @@ function renderEdit(data) {
         const { amount, unit } = Parser.parseQuantity(raw);
         ingrList.appendChild(buildIngredientRow(ingr, String(amount), unit, data, customIngredients));
       }
-      stepsTa.value = (existing.steps || []).join('\n');
+      const steps = (existing.steps || []).map(String);
+      const idx = steps.findIndex((s) => MARKER_RE.test(s));
+      const decoupe = idx === -1 ? steps : steps.slice(0, idx);
+      const cuisson = idx === -1 ? [] : steps.slice(idx + 1);
+      for (const s of decoupe) decoupeWrap.addStep(s);
+      for (const s of cuisson) cuissonWrap.addStep(s);
     }
   } else {
-    // Start with one empty row.
     ingrList.appendChild(buildIngredientRow('', '', '', data, customIngredients));
+    decoupeWrap.addStep('');
+    cuissonWrap.addStep('');
   }
+  if (decoupeWrap.count() === 0) decoupeWrap.addStep('');
+  if (cuissonWrap.count() === 0) cuissonWrap.addStep('');
 
   // --- Actions
   const actions = document.createElement('div');
   actions.className = 'edit-actions';
 
+  const previewBtn = document.createElement('button');
+  previewBtn.type = 'button';
+  previewBtn.className = 'preview-btn';
+  previewBtn.textContent = '👁 Prévisualiser';
+  previewBtn.addEventListener('click', () => onPreview(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
+  actions.appendChild(previewBtn);
+
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'save-btn';
   saveBtn.textContent = 'Enregistrer';
-  saveBtn.addEventListener('click', () => onSave(data, slot, nameInput, ingrList, stepsTa, customIngredients));
+  saveBtn.addEventListener('click', () => onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
   actions.appendChild(saveBtn);
 
   const cancelBtn = document.createElement('button');
@@ -176,6 +257,71 @@ function renderEdit(data) {
   root.appendChild(actions);
 }
 
+function buildStepsBlock(title, listId) {
+  const section = document.createElement('div');
+  section.className = 'steps-section';
+
+  const h3 = document.createElement('h3');
+  h3.textContent = title;
+  section.appendChild(h3);
+
+  const list = document.createElement('div');
+  list.className = 'edit-steps-list';
+  list.id = listId;
+  section.appendChild(list);
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Ajouter une étape';
+  section.appendChild(addBtn);
+
+  const addStep = (value) => {
+    const row = document.createElement('div');
+    row.className = 'step-row';
+
+    const num = document.createElement('span');
+    num.className = 'step-num';
+    row.appendChild(num);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'step-input';
+    input.placeholder = 'Étape…';
+    input.value = value || '';
+    row.appendChild(input);
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'ingr-del-btn';
+    del.textContent = '×';
+    del.title = 'Retirer cette étape';
+    del.addEventListener('click', () => {
+      row.remove();
+      renumber();
+    });
+    row.appendChild(del);
+
+    list.appendChild(row);
+    renumber();
+  };
+
+  const renumber = () => {
+    Array.from(list.querySelectorAll('.step-row')).forEach((row, i) => {
+      const n = row.querySelector('.step-num');
+      if (n) n.textContent = `${i + 1}.`;
+    });
+  };
+
+  addBtn.addEventListener('click', () => addStep(''));
+
+  const readSteps = () => Array.from(list.querySelectorAll('.step-input'))
+    .map((i) => i.value.trim())
+    .filter(Boolean);
+
+  return { section, addStep, readSteps, count: () => list.querySelectorAll('.step-row').length };
+}
+
 function buildIngredientRow(name, amount, unit, data, customIngredients) {
   const row = document.createElement('div');
   row.className = 'ingr-row';
@@ -195,12 +341,8 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
   amountInput.className = 'ingr-amount-input';
   amountInput.value = amount;
 
-  const unitInput = document.createElement('input');
-  unitInput.type = 'text';
-  unitInput.placeholder = 'unité';
-  unitInput.setAttribute('list', 'dl-units');
-  unitInput.className = 'ingr-unit-input';
-  unitInput.value = unit;
+  const unitSelect = document.createElement('select');
+  unitSelect.className = 'ingr-unit-select';
 
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
@@ -211,23 +353,46 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
 
   row.appendChild(nameInput);
   row.appendChild(amountInput);
-  row.appendChild(unitInput);
+  row.appendChild(unitSelect);
   row.appendChild(delBtn);
 
-  // Sub-block for unknown ingredients : type/preferred/purchase/convert.
+  // Sub-block for unknown ingredients : type / preferred / purchase / convert.
   const sub = document.createElement('div');
   sub.className = 'new-ingr-sub';
   sub.hidden = true;
   row.appendChild(sub);
 
-  const refresh = () => {
-    const v = nameInput.value.trim();
-    const known = !!(v && ((data.ingredients && data.ingredients[v]) || customIngredients[v]));
-    if (!v || known) { sub.hidden = true; sub.innerHTML = ''; return; }
-    if (sub.dataset.builtFor === v) return;
-    sub.dataset.builtFor = v;
+  // Replace options of unitSelect based on a units array; keep previous selection if possible.
+  const setUnits = (units, fallback) => {
+    const prev = unitSelect.value || fallback || '';
+    unitSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— unité —';
+    placeholder.disabled = true;
+    unitSelect.appendChild(placeholder);
+    for (const u of units) {
+      const o = document.createElement('option');
+      o.value = u;
+      o.textContent = u;
+      unitSelect.appendChild(o);
+    }
+    if (prev && units.includes(prev)) {
+      unitSelect.value = prev;
+    } else if (units.length > 0) {
+      unitSelect.value = units[0];
+    } else {
+      unitSelect.value = '';
+    }
+  };
+
+  let subBuiltFor = '';
+  let subRefs = null;
+
+  const buildSub = (v) => {
     sub.hidden = false;
     sub.innerHTML = '';
+    subBuiltFor = v;
 
     const hint = document.createElement('p');
     hint.className = 'edit-hint';
@@ -246,7 +411,6 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     prefInput.placeholder = 'unité recette (ex: g)';
     prefInput.setAttribute('list', 'dl-units');
     prefInput.className = 'new-ingr-pref';
-    prefInput.value = unitInput.value || '';
     sub.appendChild(prefInput);
 
     const purchaseInput = document.createElement('input');
@@ -256,48 +420,193 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     purchaseInput.className = 'new-ingr-purchase';
     sub.appendChild(purchaseInput);
 
+    // Preset chooser : copies a predefined `convert` block at creation.
+    const presets = (data && data.commonConverts) || {};
+    const presetNames = Object.keys(presets);
+    const presetRow = document.createElement('div');
+    presetRow.className = 'conv-row';
+    const presetLabel = document.createElement('span');
+    presetLabel.textContent = 'Preset de conversion :';
+    presetRow.appendChild(presetLabel);
+    const presetSelect = document.createElement('select');
+    presetSelect.className = 'new-ingr-preset';
+    const noneOpt = document.createElement('option');
+    noneOpt.value = '';
+    noneOpt.textContent = '(aucun)';
+    presetSelect.appendChild(noneOpt);
+    for (const pn of presetNames) {
+      const o = document.createElement('option');
+      o.value = pn;
+      o.textContent = pn;
+      presetSelect.appendChild(o);
+    }
+    presetRow.appendChild(presetSelect);
+    sub.appendChild(presetRow);
+
+    const presetHint = document.createElement('p');
+    presetHint.className = 'edit-hint';
+    presetHint.hidden = true;
+    sub.appendChild(presetHint);
+
     const convHint = document.createElement('p');
     convHint.className = 'edit-hint';
-    convHint.textContent = 'Conversion (optionnelle) : 1 unité achat = X unités recette';
+    convHint.textContent = "Conversion (optionnelle) : 1 unité d'achat = X unités recette";
     sub.appendChild(convHint);
 
     const convRow = document.createElement('div');
     convRow.className = 'conv-row';
+    convRow.appendChild(document.createTextNode('1 '));
+    const fromLabel = document.createElement('span');
+    fromLabel.className = 'conv-from-label';
+    fromLabel.textContent = '(achat)';
+    convRow.appendChild(fromLabel);
+    convRow.appendChild(document.createTextNode(' = '));
     const convFactor = document.createElement('input');
     convFactor.type = 'number';
     convFactor.step = '0.01';
     convFactor.min = '0';
     convFactor.placeholder = 'facteur (ex: 120)';
     convFactor.className = 'new-ingr-conv-factor';
-    convRow.appendChild(document.createTextNode('1 '));
-    const fromLabel = document.createElement('span');
-    fromLabel.className = 'conv-from-label';
-    fromLabel.textContent = purchaseInput.value || '(achat)';
-    convRow.appendChild(fromLabel);
-    convRow.appendChild(document.createTextNode(' = '));
     convRow.appendChild(convFactor);
     convRow.appendChild(document.createTextNode(' '));
     const toLabel = document.createElement('span');
     toLabel.className = 'conv-to-label';
-    toLabel.textContent = prefInput.value || '(recette)';
+    toLabel.textContent = '(recette)';
     convRow.appendChild(toLabel);
     sub.appendChild(convRow);
 
-    prefInput.addEventListener('input', () => { toLabel.textContent = prefInput.value || '(recette)'; });
-    purchaseInput.addEventListener('input', () => { fromLabel.textContent = purchaseInput.value || '(achat)'; });
+    const autoHint = document.createElement('p');
+    autoHint.className = 'edit-hint';
+    autoHint.hidden = true;
+    sub.appendChild(autoHint);
+
+    const formatFactor = (n) => {
+      if (!isFinite(n)) return '0';
+      // Up to 4 significant digits, strip trailing zeros — handles 0.001 and 1234 alike.
+      return Number(n.toPrecision(4)).toString();
+    };
+
+    const formatPreset = (block) => {
+      const lines = [];
+      for (const [tgt, srcs] of Object.entries(block || {})) {
+        for (const [src, f] of Object.entries(srcs || {})) {
+          lines.push(`1 ${src} = ${formatFactor(f)} ${tgt}`);
+        }
+      }
+      return lines.join(' · ');
+    };
+
+    const suggestPreset = (pref, purch) => {
+      if (!pref || !purch || pref === purch) return '';
+      for (const [pn, block] of Object.entries(presets)) {
+        for (const [tgt, srcs] of Object.entries(block || {})) {
+          if (tgt === pref && Object.prototype.hasOwnProperty.call(srcs || {}, purch)) return pn;
+          if (tgt === purch && Object.prototype.hasOwnProperty.call(srcs || {}, pref)) return pn;
+        }
+      }
+      return '';
+    };
+
+    const refreshUnitsFromSub = () => {
+      const us = [];
+      const p = prefInput.value.trim();
+      const pu = purchaseInput.value.trim();
+      if (p) us.push(p);
+      if (pu && pu !== p) us.push(pu);
+      setUnits(us, p || pu);
+      fromLabel.textContent = pu || '(achat)';
+      toLabel.textContent = p || '(recette)';
+
+      // If user hasn't explicitly chosen a preset, propose one matching the (pref, purchase) pair.
+      if (!presetSelect.dataset.userChosen) {
+        const sug = suggestPreset(p, pu);
+        if (sug && presetSelect.value !== sug) presetSelect.value = sug;
+      }
+
+      const chosen = presetSelect.value;
+      if (chosen && presets[chosen]) {
+        const baseUnit = Object.keys(presets[chosen])[0] || '';
+        convHint.hidden = false;
+        convHint.textContent = `Conversion (optionnelle) : 1 unité d'achat = X ${baseUnit}`;
+        convRow.hidden = false;
+        toLabel.textContent = baseUnit || '(base)';
+        autoHint.hidden = true;
+        presetHint.hidden = false;
+        presetHint.innerHTML = `Preset <strong>${chosen}</strong> appliqué : ${formatPreset(presets[chosen])}`;
+        return;
+      }
+      presetHint.hidden = true;
+
+      // Auto-derive from unitScales when possible — hide manual factor.
+      const derived = deriveConvertFactor(p, pu, (data && data.unitScales) || {});
+      if (derived != null) {
+        convHint.hidden = true;
+        convRow.hidden = true;
+        convFactor.value = '';
+        autoHint.hidden = false;
+        autoHint.innerHTML = `Conversion automatique : <strong>1 ${pu} = ${Parser.formatAmount(derived)} ${p}</strong>`;
+      } else {
+        convHint.hidden = false;
+        convRow.hidden = false;
+        autoHint.hidden = true;
+      }
+    };
+    prefInput.addEventListener('input', refreshUnitsFromSub);
+    purchaseInput.addEventListener('input', refreshUnitsFromSub);
+    presetSelect.addEventListener('change', () => {
+      presetSelect.dataset.userChosen = '1';
+      refreshUnitsFromSub();
+    });
+
+    subRefs = { typeInput, prefInput, purchaseInput, convFactor, presetSelect };
+  };
+
+  const refresh = () => {
+    const v = nameInput.value.trim();
+    if (!v) {
+      sub.hidden = true;
+      sub.innerHTML = '';
+      subBuiltFor = '';
+      subRefs = null;
+      setUnits([], unit);
+      return;
+    }
+    const spec = findSpec(v, data, customIngredients);
+    if (spec) {
+      sub.hidden = true;
+      sub.innerHTML = '';
+      subBuiltFor = '';
+      subRefs = null;
+      setUnits(unitsForSpec(spec), unit);
+      return;
+    }
+    if (subBuiltFor !== v) buildSub(v);
   };
 
   nameInput.addEventListener('input', refresh);
   nameInput.addEventListener('blur', refresh);
   refresh();
+  // Ensure prefilled unit is selected if the spec already exposes it.
+  if (unit) {
+    const opts = Array.from(unitSelect.options).map((o) => o.value);
+    if (!opts.includes(unit) && unit) {
+      const o = document.createElement('option');
+      o.value = unit;
+      o.textContent = unit;
+      unitSelect.appendChild(o);
+    }
+    unitSelect.value = unit;
+  }
 
   return row;
 }
 
-function readIngredientRow(row) {
+function readIngredientRow(row, data) {
+  const unitScales = (data && data.unitScales) || {};
+  const presets = (data && data.commonConverts) || {};
   const name = row.querySelector('.ingr-name-input').value.trim();
   const amount = row.querySelector('.ingr-amount-input').value.trim();
-  const unit = row.querySelector('.ingr-unit-input').value.trim();
+  const unit = row.querySelector('.ingr-unit-select').value.trim();
   const sub = row.querySelector('.new-ingr-sub');
   const out = { name, amount, unit, newSpec: null };
   if (!name) return out;
@@ -306,61 +615,215 @@ function readIngredientRow(row) {
     const pref = (row.querySelector('.new-ingr-pref') || {}).value || '';
     const purchase = (row.querySelector('.new-ingr-purchase') || {}).value || '';
     const factor = parseFloat((row.querySelector('.new-ingr-conv-factor') || {}).value || '');
+    const presetName = (row.querySelector('.new-ingr-preset') || {}).value || '';
     const spec = { type: type.trim(), preferred: pref.trim(), purchase: purchase.trim() };
-    if (isFinite(factor) && factor > 0 && spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
+    if (presetName && presets[presetName]) {
+      // Deep clone so further edits don't mutate the shared preset.
+      spec.convert = JSON.parse(JSON.stringify(presets[presetName]));
+      // If a manual factor is provided, merge it: 1 purchase = factor baseUnit.
+      const baseUnit = Object.keys(presets[presetName])[0];
+      if (isFinite(factor) && factor > 0 && baseUnit && spec.purchase && spec.purchase !== baseUnit) {
+        spec.convert[baseUnit] = spec.convert[baseUnit] || {};
+        spec.convert[baseUnit][spec.purchase] = factor;
+      }
+    } else if (isFinite(factor) && factor > 0 && spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
       spec.convert = { [spec.preferred]: { [spec.purchase]: factor } };
+    } else if (spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
+      const derived = deriveConvertFactor(spec.preferred, spec.purchase, unitScales);
+      if (derived != null) spec.convert = { [spec.preferred]: { [spec.purchase]: derived } };
     }
     out.newSpec = spec;
   }
   return out;
 }
 
-function onSave(data, slot, nameInput, ingrList, stepsTa, customIngredients) {
-  const errEl = document.getElementById('error');
-  errEl.hidden = true;
-  const fail = (msg) => { errEl.hidden = false; errEl.textContent = msg; };
-
+// Build a recipe object from the current form state. Returns { name, recipe, mergedIngredients } or { error }.
+function buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName = true } = {}) {
   const name = nameInput.value.trim();
-  if (!name) return fail('Le nom de la recette est obligatoire.');
+  if (requireName && !name) return { error: 'Le nom de la recette est obligatoire.' };
 
-  const stepsRaw = stepsTa.value.trim();
-  if (!stepsRaw) return fail('Au moins une étape de préparation est obligatoire.');
-  const steps = stepsRaw.split('\n').map((s) => s.trim()).filter(Boolean);
-  if (steps.length === 0) return fail('Au moins une étape de préparation est obligatoire.');
+  const decoupe = decoupeWrap.readSteps();
+  const cuisson = cuissonWrap.readSteps();
+  const steps = [];
+  for (const s of decoupe) steps.push(s);
+  if (cuisson.length > 0) {
+    steps.push(STEP_MARKER);
+    for (const s of cuisson) steps.push(s);
+  }
+  if (steps.length === 0) return { error: 'Au moins une étape de préparation est obligatoire.' };
 
   const rows = Array.from(ingrList.querySelectorAll('.ingr-row'));
-  const parsed = rows.map(readIngredientRow).filter((r) => r.name);
-  if (parsed.length === 0) return fail('Ajoute au moins un ingrédient.');
+  const parsed = rows.map((r) => readIngredientRow(r, data)).filter((r) => r.name);
+  if (parsed.length === 0) return { error: 'Ajoute au moins un ingrédient.' };
 
-  // Validate new ingredients have type / preferred / purchase.
   for (const r of parsed) {
-    if (!r.amount || !isFinite(parseFloat(r.amount))) return fail(`Quantité manquante pour « ${r.name} ».`);
-    if (!r.unit) return fail(`Unité manquante pour « ${r.name} ».`);
+    if (!r.amount || !isFinite(parseFloat(r.amount))) return { error: `Quantité manquante pour « ${r.name} ».` };
+    if (!r.unit) return { error: `Unité manquante pour « ${r.name} ».` };
     if (r.newSpec) {
-      if (!r.newSpec.type) return fail(`Catégorie manquante pour le nouvel ingrédient « ${r.name} ».`);
-      if (!r.newSpec.preferred) return fail(`Unité recette manquante pour « ${r.name} ».`);
-      if (!r.newSpec.purchase) return fail(`Unité d'achat manquante pour « ${r.name} ».`);
+      if (!r.newSpec.type) return { error: `Catégorie manquante pour le nouvel ingrédient « ${r.name} ».` };
+      if (!r.newSpec.preferred) return { error: `Unité recette manquante pour « ${r.name} ».` };
+      if (!r.newSpec.purchase) return { error: `Unité d'achat manquante pour « ${r.name} ».` };
     }
   }
 
-  // Persist new ingredients first.
-  for (const r of parsed) {
-    if (r.newSpec) Store.saveCustomIngredient(r.name, r.newSpec);
-  }
-
-  // Build the recipe object.
   const ingredients = {};
   for (const r of parsed) {
     const a = parseFloat(r.amount);
-    // Keep the YAML "100g" form when no space (cleaner) ; otherwise use object form.
     ingredients[r.name] = `${a}${r.unit}`;
   }
   const recipe = { ingredients, steps };
-  Store.saveCustomRecipe(name, recipe);
 
-  // If launched from a slot, append to that slot's recipes.
+  // Merged spec map : YAML + saved customs + pending new specs (for preview).
+  const mergedIngredients = Object.assign({}, data.ingredients || {}, customIngredients);
+  for (const r of parsed) {
+    if (r.newSpec) mergedIngredients[r.name] = r.newSpec;
+  }
+  return { name, recipe, mergedIngredients, newSpecs: parsed.filter((r) => r.newSpec) };
+}
+
+function onPreview(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+  const errEl = document.getElementById('error');
+  errEl.hidden = true;
+  const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: false });
+  if (built.error) { errEl.hidden = false; errEl.textContent = built.error; return; }
+  openPreviewModal(built.name || '(sans nom)', built.recipe, built.mergedIngredients, data.unitScales || {});
+}
+
+function openPreviewModal(name, recipe, ingredientsSpec, unitScales) {
+  // Remove any previous preview.
+  document.querySelectorAll('.preview-backdrop, .preview-modal').forEach((n) => n.remove());
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop preview-backdrop';
+  backdrop.addEventListener('click', () => { backdrop.remove(); modal.remove(); });
+  document.body.appendChild(backdrop);
+
+  const modal = document.createElement('div');
+  modal.className = 'modal preview-modal';
+  const close = document.createElement('button');
+  close.className = 'modal-close';
+  close.type = 'button';
+  close.textContent = '×';
+  close.addEventListener('click', () => { backdrop.remove(); modal.remove(); });
+  modal.appendChild(close);
+
+  const inner = document.createElement('div');
+  inner.id = 'preview-root';
+  modal.appendChild(inner);
+
+  renderRecipePreview(inner, name, recipe, 1, ingredientsSpec, unitScales);
+  document.body.appendChild(modal);
+}
+
+// Standalone preview rendering : mirrors js/recipe.js logic without depending on URL params.
+function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unitScales) {
+  root.innerHTML = '';
+  const title = document.createElement('h1');
+  title.textContent = name;
+  root.appendChild(title);
+
+  const subtitle = document.createElement('p');
+  subtitle.className = 'recipe-subtitle';
+  subtitle.textContent = `Prévisualisation — ${portions} portion${portions > 1 ? 's' : ''}`;
+  root.appendChild(subtitle);
+
+  const h2i = document.createElement('h2');
+  h2i.textContent = 'Ingrédients';
+  root.appendChild(h2i);
+
+  const ulIngr = document.createElement('ul');
+  ulIngr.className = 'ingredients-list';
+  for (const [ingrName, rawValue] of Object.entries(recipe.ingredients || {})) {
+    const { amount, unit } = Parser.parseQuantity(rawValue);
+    const scaled = amount * portions;
+    const spec = ingredientsSpec[ingrName] || {};
+    const displayParts = Shopping.aggregateIngredient(ingrName, { [unit]: scaled }, ingredientsSpec);
+
+    const li = document.createElement('li');
+    const labelStr = displayParts
+      .map((p) => Parser.promoteUnit(p.amount, p.unit, unitScales))
+      .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+      .join(' + ');
+
+    const purchase = spec.purchase || null;
+    const convert = spec.convert || null;
+    let equivStr = '';
+    if (purchase) {
+      const parts = [];
+      for (const p of displayParts) {
+        if (p.unit === purchase) { parts.push(p); continue; }
+        const v = Shopping.convertAmount(p.amount, p.unit, purchase, convert);
+        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: purchase });
+      }
+      if (parts.length > 0) {
+        const promoted = parts
+          .map((p) => Parser.promoteUnit(p.amount, p.unit, unitScales))
+          .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+          .join(' + ');
+        if (promoted !== labelStr) equivStr = promoted;
+      }
+    }
+
+    li.innerHTML = `<span class="ingr-name">${ingrName}</span><span class="ingr-qtys"><span class="ingr-qty has-popover" title="Voir les conversions">${labelStr}</span>${equivStr ? `<span class="ingr-qty-equiv">≈ ${equivStr}</span>` : ''}</span>`;
+    const qtyEl = li.querySelector('.ingr-qty');
+    qtyEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      Popover.showConversions(ingrName, spec, qtyEl, displayParts, unitScales);
+    });
+    ulIngr.appendChild(li);
+  }
+  root.appendChild(ulIngr);
+
+  const h2s = document.createElement('h2');
+  h2s.textContent = 'Préparation';
+  root.appendChild(h2s);
+
+  if (!recipe.steps || recipe.steps.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'no-steps';
+    p.textContent = 'Aucune étape de préparation renseignée pour cette recette.';
+    root.appendChild(p);
+  } else {
+    const splitIdx = recipe.steps.findIndex((s) => MARKER_RE.test(String(s)));
+    const renderList = (items) => {
+      const ol = document.createElement('ol');
+      ol.className = 'steps-list';
+      for (const step of items) {
+        const li = document.createElement('li');
+        li.textContent = step;
+        ol.appendChild(li);
+      }
+      root.appendChild(ol);
+    };
+    const renderBlock = (title, items) => {
+      if (!items || items.length === 0) return;
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      root.appendChild(h3);
+      renderList(items);
+    };
+    if (splitIdx === -1) {
+      renderList(recipe.steps);
+    } else {
+      renderBlock('Découpe', recipe.steps.slice(0, splitIdx));
+      renderBlock('Cuisson', recipe.steps.slice(splitIdx + 1));
+    }
+  }
+}
+
+function onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+  const errEl = document.getElementById('error');
+  errEl.hidden = true;
+  const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
+  if (built.error) { errEl.hidden = false; errEl.textContent = built.error; return; }
+
+  for (const r of built.newSpecs) {
+    Store.saveCustomIngredient(r.name, r.newSpec);
+  }
+  Store.saveCustomRecipe(built.name, built.recipe);
+
   if (slot) {
-    // Read current state of that slot to preserve existing recipes (from YAML or prior override).
     fetch('repas.yml')
       .then((r) => r.text())
       .then((text) => {
@@ -374,7 +837,7 @@ function onSave(data, slot, nameInput, ingrList, stepsTa, customIngredients) {
           const m = (yamlData.meals || []).find((x) => x.name === slot);
           current = (m && Array.isArray(m.recipes)) ? m.recipes.slice() : [];
         }
-        if (!current.includes(name)) current.push(name);
+        if (!current.includes(built.name)) current.push(built.name);
         Store.setMealOverride(slot, { recipes: current });
         window.location.href = 'index.html';
       })

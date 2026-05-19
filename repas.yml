@@ -13,6 +13,26 @@ unitScales:
   cl: { upper: L, factor: 100 }
   cc: { upper: cs, factor: 3 }
 
+# Presets de conversion réutilisables pour les nouveaux ingrédients.
+# Appliqués UNIQUEMENT à la création d'un ingrédient depuis le formulaire ;
+# le bloc convert résultant est copié tel quel dans la spec de l'ingrédient.
+# Format : nom_preset: { unite_cible: { unite_source: facteur } }  (1 source = facteur cible)
+commonConverts:
+  liquide:
+    L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005 }
+  épice_légère:
+    g: { cc: 2, cs: 6 }
+  épice_dense:
+    g: { cc: 5, cs: 15 }
+  herbe_sèche:
+    g: { cc: 1, cs: 3 }
+  miel:
+    g: { cc: 8, cs: 20 }
+  botte_dense:
+    botte: { feuille: 0.0333 }
+  botte_persil:
+    botte: { feuille: 0.025 }
+
 recipes:
   taboulé:
     ingredients:
