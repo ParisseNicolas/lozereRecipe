@@ -672,6 +672,172 @@ ingredients:
   cumin:
     type: Épices
     preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
 
+  # === Épices et herbes sèches ===
+  paprika:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  piment poudre:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  piment d'espelette:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  curry:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  curcuma:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  gingembre poudre:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  zataar:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  épices à couscous:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 2, cs: 6 }
+  origan:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 1, cs: 3 }
+  herbes de provence:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 1, cs: 3 }
+  herbe de provence:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 1, cs: 3 }
+  thym:
+    type: Épices
+    preferred: g
+    convert:
+      g: { cc: 1, cs: 3 }
+  laurier:
+    type: Épices
+    preferred: feuille
+  sucre:
+    type: Condiments
+    preferred: g
+    convert:
+      g: { cc: 5, cs: 15 }
+  sel:
+    type: Condiments
+    preferred: g
+    convert:
+      g: { cc: 5, cs: 15 }
 
+  # === Condiments / liquides ===
+  vinaigre balsamique:
+    type: Condiments
+    preferred: L
+    convert:
+      L: { cl: 0.01, cs: 0.015, cc: 0.005, ml: 0.001 }
+  miel:
+    type: Condiments
+    preferred: g
+    convert:
+      g: { cc: 8, cs: 20, pot: 250 }
+  harissa:
+    type: Condiments
+    preferred: g
+    convert:
+      g: { cc: 5, cs: 15, tube: 100 }
+  lait de coco:
+    type: Condiments
+    preferred: L
+    convert:
+      L: { ml: 0.001, cl: 0.01, boite: 0.4 }
+  vin blanc:
+    type: Boissons
+    preferred: L
+    convert:
+      L: { cl: 0.01, ml: 0.001, bouteille: 0.75 }
+  bouillon cube légume:
+    type: Condiments
+    preferred: u
+
+  # === Herbes fraîches / aromatiques ===
+  menthe:
+    type: Fruits et légumes
+    preferred: feuille
+    convert:
+      feuille: { botte: 30 }
+  basilic:
+    type: Fruits et légumes
+    preferred: feuille
+    convert:
+      feuille: { botte: 30 }
+  persil:
+    type: Fruits et légumes
+    preferred: feuille
+    convert:
+      feuille: { botte: 40 }
+
+  # === Légumes / fruits manquants ===
+  piment doux:
+    type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 80 }
+
+  # === Sec / féculents / conserves manquants ===
+  riz:
+    type: Sec
+    preferred: g
+  pois chiches:
+    type: Sec
+    preferred: g
+  pois chiche:
+    type: Sec
+    preferred: g
+  pois cassés:
+    type: Sec
+    preferred: g
+  vermicelle:
+    type: Sec
+    preferred: g
+  noix de cajou:
+    type: Sec
+    preferred: g
+  mais en boîte:
+    type: Sec
+    preferred: g
+
+  # === Fromages / frais manquants ===
+  parmesan:
+    type: Fromages
+    preferred: g
+  roquefort:
+    type: Fromages
+    preferred: g
+  kiri:
+    type: Fromages
+    preferred: u
+  yaourt nature:
+    type: Frais
+    preferred: u
 
