@@ -1062,6 +1062,9 @@ main {
 @media (max-width: 768px) {
   header {
     padding: 0.85rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
   header h1 {
     font-size: clamp(1.2rem, 5vw, 1.5rem);
