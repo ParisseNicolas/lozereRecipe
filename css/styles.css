@@ -1,4 +1,23 @@
-/* styles.css : style simple et lisible */
+/* styles.css : thème "Lozère Party" — fond sombre, vert néon, contours rouges */
+
+:root {
+  --lp-bg: #1a1410;
+  --lp-bg-2: #251a14;
+  --lp-surface: #2a201a;
+  --lp-surface-2: #322620;
+  --lp-border: #4a3a30;
+  --lp-text: #ede4d3;
+  --lp-text-dim: #a89684;
+  --lp-text-mute: #7a6a5a;
+  --lp-green: #7fff3a;
+  --lp-green-glow: rgba(127, 255, 58, 0.55);
+  --lp-green-dark: #3fa61a;
+  --lp-red: #b8341c;
+  --lp-red-dark: #7a1f10;
+  --lp-red-glow: rgba(184, 52, 28, 0.5);
+  --lp-blue: #6ec3ff;
+  --lp-amber: #f9a825;
+}
 
 * {
   box-sizing: border-box;
@@ -7,34 +26,55 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0;
-  background: #fafaf7;
-  color: #222;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(184, 52, 28, 0.18), transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(127, 255, 58, 0.08), transparent 60%),
+    var(--lp-bg);
+  background-attachment: fixed;
+  color: var(--lp-text);
   line-height: 1.5;
 }
 
 header {
-  background: #2e7d32;
-  color: white;
+  background: linear-gradient(180deg, #0e0a07 0%, #1a1410 100%);
+  color: var(--lp-text);
   padding: 1rem 2rem;
   position: relative;
+  border-bottom: 2px solid var(--lp-red-dark);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
 
 header h1 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
+  color: var(--lp-text);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 800;
+  -webkit-text-stroke: 1px var(--lp-red);
+  text-shadow:
+    0 0 8px var(--lp-red-glow),
+    0 0 16px rgba(184, 52, 28, 0.3);
 }
 
 header nav a {
-  color: white;
+  color: var(--lp-text);
   text-decoration: none;
   margin-right: 1.5rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.7rem;
   border-radius: 4px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.15s;
 }
 
 header nav a.active,
 header nav a:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(127, 255, 58, 0.08);
+  border-color: var(--lp-green);
+  color: var(--lp-green);
+  text-shadow: 0 0 6px var(--lp-green-glow);
 }
 
 .nav-toggle {
@@ -45,9 +85,9 @@ header nav a:hover {
   width: 44px;
   height: 44px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--lp-red);
   border-radius: 6px;
-  color: white;
+  color: var(--lp-text);
   font-size: 1.4rem;
   cursor: pointer;
   line-height: 1;
@@ -55,11 +95,12 @@ header nav a:hover {
 }
 
 .nav-toggle:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(184, 52, 28, 0.15);
+  color: var(--lp-green);
 }
 
 .nav-toggle:focus-visible {
-  outline: 2px solid white;
+  outline: 2px solid var(--lp-green);
   outline-offset: 2px;
 }
 
@@ -70,38 +111,42 @@ main {
 }
 
 .intro {
-  background: #fff;
-  border-left: 4px solid #2e7d32;
+  background: var(--lp-surface);
+  border-left: 4px solid var(--lp-green);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
   border-radius: 4px;
+  color: var(--lp-text-dim);
+  box-shadow: 0 0 12px rgba(127, 255, 58, 0.08);
 }
 
 /* === Menu table === */
 #menu-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--lp-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
   overflow: hidden;
+  border: 1px solid var(--lp-border);
 }
 
 #menu-table th,
 #menu-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--lp-border);
   vertical-align: top;
 }
 
 #menu-table th {
-  background: #f4f1ea;
-  font-weight: 600;
-  color: #555;
-  font-size: 0.9rem;
+  background: linear-gradient(180deg, #1a1410 0%, #251a14 100%);
+  font-weight: 700;
+  color: var(--lp-green);
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 4px var(--lp-green-glow);
 }
 
 #menu-table tr:last-child td {
@@ -109,61 +154,77 @@ main {
 }
 
 .day-cell {
-  font-weight: 600;
-  color: #2e7d32;
+  font-weight: 700;
+  color: var(--lp-amber);
   white-space: nowrap;
   width: 130px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .recipe-link {
   display: block;
-  color: #1565c0;
+  color: var(--lp-blue);
   text-decoration: none;
   padding: 0.25rem 0;
 }
 
 .recipe-link:hover {
   text-decoration: underline;
+  color: var(--lp-green);
 }
 
 .leftover {
-  color: #999;
+  color: var(--lp-text-mute);
   font-style: italic;
 }
 
 .portions-input {
   width: 70px;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 1rem;
   text-align: center;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+.portions-input:focus {
+  outline: none;
+  border-color: var(--lp-green);
+  box-shadow: 0 0 0 2px var(--lp-green-glow);
 }
 
 /* === Shopping list === */
 .portions-summary {
-  background: #fff;
+  background: var(--lp-surface);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
   border-radius: 4px;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--lp-text-dim);
+  border: 1px solid var(--lp-border);
 }
 
 .category {
-  background: white;
+  background: var(--lp-surface);
   margin-bottom: 1.5rem;
   padding: 1rem 1.5rem;
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--lp-border);
   page-break-inside: avoid;
 }
 
 .category h2 {
   margin: 0 0 0.75rem 0;
-  color: #2e7d32;
-  border-bottom: 2px solid #e8f5e9;
+  color: var(--lp-green);
+  border-bottom: 2px solid var(--lp-red-dark);
   padding-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px var(--lp-green-glow);
 }
 
 .shopping-list {
@@ -176,7 +237,7 @@ main {
   display: flex;
   align-items: center;
   padding: 0.35rem 0;
-  border-bottom: 1px dashed #f0f0f0;
+  border-bottom: 1px dashed var(--lp-border);
 }
 
 .shopping-list li:last-child {
@@ -187,11 +248,12 @@ main {
   margin-right: 0.75rem;
   width: 18px;
   height: 18px;
+  accent-color: var(--lp-green);
 }
 
 .shopping-list li.checked label {
   text-decoration: line-through;
-  color: #999;
+  color: var(--lp-text-mute);
 }
 
 .shopping-list label {
@@ -206,7 +268,7 @@ main {
 }
 
 .ingr-qty {
-  color: #666;
+  color: var(--lp-text-dim);
   font-variant-numeric: tabular-nums;
   margin-left: 1rem;
 }
@@ -223,19 +285,19 @@ main {
 }
 
 .ingr-qty-equiv {
-  color: #999;
+  color: var(--lp-text-mute);
   font-size: 0.9em;
   font-variant-numeric: tabular-nums;
 }
 
 .ingr-qty.has-popover {
   cursor: pointer;
-  border-bottom: 1px dotted #999;
+  border-bottom: 1px dotted var(--lp-text-mute);
 }
 
 .ingr-qty.has-popover:hover {
-  color: #1565c0;
-  border-bottom-color: #1565c0;
+  color: var(--lp-green);
+  border-bottom-color: var(--lp-green);
 }
 
 /* === Popover === */
@@ -249,27 +311,28 @@ main {
 .qty-popover {
   position: absolute;
   z-index: 1000;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--lp-surface-2);
+  border: 1px solid var(--lp-border);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(127, 255, 58, 0.1);
   padding: 0.75rem 1rem;
   min-width: 220px;
   max-width: 320px;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--lp-text);
 }
 
 .popover-title {
-  font-weight: 600;
+  font-weight: 700;
   text-transform: capitalize;
-  color: #2e7d32;
+  color: var(--lp-green);
   margin-right: 1.5rem;
+  text-shadow: 0 0 4px var(--lp-green-glow);
 }
 
 .popover-sub {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--lp-text-dim);
   margin-top: 0.15rem;
 }
 
@@ -282,12 +345,12 @@ main {
 .popover-section-title {
   margin-top: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--lp-border);
   font-size: 0.8rem;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700;
+  color: var(--lp-amber);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .popover-list li {
@@ -297,7 +360,7 @@ main {
 
 .popover-empty {
   margin-top: 0.5rem;
-  color: #999;
+  color: var(--lp-text-mute);
   font-style: italic;
 }
 
@@ -309,111 +372,128 @@ main {
   border: none;
   font-size: 1.3rem;
   line-height: 1;
-  color: #999;
+  color: var(--lp-text-mute);
   cursor: pointer;
   padding: 0.1rem 0.4rem;
 }
 
 .popover-close:hover {
-  color: #333;
+  color: var(--lp-red);
 }
 
 #print-btn {
-  background: #2e7d32;
-  color: white;
-  border: none;
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border: 1px solid var(--lp-green);
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   margin-bottom: 1rem;
   font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px var(--lp-green-glow);
 }
 
 #print-btn:hover {
-  background: #1b5e20;
+  background: var(--lp-green);
+  box-shadow: 0 0 12px var(--lp-green-glow);
 }
 
 #reset-btn {
-  background: #c62828;
-  color: white;
-  border: none;
+  background: var(--lp-red-dark);
+  color: var(--lp-text);
+  border: 1px solid var(--lp-red);
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   margin: 0 0 1rem 0.5rem;
   font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 #reset-btn:hover {
-  background: #8e0000;
+  background: var(--lp-red);
+  box-shadow: 0 0 8px var(--lp-red-glow);
 }
 
 .done-category h2 {
-  color: #888;
-  border-bottom-color: #eee;
+  color: var(--lp-text-mute);
+  border-bottom-color: var(--lp-border);
+  text-shadow: none;
 }
 
 .done-category .shopping-list li {
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .done-wrapper {
   margin-top: 2.5rem;
   padding-top: 1rem;
-  border-top: 2px dashed #ccc;
+  border-top: 2px dashed var(--lp-border);
 }
 
 .done-title {
-  color: #888;
+  color: var(--lp-text-mute);
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 /* === Recipe detail === */
 .back-link {
-  color: #1565c0;
+  color: var(--lp-blue);
   text-decoration: none;
 }
 
 .back-link:hover {
   text-decoration: underline;
+  color: var(--lp-green);
 }
 
 #recipe-root h1 {
-  text-transform: capitalize;
-  color: #2e7d32;
+  text-transform: uppercase;
+  color: var(--lp-green);
   margin-bottom: 0.25rem;
+  letter-spacing: 0.08em;
+  -webkit-text-stroke: 1px var(--lp-red);
+  text-shadow: 0 0 10px var(--lp-green-glow), 0 0 6px var(--lp-red-glow);
 }
 
 .recipe-subtitle {
-  color: #666;
+  color: var(--lp-text-dim);
   font-size: 1.1rem;
   margin-top: 0;
   margin-bottom: 1.5rem;
 }
 
 #recipe-root h2 {
-  color: #2e7d32;
-  border-bottom: 2px solid #e8f5e9;
+  color: var(--lp-amber);
+  border-bottom: 2px solid var(--lp-red-dark);
   padding-bottom: 0.25rem;
   margin-top: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .ingredients-list {
   list-style: none;
   padding: 0;
-  background: white;
+  background: var(--lp-surface);
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--lp-border);
 }
 
 .ingredients-list li {
   padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px dashed #f0f0f0;
+  border-bottom: 1px dashed var(--lp-border);
 }
 
 .ingredients-list li:last-child {
@@ -421,15 +501,16 @@ main {
 }
 
 .steps-list {
-  background: white;
+  background: var(--lp-surface);
   padding: 1rem 1rem 1rem 3rem;
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--lp-border);
 }
 
 .steps-list li {
   padding: 0.6rem 0.5rem;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--lp-border);
   line-height: 1.6;
 }
 
@@ -438,16 +519,16 @@ main {
 }
 
 .no-steps {
-  color: #999;
+  color: var(--lp-text-mute);
   font-style: italic;
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(184, 52, 28, 0.15);
+  color: #ffb3a8;
   padding: 1rem 2.75rem 1rem 1rem;
   border-radius: 4px;
-  border-left: 4px solid #c62828;
+  border-left: 4px solid var(--lp-red);
   position: relative;
 }
 .error-close {
@@ -456,14 +537,14 @@ main {
   right: 0.5rem;
   background: transparent;
   border: none;
-  color: #c62828;
+  color: #ffb3a8;
   font-size: 1.5rem;
   font-weight: bold;
   line-height: 1;
   cursor: pointer;
   padding: 0.15rem 0.5rem;
 }
-.error-close:hover { color: #8e0000; }
+.error-close:hover { color: var(--lp-red); }
 
 @media (max-width: 768px) {
   .error {
@@ -491,22 +572,22 @@ main {
   width: 26px;
   height: 26px;
   font-size: 0.9rem;
-  color: #888;
+  color: var(--lp-text-dim);
   cursor: pointer;
   line-height: 1;
   padding: 0;
 }
 
 .edit-meal-btn:hover {
-  border-color: #2e7d32;
-  color: #2e7d32;
-  background: #f1f8e9;
+  border-color: var(--lp-green);
+  color: var(--lp-green);
+  background: rgba(127, 255, 58, 0.1);
 }
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.7);
   z-index: 1000;
 }
 
@@ -515,20 +596,25 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
+  background: var(--lp-surface-2);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(127, 255, 58, 0.15);
+  border: 1px solid var(--lp-border);
   padding: 1.25rem 1.5rem;
   z-index: 1001;
   min-width: 320px;
   max-width: 90vw;
   max-height: 85vh;
   overflow-y: auto;
+  color: var(--lp-text);
 }
 
 .picker-modal h3 {
   margin: 0 0 0.5rem 0;
-  color: #2e7d32;
+  color: var(--lp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px var(--lp-green-glow);
 }
 
 .picker-recipes {
@@ -543,13 +629,13 @@ main {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--lp-border);
 }
 
-.picker-recipes li:first-child { border-top: 1px solid #f0f0f0; }
+.picker-recipes li:first-child { border-top: 1px solid var(--lp-border); }
 
 .picker-empty {
-  color: #999;
+  color: var(--lp-text-mute);
   font-style: italic;
   justify-content: center !important;
 }
@@ -560,37 +646,45 @@ main {
   padding: 0.1rem 0;
   margin: 0;
   font: inherit;
-  color: #1565c0;
+  color: var(--lp-blue);
   text-align: left;
   cursor: pointer;
   flex: 1;
   min-width: 0;
   text-decoration: underline;
-  text-decoration-color: rgba(21, 101, 192, 0.3);
+  text-decoration-color: rgba(110, 195, 255, 0.3);
   text-underline-offset: 2px;
 }
 
-.picker-recipe-name:hover { color: #0d47a1; text-decoration-color: #0d47a1; }
+.picker-recipe-name:hover { color: var(--lp-green); text-decoration-color: var(--lp-green); }
 
 .picker-remove {
   background: transparent;
   border: none;
-  color: #c62828;
+  color: var(--lp-red);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0 0.3rem;
   line-height: 1;
 }
 
-.picker-remove:hover { color: #8e0000; }
+.picker-remove:hover { color: #ff6650; }
 
 .picker-add {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   margin-bottom: 1rem;
   font-size: 0.95rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+.picker-add:focus {
+  outline: none;
+  border-color: var(--lp-green);
+  box-shadow: 0 0 0 2px var(--lp-green-glow);
 }
 
 .picker-actions {
@@ -598,22 +692,22 @@ main {
   flex-wrap: wrap;
   gap: 0.4rem;
   padding-top: 0.6rem;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--lp-border);
 }
 
 .picker-actions button {
   flex: 1;
   min-width: 100px;
   padding: 0.45rem 0.6rem;
-  background: #f5f5f5;
-  color: #333;
-  border: 1px solid #ccc;
+  background: var(--lp-surface);
+  color: var(--lp-text);
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-.picker-actions button:hover { background: #e0e0e0; }
+.picker-actions button:hover { background: var(--lp-bg-2); border-color: var(--lp-green); color: var(--lp-green); }
 
 .modal-close {
   position: absolute;
@@ -622,12 +716,12 @@ main {
   background: transparent;
   border: none;
   font-size: 1.4rem;
-  color: #999;
+  color: var(--lp-text-mute);
   cursor: pointer;
   line-height: 1;
 }
 
-.modal-close:hover { color: #333; }
+.modal-close:hover { color: var(--lp-red); }
 
 #menu-actions {
   margin-top: 1rem;
@@ -636,52 +730,61 @@ main {
 }
 
 #export-yaml-btn {
-  background: #1565c0;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--lp-blue);
+  border: 1px solid var(--lp-blue);
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-#export-yaml-btn:hover { background: #0d47a1; }
+#export-yaml-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
 
 #reset-overrides-btn {
-  background: #ef6c00;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--lp-amber);
+  border: 1px solid var(--lp-amber);
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-#reset-overrides-btn:hover { background: #e65100; }
+#reset-overrides-btn:hover { background: rgba(249, 168, 37, 0.1); box-shadow: 0 0 8px rgba(249, 168, 37, 0.3); }
 
 /* === Edit recipe form === */
 .per-person-banner {
-  background: #fff8e1;
-  border-left: 4px solid #f9a825;
-  color: #5d4037;
+  background: rgba(249, 168, 37, 0.1);
+  border-left: 4px solid var(--lp-amber);
+  color: var(--lp-amber);
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
   border-radius: 4px;
 }
 
 .edit-ctx {
-  background: #e8f5e9;
-  border-left: 4px solid #2e7d32;
+  background: rgba(127, 255, 58, 0.08);
+  border-left: 4px solid var(--lp-green);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
   margin: 0 0 1rem 0;
+  color: var(--lp-text);
 }
 
 #edit-root h2 {
-  color: #2e7d32;
-  border-bottom: 2px solid #e8f5e9;
+  color: var(--lp-amber);
+  border-bottom: 2px solid var(--lp-red-dark);
   padding-bottom: 0.25rem;
   margin-top: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .edit-row {
@@ -694,20 +797,28 @@ main {
 .edit-row label {
   min-width: 160px;
   font-weight: 600;
-  color: #555;
+  color: var(--lp-text-dim);
 }
 
 .edit-row input[type="text"] {
   flex: 1;
   padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+.edit-row input[type="text"]:focus {
+  outline: none;
+  border-color: var(--lp-green);
+  box-shadow: 0 0 0 2px var(--lp-green-glow);
 }
 
 .edit-hint {
   font-size: 0.85rem;
-  color: #777;
+  color: var(--lp-text-mute);
   margin: 0.25rem 0 0.5rem 0;
 }
 
@@ -721,9 +832,11 @@ main {
 
 #edit-ingr-list .ingr-row input {
   padding: 0.35rem 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
 }
 
 #edit-ingr-list .ingr-row .ingr-name-field {
@@ -736,10 +849,11 @@ main {
 #edit-ingr-list .ingr-row .ingr-name-select,
 .new-ingr-type-select {
   padding: 0.35rem 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
-  background: #fff;
+  background: var(--lp-bg);
+  color: var(--lp-text);
   min-width: 0;
 }
 
@@ -750,7 +864,7 @@ main {
 .ingr-del-btn {
   background: transparent;
   border: none;
-  color: #c62828;
+  color: var(--lp-red);
   width: 30px;
   height: 30px;
   cursor: pointer;
@@ -760,7 +874,7 @@ main {
 }
 
 .ingr-del-btn:hover {
-  color: #8e0000;
+  color: #ff6650;
 }
 
 .new-ingr-modal {
@@ -770,6 +884,9 @@ main {
 .new-ingr-title {
   margin: 0 0 0.75rem 0;
   font-size: 1.15rem;
+  color: var(--lp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .new-ingr-form {
@@ -781,9 +898,11 @@ main {
 .new-ingr-form input,
 .new-ingr-form select {
   padding: 0.4rem 0.55rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
 }
 
 .new-ingr-name {
@@ -791,9 +910,9 @@ main {
 }
 
 .new-ingr-error {
-  color: #c62828;
-  background: #ffebee;
-  border: 1px solid #ef9a9a;
+  color: #ffb3a8;
+  background: rgba(184, 52, 28, 0.15);
+  border: 1px solid var(--lp-red);
   padding: 0.5rem 0.6rem;
   border-radius: 4px;
   margin: 0 0 0.5rem 0;
@@ -810,32 +929,33 @@ main {
 .new-ingr-actions button {
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   cursor: pointer;
   font-size: 0.95rem;
 }
 
 .new-ingr-actions .btn-primary {
-  background: #2e7d32;
-  color: #fff;
-  border-color: #2e7d32;
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border-color: var(--lp-green);
+  font-weight: 700;
 }
 
-.new-ingr-actions .btn-primary:hover { background: #1b5e20; }
+.new-ingr-actions .btn-primary:hover { background: var(--lp-green); box-shadow: 0 0 8px var(--lp-green-glow); }
 
 .new-ingr-actions .btn-secondary {
-  background: #fff;
-  color: #333;
+  background: var(--lp-surface);
+  color: var(--lp-text);
 }
 
-.new-ingr-actions .btn-secondary:hover { background: #f5f5f5; }
+.new-ingr-actions .btn-secondary:hover { background: var(--lp-bg-2); }
 
 .conv-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--lp-text-dim);
 }
 
 .conv-row[hidden] { display: none; }
@@ -844,24 +964,27 @@ main {
 
 .add-row-btn {
   background: transparent;
-  border: 1px dashed #2e7d32;
-  color: #2e7d32;
+  border: 1px dashed var(--lp-green);
+  color: var(--lp-green);
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   cursor: pointer;
   margin-top: 0.3rem;
+  letter-spacing: 0.05em;
 }
 
-.add-row-btn:hover { background: #f1f8e9; }
+.add-row-btn:hover { background: rgba(127, 255, 58, 0.08); box-shadow: 0 0 8px var(--lp-green-glow); }
 
 #recipe-steps {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
   font-family: inherit;
   resize: vertical;
+  background: var(--lp-bg);
+  color: var(--lp-text);
 }
 
 .edit-actions {
@@ -872,57 +995,66 @@ main {
 }
 
 .save-btn {
-  background: #2e7d32;
-  color: white;
-  border: none;
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border: 1px solid var(--lp-green);
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px var(--lp-green-glow);
 }
 
-.save-btn:hover { background: #1b5e20; }
+.save-btn:hover { background: var(--lp-green); box-shadow: 0 0 14px var(--lp-green-glow); }
 
 .cancel-btn {
-  background: white;
-  color: #555;
-  border: 1px solid #ccc;
+  background: var(--lp-surface);
+  color: var(--lp-text);
+  border: 1px solid var(--lp-border);
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
 }
 
-.cancel-btn:hover { background: #f5f5f5; }
+.cancel-btn:hover { background: var(--lp-bg-2); border-color: var(--lp-text-dim); }
 
 .delete-btn {
-  background: #c62828;
-  color: white;
-  border: none;
+  background: var(--lp-red-dark);
+  color: var(--lp-text);
+  border: 1px solid var(--lp-red);
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
   margin-left: auto;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.delete-btn:hover { background: #8e0000; }
+.delete-btn:hover { background: var(--lp-red); box-shadow: 0 0 10px var(--lp-red-glow); }
 
 /* === Edit recipe : steps blocks === */
 .steps-section {
-  background: white;
+  background: var(--lp-surface);
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--lp-border);
   padding: 0.75rem 1rem 1rem 1rem;
   margin-bottom: 1rem;
 }
 
 .steps-section h3 {
   margin: 0 0 0.5rem 0;
-  color: #2e7d32;
+  color: var(--lp-green);
   font-size: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 4px var(--lp-green-glow);
 }
 
 .edit-steps-list {
@@ -941,37 +1073,43 @@ main {
 .step-num {
   min-width: 1.8rem;
   text-align: right;
-  color: #888;
+  color: var(--lp-text-mute);
   font-variant-numeric: tabular-nums;
 }
 
 .step-input {
   flex: 1;
   padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
 }
 
 .ingr-unit-select {
   padding: 0.35rem 0.4rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--lp-border);
   border-radius: 4px;
   font-size: 0.95rem;
-  background: white;
+  background: var(--lp-bg);
+  color: var(--lp-text);
 }
 
 .preview-btn {
-  background: #1565c0;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--lp-blue);
+  border: 1px solid var(--lp-blue);
   padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.preview-btn:hover { background: #0d47a1; }
+.preview-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 10px rgba(110, 195, 255, 0.3); }
 
 .preview-modal {
   width: min(800px, 92vw);
@@ -979,17 +1117,22 @@ main {
 }
 
 .preview-modal #preview-root h1 {
-  text-transform: capitalize;
-  color: #2e7d32;
+  text-transform: uppercase;
+  color: var(--lp-green);
   margin-top: 0;
   margin-bottom: 0.25rem;
+  -webkit-text-stroke: 1px var(--lp-red);
+  text-shadow: 0 0 10px var(--lp-green-glow);
+  letter-spacing: 0.08em;
 }
 
 .preview-modal #preview-root h2 {
-  color: #2e7d32;
-  border-bottom: 2px solid #e8f5e9;
+  color: var(--lp-amber);
+  border-bottom: 2px solid var(--lp-red-dark);
   padding-bottom: 0.25rem;
   margin-top: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* Popover must render above the preview modal (modal z-index 1001). */
@@ -1004,10 +1147,10 @@ main {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border: 1px solid var(--lp-green);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px var(--lp-green-glow);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1015,8 +1158,8 @@ main {
   z-index: 900;
   transition: background 0.15s, transform 0.15s;
 }
-.qr-fab:hover { background: #1b5e20; transform: scale(1.05); }
-.qr-fab:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
+.qr-fab:hover { background: var(--lp-green); transform: scale(1.05); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px var(--lp-green-glow); }
+.qr-fab:focus-visible { outline: 2px solid var(--lp-blue); outline-offset: 2px; }
 
 .qr-modal {
   text-align: center;
@@ -1025,12 +1168,18 @@ main {
 }
 .qr-modal h3 {
   margin: 0 0 0.75rem 0;
-  color: #2e7d32;
+  color: var(--lp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px var(--lp-green-glow);
 }
 .qr-wrap {
   display: flex;
   justify-content: center;
   margin: 0.5rem 0;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
 }
 .qr-wrap svg {
   width: 240px;
@@ -1039,7 +1188,7 @@ main {
 }
 .qr-url {
   font-size: 0.8rem;
-  color: #555;
+  color: var(--lp-text-dim);
   word-break: break-all;
   margin: 0.5rem 0 0 0;
 }
@@ -1079,7 +1228,8 @@ main {
     display: none;
     flex-direction: column;
     margin-top: 0.5rem;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--lp-border);
     border-radius: 6px;
     padding: 0.5rem;
   }
@@ -1133,9 +1283,10 @@ main {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 0.5rem 1rem;
-    background: white;
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-border);
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     padding: 0.75rem 1rem;
     margin-bottom: 0.85rem;
   }
@@ -1157,14 +1308,14 @@ main {
     align-items: center;
     gap: 0.4rem;
     font-size: 0.85rem;
-    color: #555;
+    color: var(--lp-text-dim);
   }
   #menu-table tr td.portions-cell::before {
     content: 'Personnes :';
   }
   #menu-table tr td.meal-cell {
     grid-column: 1 / -1;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--lp-border);
     padding-top: 0.6rem;
     position: relative;
   }
@@ -1172,11 +1323,12 @@ main {
     content: attr(data-label);
     display: block;
     font-weight: 600;
-    color: #2e7d32;
+    color: var(--lp-green);
     font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     margin-bottom: 0.3rem;
+    text-shadow: 0 0 4px var(--lp-green-glow);
   }
   .edit-meal-btn {
     top: 0.4rem;
@@ -1225,8 +1377,8 @@ main {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0.5rem;
     padding: 0.75rem 2.75rem 0.75rem 0.75rem;
-    background: #fafafa;
-    border: 1px solid #e0e0e0;
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-border);
     border-radius: 6px;
     margin-bottom: 0.6rem;
   }
@@ -1350,25 +1502,31 @@ main {
 /* === Print button === */
 .print-btn {
   padding: 0.5rem 0.9rem;
-  background: #1565c0;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--lp-blue);
+  border: 1px solid var(--lp-blue);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
   margin: 0.5rem 0 1rem 0;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
-.print-btn:hover { background: #0d47a1; }
+.print-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
 
 #print-menu-btn {
   padding: 0.5rem 0.9rem;
-  background: #1565c0;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--lp-blue);
+  border: 1px solid var(--lp-blue);
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
-#print-menu-btn:hover { background: #0d47a1; }
+#print-menu-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
 
 /* === Print styles === */
 @media print {
