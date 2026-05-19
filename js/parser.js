@@ -63,4 +63,14 @@ function promoteUnit(amount, unit, scales) {
   return { amount: a, unit: u };
 }
 
-window.Parser = { parseQuantity, formatAmount, promoteUnit };
+// Pluralize a unit when amount > 1, except for measurement abbreviations.
+const INVARIANT_UNITS = new Set(['g', 'kg', 'mg', 'ml', 'cl', 'L', 'cs', 'cc', 'u', 'petit peu']);
+function pluralizeUnit(amount, unit) {
+  if (!unit) return unit;
+  if (Math.ceil(amount) <= 1) return unit;
+  if (INVARIANT_UNITS.has(unit)) return unit;
+  if (unit.endsWith('s') || unit.endsWith('x')) return unit;
+  return unit + 's';
+}
+
+window.Parser = { parseQuantity, formatAmount, promoteUnit, pluralizeUnit };

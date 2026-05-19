@@ -102,7 +102,7 @@ function buildItem(category, item, data, isDone) {
   const label = document.createElement('label');
   const qtyStr = item.parts
     .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
-    .map((p) => `${Parser.formatAmount(p.amount)} ${p.unit}`.trim())
+    .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
     .join(' + ');
   label.innerHTML = `<span class="ingr-name">${item.name}</span> <span class="ingr-qty">${qtyStr}</span>`;
   li.appendChild(label);

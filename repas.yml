@@ -687,6 +687,9 @@ ingredients:
     type: Sec
   moutarde:
     type: Sec
+    preferred: pot
+    convert:
+      pot: { cc: 0.02, cs: 0.06, g: 0.005 }
 
   pain:
     type: Boulangerie
@@ -694,6 +697,9 @@ ingredients:
 
   chocolat:
     type: Sec
+    preferred: tablette
+    convert:
+      tablette: { carré: 0.05, g: 0.01 }
 
 
 
@@ -775,7 +781,9 @@ ingredients:
       g: { cc: 1, cs: 3 }
   laurier:
     type: Épices
-    preferred: feuille
+    preferred: sachet
+    convert:
+      sachet: { feuille: 0.04 }
   sucre:
     type: Condiments
     preferred: g
@@ -820,19 +828,19 @@ ingredients:
   # === Herbes fraîches / aromatiques ===
   menthe:
     type: Fruits et légumes
-    preferred: feuille
+    preferred: botte
     convert:
-      feuille: { botte: 30 }
+      botte: { feuille: 0.0333 }
   basilic:
     type: Fruits et légumes
-    preferred: feuille
+    preferred: botte
     convert:
-      feuille: { botte: 30 }
+      botte: { feuille: 0.0333 }
   persil:
     type: Fruits et légumes
-    preferred: feuille
+    preferred: botte
     convert:
-      feuille: { botte: 40 }
+      botte: { feuille: 0.025 }
 
   # === Légumes / fruits manquants ===
   piment doux:
