@@ -2,25 +2,45 @@
 // Build the aggregated shopping list grouped by category.
 
 // Convert an amount expressed in `fromUnit` to `toUnit` using the conversion table.
+// Supports direct, inverse, and one-hop chained conversions.
 // Returns null if no conversion is possible.
 function convertAmount(amount, fromUnit, toUnit, convertTable) {
   if (fromUnit === toUnit) return amount;
   if (!convertTable) return null;
-  
+
+  // Direct : convertTable[toUnit][fromUnit] = factor (fromUnit -> toUnit)
   if (convertTable[toUnit] && convertTable[toUnit][fromUnit] != null) {
     const factor = convertTable[toUnit][fromUnit];
     if (factor === 0) return null;
     return amount * factor;
   }
-  
+
+  // Inverse : convertTable[fromUnit][toUnit] means toUnit -> fromUnit, so reverse it.
+  if (convertTable[fromUnit] && convertTable[fromUnit][toUnit] != null) {
+    const f = convertTable[fromUnit][toUnit];
+    if (f === 0) return null;
+    return amount / f;
+  }
+
+  // One-hop through a target unit T : fromUnit -> T -> toUnit.
+  for (const T of Object.keys(convertTable)) {
+    if (convertTable[T][fromUnit] != null && convertTable[T][toUnit] != null) {
+      const f = convertTable[T][toUnit];
+      if (f === 0) continue;
+      return (amount * convertTable[T][fromUnit]) / f;
+    }
+  }
+
   return null;
 }
 
 // Pick the preferred unit for an ingredient.
 // If a totals object has several units, try to convert all to the preferred one.
-function aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec) {
+// `targetOverride` (optional) replaces spec.preferred — used by the shopping list
+// to aggregate into the purchase unit instead of the recipe unit.
+function aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec, targetOverride) {
   const spec = ingredientsSpec[ingrName] || {};
-  const preferred = spec.preferred || null;
+  const preferred = targetOverride || spec.preferred || null;
   const convert = spec.convert || null;
 
   const units = Object.keys(totalsByUnit);
@@ -84,7 +104,8 @@ function buildShoppingList(data, portionsByDay) {
   for (const [ingrName, totalsByUnit] of Object.entries(totals)) {
     const spec = ingredientsSpec[ingrName] || {};
     const category = spec.type || 'Autre';
-    const parts = aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec);
+    const target = spec.purchase || spec.preferred || null;
+    const parts = aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec, target);
     if (!byCategory[category]) byCategory[category] = [];
     byCategory[category].push({ name: ingrName, parts });
   }

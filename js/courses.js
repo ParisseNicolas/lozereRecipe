@@ -100,18 +100,38 @@ function buildItem(category, item, data, isDone) {
   li.appendChild(cb);
 
   const label = document.createElement('label');
+  const spec = (data.ingredients || {})[item.name] || {};
+  const preferred = spec.preferred || null;
+  const convert = spec.convert || null;
   const qtyStr = item.parts
     .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
     .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
     .join(' + ');
-  label.innerHTML = `<span class="ingr-name">${item.name}</span> <span class="ingr-qty has-popover" title="Voir les conversions">${qtyStr}</span>`;
+  // Equivalent in the preferred (recipe) unit, shown next to the purchase qty.
+  let equivStr = '';
+  if (preferred) {
+    const parts = [];
+    for (const p of item.parts) {
+      if (p.unit === preferred) { parts.push(p); continue; }
+      const v = Shopping.convertAmount(p.amount, p.unit, preferred, convert);
+      if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: preferred });
+    }
+    if (parts.length > 0) {
+      const promoted = parts
+        .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
+        .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+        .join(' + ');
+      // Only show if it adds info (different from the main qty string).
+      if (promoted !== qtyStr) equivStr = promoted;
+    }
+  }
+  label.innerHTML = `<span class="ingr-name">${item.name}</span><span class="ingr-qtys"><span class="ingr-qty has-popover" title="Voir les conversions">${qtyStr}</span>${equivStr ? `<span class="ingr-qty-equiv">≈ ${equivStr}</span>` : ''}</span>`;
   li.appendChild(label);
 
   const qtyEl = label.querySelector('.ingr-qty');
   qtyEl.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const spec = (data.ingredients || {})[item.name] || {};
     Popover.showConversions(item.name, spec, qtyEl, item.parts, data.unitScales);
   });
 

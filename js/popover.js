@@ -9,17 +9,19 @@ function formatRatio(n) {
 
 // Build human-readable lines from a convert table.
 // convert shape : { targetUnit: { sourceUnit: factor } }, where sourceAmount * factor = targetAmount.
-// So 1 sourceUnit = factor targetUnit, equivalently 1 targetUnit = 1/factor sourceUnit.
+// We always present each pair with the "bigger" unit on the left so it reads naturally:
+//   1 sourceUnit ≈ factor targetUnit when factor >= 1 (e.g. 1 portion ≈ 100 g)
+//   1 targetUnit ≈ 1/factor sourceUnit otherwise (e.g. 1 g ≈ 5 mg)
 function buildConversionLines(convert) {
   const lines = [];
   for (const [target, sources] of Object.entries(convert || {})) {
-    const parts = [];
     for (const [src, factor] of Object.entries(sources || {})) {
       if (!factor) continue;
-      parts.push(`${formatRatio(1 / factor)} ${src}`);
-    }
-    if (parts.length > 0) {
-      lines.push(`1 ${target} ≈ ${parts.join(', ')}`);
+      if (factor >= 1) {
+        lines.push(`1 ${src} ≈ ${formatRatio(factor)} ${target}`);
+      } else {
+        lines.push(`1 ${target} ≈ ${formatRatio(1 / factor)} ${src}`);
+      }
     }
   }
   return lines;
@@ -84,11 +86,15 @@ function buildEquivalentLines(parts, convert, unitScales) {
   for (const p of parts) {
     const promotedSelf = unitScales ? Parser.promoteUnit(p.amount, p.unit, unitScales) : p;
     const others = [];
+    const seen = new Set();
+    seen.add(promotedSelf.unit);
     for (const u of units) {
       if (u === p.unit) continue;
       const v = convertBetween(p.amount, p.unit, u, convert);
       if (v != null && isFinite(v) && v > 0) {
         const promoted = unitScales ? Parser.promoteUnit(v, u, unitScales) : { amount: v, unit: u };
+        if (seen.has(promoted.unit)) continue;
+        seen.add(promoted.unit);
         others.push(`${Parser.formatAmount(promoted.amount)} ${promoted.unit}`);
       }
     }
@@ -104,6 +110,7 @@ function showConversions(ingrName, spec, anchorEl, parts, unitScales) {
 
   const convert = (spec && spec.convert) || null;
   const preferred = (spec && spec.preferred) || null;
+  const purchase = (spec && spec.purchase) || null;
 
   const backdrop = document.createElement('div');
   backdrop.className = 'popover-backdrop';
@@ -121,8 +128,14 @@ function showConversions(ingrName, spec, anchorEl, parts, unitScales) {
   if (preferred) {
     const sub = document.createElement('div');
     sub.className = 'popover-sub';
-    sub.textContent = `Unité préférée : ${preferred}`;
+    sub.textContent = `Unité recette : ${preferred}`;
     pop.appendChild(sub);
+  }
+  if (purchase && purchase !== preferred) {
+    const sub2 = document.createElement('div');
+    sub2.className = 'popover-sub';
+    sub2.textContent = `Unité d'achat : ${purchase}`;
+    pop.appendChild(sub2);
   }
 
   const lines = buildConversionLines(convert);

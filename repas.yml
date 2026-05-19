@@ -280,7 +280,7 @@ recipes:
   malak panner:
     ingredients:
       riz: 60g
-      petits pois boite: 150g
+      petits pois boîte: 150g
       oignon: 0.25
       ail: 0.25 gousse
       noix de cajou: 15g
@@ -574,32 +574,38 @@ ingredients:
   semoule:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   tomate:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 120 }
   concombre:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 300 }
   courgette:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 200 }
   carotte:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 80 }
 
   aubergine:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 400 }
   ail:
@@ -610,37 +616,43 @@ ingredients:
   oignon:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 150 }
 
   poivron:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 150 }
   pomme de terre:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 150 }
 
   avocat:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 200 }
 
   champignon de paris:
     type: Fruits et légumes
     preferred: g
+    purchase: barquette
     convert:
       g: { barquette: 250 }
 
   concassé tomates:
     type: Sec
     preferred: g
+    purchase: boîte
     convert:
-      g: { boite: 400 }
+      g: { boîte: 400 }
 
 
   huile d'olive:
@@ -653,103 +665,122 @@ ingredients:
   chèvre coulant:
     type: Fromages
     preferred: g
+    purchase: u
     convert:
       g: { u: 100 }
   camembert:
     type: Fromages
     preferred: g
+    purchase: u
     convert:
       g: { u: 250 }
 
   citron:
     type: Fruits et légumes
     preferred: g
+    purchase: u
     convert:
       g: { u: 100 }
 
   crème fraîche:
     type: Frais
     preferred: g
+    purchase: pot
     convert:
       g: { ml: 1, cl: 10, pot: 200 }
   beurre:
     type: Frais
     preferred: g
+    purchase: plaquette
     convert:
       g: { plaquette: 250 }
   lait:
     type: Frais
     preferred: L
+    purchase: brique
     convert:
       L: { ml: 0.001, cl: 0.01, brique: 1 }
   oeuf:
     type: Frais
     preferred: u
+    purchase: boîte
     convert:
-      u: { boite: 6 }
+      u: { boîte: 6 }
 
 
   ebly:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   boulgour:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   lentilles:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   pates:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   pates tortillis:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   spaghettis:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
 
   cornichon:
     type: Sec
     preferred: g
+    purchase: pot
     convert:
       g: { pot: 300 }
   feta:
     type: Fromages
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 200 }
   olive noire:
     type: Sec
     preferred: g
+    purchase: pot
     convert:
       g: { pot: 200 }
   raisin sec:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 250 }
   haricot rouge sec:
     type: Sec
     preferred: g
+    purchase: boîte
     convert:
-      g: { boite: 250, paquet: 500 }
-  petits pois boite:
+      g: { boîte: 250, paquet: 500 }
+  petits pois boîte:
     type: Sec
     preferred: g
+    purchase: boîte
     convert:
-      g: { boite: 400 }
+      g: { boîte: 400 }
   moutarde:
     type: Sec
     preferred: pot
@@ -759,6 +790,7 @@ ingredients:
   pain:
     type: Boulangerie
     preferred: g
+    purchase: baguette
     convert:
       g: { baguette: 250 }
 
@@ -783,65 +815,77 @@ ingredients:
   cumin:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
 
   # === Épices et herbes sèches ===
   paprika:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   piment poudre:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   piment d'espelette:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   curry:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   curcuma:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   gingembre poudre:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   zataar:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   épices à couscous:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 2, cs: 6 }
+      g: { cc: 2, cs: 6, tube: 40 }
   origan:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 1, cs: 3 }
+      g: { cc: 1, cs: 3, tube: 25 }
   herbes de provence:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 1, cs: 3 }
+      g: { cc: 1, cs: 3, tube: 25 }
   thym:
     type: Épices
     preferred: g
+    purchase: tube
     convert:
-      g: { cc: 1, cs: 3 }
+      g: { cc: 1, cs: 3, tube: 25 }
   laurier:
     type: Épices
     preferred: sachet
@@ -867,21 +911,25 @@ ingredients:
   miel:
     type: Condiments
     preferred: g
+    purchase: pot
     convert:
       g: { cc: 8, cs: 20, pot: 250 }
   harissa:
     type: Condiments
     preferred: g
+    purchase: tube
     convert:
       g: { cc: 5, cs: 15, tube: 100 }
   lait de coco:
     type: Condiments
     preferred: L
+    purchase: boîte
     convert:
-      L: { ml: 0.001, cl: 0.01, boite: 0.4 }
+      L: { ml: 0.001, cl: 0.01, boîte: 0.4 }
   vin blanc:
     type: Boissons
     preferred: L
+    purchase: bouteille
     convert:
       L: { cl: 0.01, ml: 0.001, bouteille: 0.75 }
   bouillon cube légume:
@@ -916,43 +964,51 @@ ingredients:
   riz:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 1000 }
   pois chiches:
     type: Sec
     preferred: g
+    purchase: boîte
     convert:
-      g: { boite: 250, paquet: 500 }
+      g: { boîte: 250, paquet: 500 }
   pois cassés:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 500 }
   vermicelle:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 250 }
   noix de cajou:
     type: Sec
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 200 }
   mais en boîte:
     type: Sec
     preferred: g
+    purchase: boîte
     convert:
-      g: { boite: 285 }
+      g: { boîte: 285 }
 
   # === Fromages / frais manquants ===
   parmesan:
     type: Fromages
     preferred: g
+    purchase: bloc
     convert:
       g: { bloc: 100 }
   roquefort:
     type: Fromages
     preferred: g
+    purchase: portion
     convert:
       g: { portion: 100 }
   kiri:
@@ -969,26 +1025,31 @@ ingredients:
   fromage:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    purchase: u
     convert:
       g: { u: 250 }
   confiture:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    purchase: pot
     convert:
       g: { pot: 370 }
   café moulu:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 250 }
   chips:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 150 }
   cacahuète:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    purchase: paquet
     convert:
       g: { paquet: 200 }
 

@@ -61,7 +61,28 @@ function renderRecipe(data) {
       .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
       .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
       .join(' + ');
-    li.innerHTML = `<span class="ingr-name">${ingrName}</span> <span class="ingr-qty has-popover" title="Voir les conversions">${labelStr}</span>`;
+
+    // Equivalent in the purchase unit, shown next to the recipe qty.
+    const purchase = spec.purchase || null;
+    const convert = spec.convert || null;
+    let equivStr = '';
+    if (purchase) {
+      const parts = [];
+      for (const p of displayParts) {
+        if (p.unit === purchase) { parts.push(p); continue; }
+        const v = Shopping.convertAmount(p.amount, p.unit, purchase, convert);
+        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: purchase });
+      }
+      if (parts.length > 0) {
+        const promoted = parts
+          .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
+          .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+          .join(' + ');
+        if (promoted !== labelStr) equivStr = promoted;
+      }
+    }
+
+    li.innerHTML = `<span class="ingr-name">${ingrName}</span><span class="ingr-qtys"><span class="ingr-qty has-popover" title="Voir les conversions">${labelStr}</span>${equivStr ? `<span class="ingr-qty-equiv">≈ ${equivStr}</span>` : ''}</span>`;
     const qtyEl = li.querySelector('.ingr-qty');
     qtyEl.addEventListener('click', (e) => {
       e.preventDefault();
