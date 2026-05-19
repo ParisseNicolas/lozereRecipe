@@ -424,6 +424,8 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     const e = enable === undefined ? units.length > 0 : !!enable;
     unitSelect.disabled = !e;
     amountInput.disabled = !e;
+    unitSelect.hidden = !e;
+    amountInput.hidden = !e;
   };
 
 

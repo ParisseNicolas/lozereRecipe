@@ -445,9 +445,35 @@ main {
 .error {
   background: #ffebee;
   color: #c62828;
-  padding: 1rem;
+  padding: 1rem 2.75rem 1rem 1rem;
   border-radius: 4px;
   border-left: 4px solid #c62828;
+  position: relative;
+}
+.error-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.15rem 0.5rem;
+}
+.error-close:hover { color: #8e0000; }
+
+@media (max-width: 768px) {
+  .error {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  }
 }
 
 /* === Meal edit (✎ button + picker modal) === */
