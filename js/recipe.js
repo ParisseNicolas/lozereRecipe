@@ -40,6 +40,13 @@ function renderRecipe(data) {
     : `${portions} portion${portions > 1 ? 's' : ''}`;
   root.appendChild(subtitle);
 
+  const printBtn = document.createElement('button');
+  printBtn.type = 'button';
+  printBtn.className = 'print-btn no-print';
+  printBtn.textContent = '🖨 Imprimer';
+  printBtn.addEventListener('click', () => window.print());
+  root.appendChild(printBtn);
+
   // Ingredients
   const h2i = document.createElement('h2');
   h2i.textContent = 'Ingrédients';

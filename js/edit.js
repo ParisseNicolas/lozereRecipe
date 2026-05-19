@@ -957,9 +957,9 @@ function onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, custo
         }
         if (!current.includes(built.name)) current.push(built.name);
         Store.setMealOverride(slot, { recipes: current });
-        window.location.href = 'index.html';
+        window.location.href = `index.html?openPicker=${encodeURIComponent(slot)}`;
       })
-      .catch(() => { window.location.href = 'index.html'; });
+      .catch(() => { window.location.href = `index.html?openPicker=${encodeURIComponent(slot)}`; });
   } else {
     window.location.href = 'index.html';
   }

@@ -31,6 +31,7 @@ function renderMenu(data) {
     for (const slot of ['midi', 'soir']) {
       const td = document.createElement('td');
       td.className = 'meal-cell';
+      td.dataset.label = slot === 'midi' ? 'Midi' : 'Soir';
       const meal = byDay[day] && byDay[day][slot];
       const recipesList = document.createElement('div');
       recipesList.className = 'recipe-list';
@@ -68,6 +69,8 @@ function renderMenu(data) {
     }
 
     const tdPortions = document.createElement('td');
+    tdPortions.className = 'portions-cell';
+    tdPortions.dataset.label = 'Personnes';
     const input = document.createElement('input');
     input.type = 'number';
     input.min = '0';
@@ -92,6 +95,20 @@ function renderMenu(data) {
   }
 
   renderMenuActions(data);
+
+  // Auto-open picker if requested via ?openPicker=<slot> (e.g. after creating a recipe)
+  const params = new URLSearchParams(window.location.search);
+  const slotToOpen = params.get('openPicker');
+  if (slotToOpen) {
+    const meal = (data.meals || []).find((m) => m.name === slotToOpen);
+    if (meal) {
+      openMealPicker(meal.name, meal.recipes || [], data);
+    }
+    // Clean URL so refresh doesn't reopen
+    const url = new URL(window.location.href);
+    url.searchParams.delete('openPicker');
+    window.history.replaceState({}, '', url.toString());
+  }
 }
 
 function renderMenuActions(data) {
@@ -110,6 +127,13 @@ function renderMenuActions(data) {
   exportBtn.textContent = 'Exporter YAML';
   exportBtn.addEventListener('click', exportYaml);
   actions.appendChild(exportBtn);
+
+  const printBtn = document.createElement('button');
+  printBtn.type = 'button';
+  printBtn.id = 'print-menu-btn';
+  printBtn.textContent = '🖨 Imprimer';
+  printBtn.addEventListener('click', () => window.print());
+  actions.appendChild(printBtn);
 
   const hasOverrides =
     Object.keys(Store.loadCustomRecipes()).length > 0 ||
@@ -177,152 +201,97 @@ function openMealPicker(slot, currentRecipes, data) {
   modal.addEventListener('click', (e) => e.stopPropagation());
 
   const title = document.createElement('h3');
-  title.textContent = `Modifier : ${slot}`;
+  title.textContent = slot;
   modal.appendChild(title);
 
-  const cur = document.createElement('p');
-  cur.className = 'picker-current';
-  cur.textContent = currentRecipes.length > 0
-    ? `Actuellement : ${currentRecipes.join(', ')}`
-    : 'Actuellement : (vide / restes)';
-  modal.appendChild(cur);
+  // Current recipes list with inline remove buttons
+  const list = document.createElement('ul');
+  list.className = 'picker-recipes';
+  if (currentRecipes.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'picker-empty';
+    li.textContent = '(vide / restes)';
+    list.appendChild(li);
+  } else {
+    for (const name of currentRecipes) {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.textContent = name;
+      li.appendChild(span);
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'picker-remove';
+      rm.title = 'Retirer';
+      rm.textContent = '✕';
+      rm.addEventListener('click', () => {
+        const next = currentRecipes.filter((x) => x !== name);
+        Store.setMealOverride(slot, { recipes: next });
+        reloadAndKeepPicker(slot);
+      });
+      li.appendChild(rm);
+      list.appendChild(li);
+    }
+  }
+  modal.appendChild(list);
 
-  // Action 1 : add an existing recipe
-  const addBlock = document.createElement('div');
-  addBlock.className = 'picker-block';
-  const addLabel = document.createElement('label');
-  addLabel.textContent = 'Ajouter une recette existante :';
-  addBlock.appendChild(addLabel);
-  const select = document.createElement('select');
+  // Single picker that adds on selection
+  const addSelect = document.createElement('select');
+  addSelect.className = 'picker-add';
   const empty = document.createElement('option');
   empty.value = '';
-  empty.textContent = '— choisir —';
-  select.appendChild(empty);
+  empty.textContent = '+ Ajouter une recette…';
+  addSelect.appendChild(empty);
   const names = Object.keys(data.recipes || {}).sort((a, b) => a.localeCompare(b, 'fr'));
   for (const n of names) {
     const opt = document.createElement('option');
     opt.value = n;
     opt.textContent = n;
-    select.appendChild(opt);
+    addSelect.appendChild(opt);
   }
-  addBlock.appendChild(select);
-  const addBtn = document.createElement('button');
-  addBtn.type = 'button';
-  addBtn.textContent = 'Ajouter';
-  addBtn.addEventListener('click', () => {
-    const v = select.value;
+  addSelect.addEventListener('change', () => {
+    const v = addSelect.value;
     if (!v) return;
     const next = currentRecipes.slice();
     next.push(v);
     Store.setMealOverride(slot, { recipes: next });
-    closePicker();
-    reloadAndRender();
+    reloadAndKeepPicker(slot);
   });
-  addBlock.appendChild(addBtn);
-  modal.appendChild(addBlock);
+  modal.appendChild(addSelect);
 
-  // Action 2 : replace (set as single recipe)
-  const replaceBlock = document.createElement('div');
-  replaceBlock.className = 'picker-block';
-  const replaceLabel = document.createElement('label');
-  replaceLabel.textContent = 'Remplacer par une recette existante :';
-  replaceBlock.appendChild(replaceLabel);
-  const select2 = document.createElement('select');
-  select2.appendChild(empty.cloneNode(true));
-  for (const n of names) {
-    const opt = document.createElement('option');
-    opt.value = n;
-    opt.textContent = n;
-    select2.appendChild(opt);
-  }
-  replaceBlock.appendChild(select2);
-  const replaceBtn = document.createElement('button');
-  replaceBtn.type = 'button';
-  replaceBtn.textContent = 'Remplacer';
-  replaceBtn.addEventListener('click', () => {
-    const v = select2.value;
-    if (!v) return;
-    Store.setMealOverride(slot, { recipes: [v] });
-    closePicker();
-    reloadAndRender();
-  });
-  replaceBlock.appendChild(replaceBtn);
-  modal.appendChild(replaceBlock);
+  // Compact action row
+  const actions = document.createElement('div');
+  actions.className = 'picker-actions';
 
-  // Action 3 : remove one of the current recipes
-  if (currentRecipes.length > 0) {
-    const rmBlock = document.createElement('div');
-    rmBlock.className = 'picker-block';
-    const rmLabel = document.createElement('label');
-    rmLabel.textContent = 'Retirer une recette du créneau :';
-    rmBlock.appendChild(rmLabel);
-    const rmSel = document.createElement('select');
-    rmSel.appendChild(empty.cloneNode(true));
-    for (const n of currentRecipes) {
-      const opt = document.createElement('option');
-      opt.value = n;
-      opt.textContent = n;
-      rmSel.appendChild(opt);
-    }
-    rmBlock.appendChild(rmSel);
-    const rmBtn = document.createElement('button');
-    rmBtn.type = 'button';
-    rmBtn.textContent = 'Retirer';
-    rmBtn.addEventListener('click', () => {
-      const v = rmSel.value;
-      if (!v) return;
-      const next = currentRecipes.filter((x) => x !== v);
-      Store.setMealOverride(slot, { recipes: next });
-      closePicker();
-      reloadAndRender();
-    });
-    rmBlock.appendChild(rmBtn);
-    modal.appendChild(rmBlock);
-  }
-
-  // Action 4 : create a new recipe
-  const createBlock = document.createElement('div');
-  createBlock.className = 'picker-block';
   const createBtn = document.createElement('button');
   createBtn.type = 'button';
-  createBtn.className = 'picker-primary';
-  createBtn.textContent = '+ Créer une nouvelle recette';
+  createBtn.textContent = '+ Nouvelle recette';
   createBtn.addEventListener('click', () => {
     window.location.href = `editer-recette.html?slot=${encodeURIComponent(slot)}`;
   });
-  createBlock.appendChild(createBtn);
-  modal.appendChild(createBlock);
+  actions.appendChild(createBtn);
 
-  // Action 5 : empty slot
-  const emptyBlock = document.createElement('div');
-  emptyBlock.className = 'picker-block';
   const emptyBtn = document.createElement('button');
   emptyBtn.type = 'button';
-  emptyBtn.textContent = 'Vider ce créneau (restes)';
+  emptyBtn.textContent = 'Vider';
   emptyBtn.addEventListener('click', () => {
     Store.setMealOverride(slot, null);
-    closePicker();
-    reloadAndRender();
+    reloadAndKeepPicker(slot);
   });
-  emptyBlock.appendChild(emptyBtn);
-  modal.appendChild(emptyBlock);
+  actions.appendChild(emptyBtn);
 
-  // Action 6 : restore original
   const overrides = Store.loadMealOverrides();
   if (slot in overrides) {
-    const restoreBlock = document.createElement('div');
-    restoreBlock.className = 'picker-block';
     const restoreBtn = document.createElement('button');
     restoreBtn.type = 'button';
-    restoreBtn.textContent = "Restaurer la valeur d'origine du YAML";
+    restoreBtn.textContent = 'Restaurer';
+    restoreBtn.title = "Restaurer la valeur d'origine du YAML";
     restoreBtn.addEventListener('click', () => {
       Store.clearMealOverride(slot);
-      closePicker();
-      reloadAndRender();
+      reloadAndKeepPicker(slot);
     });
-    restoreBlock.appendChild(restoreBtn);
-    modal.appendChild(restoreBlock);
+    actions.appendChild(restoreBtn);
   }
+  modal.appendChild(actions);
 
   // Close button
   const closeBtn = document.createElement('button');
@@ -341,6 +310,17 @@ function openMealPicker(slot, currentRecipes, data) {
 
 function reloadAndRender() {
   App.loadData().then(renderMenu).catch((err) => {
+    const e = document.getElementById('error');
+    if (e) { e.hidden = false; e.textContent = err.message; }
+  });
+}
+
+function reloadAndKeepPicker(slot) {
+  App.loadData().then((data) => {
+    renderMenu(data);
+    const meal = (data.meals || []).find((m) => m.name === slot);
+    if (meal) openMealPicker(meal.name, meal.recipes || [], data);
+  }).catch((err) => {
     const e = document.getElementById('error');
     if (e) { e.hidden = false; e.textContent = err.message; }
   });

@@ -426,7 +426,7 @@ main {
 /* === Meal edit (✎ button + picker modal) === */
 .meal-cell { position: relative; }
 
-.recipe-list { display: block; }
+.recipe-list { display: block; padding-right: 32px; }
 
 .edit-meal-btn {
   position: absolute;
@@ -478,53 +478,71 @@ main {
   color: #2e7d32;
 }
 
-.picker-current {
+.picker-recipes {
+  list-style: none;
+  padding: 0;
   margin: 0 0 1rem 0;
-  font-size: 0.9rem;
-  color: #666;
 }
 
-.picker-block {
+.picker-recipes li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.picker-recipes li:first-child { border-top: 1px solid #f0f0f0; }
+
+.picker-empty {
+  color: #999;
+  font-style: italic;
+  justify-content: center !important;
+}
+
+.picker-remove {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0.3rem;
+  line-height: 1;
+}
+
+.picker-remove:hover { color: #8e0000; }
+
+.picker-add {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.picker-actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.6rem 0;
-  padding: 0.6rem 0;
+  gap: 0.4rem;
+  padding-top: 0.6rem;
   border-top: 1px solid #f0f0f0;
 }
 
-.picker-block label {
-  flex-basis: 100%;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-.picker-block select {
+.picker-actions button {
   flex: 1;
-  min-width: 140px;
-  padding: 0.35rem 0.5rem;
+  min-width: 100px;
+  padding: 0.45rem 0.6rem;
+  background: #f5f5f5;
+  color: #333;
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-.picker-block button {
-  padding: 0.4rem 0.8rem;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.picker-block button:hover { background: #1b5e20; }
-
-.picker-block .picker-primary {
-  background: #1565c0;
-  width: 100%;
-}
-
-.picker-block .picker-primary:hover { background: #0d47a1; }
+.picker-actions button:hover { background: #e0e0e0; }
 
 .modal-close {
   position: absolute;
@@ -860,14 +878,124 @@ main {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+
+  /* Stack table as cards */
   #menu-table {
-    font-size: 0.9rem;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
   }
-  #menu-table th,
+  #menu-table thead { display: none; }
+  #menu-table tbody { display: block; }
+  #menu-table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 1rem;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.85rem;
+  }
   #menu-table td {
-    padding: 0.5rem;
+    display: block;
+    padding: 0;
+    border: none;
+  }
+  #menu-table tr td.day-cell {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 1.1rem;
+    width: auto;
+  }
+  #menu-table tr td.portions-cell {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #555;
+  }
+  #menu-table tr td.portions-cell::before {
+    content: 'Personnes :';
+  }
+  #menu-table tr td.meal-cell {
+    grid-column: 1 / -1;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 0.6rem;
+    position: relative;
+  }
+  #menu-table tr td.meal-cell::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 600;
+    color: #2e7d32;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+  .edit-meal-btn {
+    top: 0.4rem;
+    right: 0;
   }
   .portions-input {
     width: 55px;
+  }
+}
+
+/* === Print button === */
+.print-btn {
+  padding: 0.5rem 0.9rem;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem 0;
+}
+.print-btn:hover { background: #0d47a1; }
+
+#print-menu-btn {
+  padding: 0.5rem 0.9rem;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#print-menu-btn:hover { background: #0d47a1; }
+
+/* === Print styles === */
+@media print {
+  header nav,
+  .back-link,
+  #menu-actions,
+  .print-btn,
+  .no-print,
+  .edit-meal-btn {
+    display: none !important;
+  }
+  body { background: white; color: black; }
+  a { color: black; text-decoration: none; }
+  #menu-table { font-size: 0.95rem; }
+  .portions-input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: auto !important;
+    font-size: 1rem;
+    text-align: left;
+    color: black;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+  }
+  .portions-input::-webkit-inner-spin-button,
+  .portions-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
