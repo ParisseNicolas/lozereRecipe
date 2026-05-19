@@ -104,8 +104,16 @@ function buildItem(category, item, data, isDone) {
     .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
     .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
     .join(' + ');
-  label.innerHTML = `<span class="ingr-name">${item.name}</span> <span class="ingr-qty">${qtyStr}</span>`;
+  label.innerHTML = `<span class="ingr-name">${item.name}</span> <span class="ingr-qty has-popover" title="Voir les conversions">${qtyStr}</span>`;
   li.appendChild(label);
+
+  const qtyEl = label.querySelector('.ingr-qty');
+  qtyEl.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const spec = (data.ingredients || {})[item.name] || {};
+    Popover.showConversions(item.name, spec, qtyEl, item.parts, data.unitScales);
+  });
 
   cb.addEventListener('change', () => {
     Store.setItemChecked(itemKey(category, item.name), cb.checked);

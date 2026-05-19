@@ -573,6 +573,9 @@ meals:
 ingredients:
   semoule:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   tomate:
     type: Fruits et légumes
     preferred: g
@@ -623,12 +626,21 @@ ingredients:
 
   avocat:
     type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 200 }
 
   champignon de paris:
     type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { barquette: 250 }
 
   concassé tomates:
     type: Sec
+    preferred: g
+    convert:
+      g: { boite: 400 }
 
 
   huile d'olive:
@@ -640,47 +652,104 @@ ingredients:
 
   chèvre coulant:
     type: Fromages
+    preferred: g
+    convert:
+      g: { u: 100 }
   camembert:
     type: Fromages
+    preferred: g
+    convert:
+      g: { u: 250 }
 
   citron:
     type: Fruits et légumes
+    preferred: g
+    convert:
+      g: { u: 100 }
 
   crème fraîche:
     type: Frais
+    preferred: g
+    convert:
+      g: { ml: 1, cl: 10, pot: 200 }
   beurre:
     type: Frais
+    preferred: g
+    convert:
+      g: { plaquette: 250 }
   lait:
     type: Frais
+    preferred: L
+    convert:
+      L: { ml: 0.001, cl: 0.01, brique: 1 }
   oeuf:
     type: Frais
+    preferred: u
+    convert:
+      u: { boite: 6 }
 
 
   ebly:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   boulgour:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   lentilles:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   pates:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   pates tortillis:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
   spaghettis:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 500 }
 
   cornichon:
     type: Sec
+    preferred: g
+    convert:
+      g: { pot: 300 }
   feta:
     type: Fromages
+    preferred: g
+    convert:
+      g: { paquet: 200 }
   olive noire:
     type: Sec
+    preferred: g
+    convert:
+      g: { pot: 200 }
   raisin sec:
     type: Sec
+    preferred: g
+    convert:
+      g: { paquet: 250 }
   haricot rouge sec:
     type: Sec
+    preferred: g
+    convert:
+      g: { boite: 250, paquet: 500 }
   petits pois boite:
     type: Sec
+    preferred: g
+    convert:
+      g: { boite: 400 }
   moutarde:
     type: Sec
     preferred: pot
@@ -689,6 +758,9 @@ ingredients:
 
   pain:
     type: Boulangerie
+    preferred: g
+    convert:
+      g: { baguette: 250 }
 
 
   chocolat:
@@ -844,29 +916,45 @@ ingredients:
   riz:
     type: Sec
     preferred: g
+    convert:
+      g: { paquet: 1000 }
   pois chiches:
     type: Sec
     preferred: g
+    convert:
+      g: { boite: 250, paquet: 500 }
   pois cassés:
     type: Sec
     preferred: g
+    convert:
+      g: { paquet: 500 }
   vermicelle:
     type: Sec
     preferred: g
+    convert:
+      g: { paquet: 250 }
   noix de cajou:
     type: Sec
     preferred: g
+    convert:
+      g: { paquet: 200 }
   mais en boîte:
     type: Sec
     preferred: g
+    convert:
+      g: { boite: 285 }
 
   # === Fromages / frais manquants ===
   parmesan:
     type: Fromages
     preferred: g
+    convert:
+      g: { bloc: 100 }
   roquefort:
     type: Fromages
     preferred: g
+    convert:
+      g: { portion: 100 }
   kiri:
     type: Fromages
     preferred: u
@@ -881,6 +969,8 @@ ingredients:
   fromage:
     type: Petit-déjeuner et apéritifs
     preferred: g
+    convert:
+      g: { u: 250 }
   confiture:
     type: Petit-déjeuner et apéritifs
     preferred: g

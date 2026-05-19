@@ -184,6 +184,96 @@ main {
   margin-left: 1rem;
 }
 
+.ingr-qty.has-popover {
+  cursor: pointer;
+  border-bottom: 1px dotted #999;
+}
+
+.ingr-qty.has-popover:hover {
+  color: #1565c0;
+  border-bottom-color: #1565c0;
+}
+
+/* === Popover === */
+.popover-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 999;
+}
+
+.qty-popover {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.75rem 1rem;
+  min-width: 220px;
+  max-width: 320px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.popover-title {
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #2e7d32;
+  margin-right: 1.5rem;
+}
+
+.popover-sub {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.15rem;
+}
+
+.popover-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.popover-section-title {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.popover-list li {
+  padding: 0.2rem 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.popover-empty {
+  margin-top: 0.5rem;
+  color: #999;
+  font-style: italic;
+}
+
+.popover-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0.1rem 0.4rem;
+}
+
+.popover-close:hover {
+  color: #333;
+}
+
 #print-btn {
   background: #2e7d32;
   color: white;

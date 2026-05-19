@@ -61,7 +61,13 @@ function renderRecipe(data) {
       .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
       .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
       .join(' + ');
-    li.innerHTML = `<span class="ingr-name">${ingrName}</span> <span class="ingr-qty">${labelStr}</span>`;
+    li.innerHTML = `<span class="ingr-name">${ingrName}</span> <span class="ingr-qty has-popover" title="Voir les conversions">${labelStr}</span>`;
+    const qtyEl = li.querySelector('.ingr-qty');
+    qtyEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      Popover.showConversions(ingrName, spec, qtyEl, displayParts, data.unitScales);
+    });
     ulIngr.appendChild(li);
   }
   root.appendChild(ulIngr);
