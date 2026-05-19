@@ -32,8 +32,35 @@ function parseQuantity(value) {
 // Format a number for display : 2 decimals max, no trailing zeros.
 function formatAmount(n) {
   if (!isFinite(n)) return '0';
-  const rounded = Math.round(n * 100) / 100;
-  return String(rounded);
+  return String(Math.ceil(n));
 }
 
-window.Parser = { parseQuantity, formatAmount };
+// Promote a quantity to a larger unit when the result stays a whole number.
+// Iterative : 5000 ml -> 500 cl -> 5 L. Stops at the first non-integer step.
+// `scales` shape : { unit: { upper: <string>, factor: <number> } }
+function promoteUnit(amount, unit, scales) {
+  if (!scales || amount === 0) return { amount, unit };
+  let a = amount, u = unit;
+  // Promote upward while value >= 1 in the larger unit.
+  while (scales[u]) {
+    const { upper, factor } = scales[u];
+    if (!upper || !factor) break;
+    const promoted = a / factor;
+    if (Math.abs(promoted) < 1) break;
+    a = promoted;
+    u = upper;
+  }
+  // Demote downward while value < 1 in the current unit and a lower unit exists.
+  const lower = {};
+  for (const [small, def] of Object.entries(scales)) {
+    if (def && def.upper) lower[def.upper] = { lower: small, factor: def.factor };
+  }
+  while (Math.abs(a) < 1 && lower[u]) {
+    const { lower: smaller, factor } = lower[u];
+    a = a * factor;
+    u = smaller;
+  }
+  return { amount: a, unit: u };
+}
+
+window.Parser = { parseQuantity, formatAmount, promoteUnit };

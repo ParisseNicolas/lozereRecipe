@@ -2,6 +2,17 @@
 # WiP !
 # Les étapes (`steps`) sont rédigées pour une grande tablée (>20 personnes) :
 # grandes marmites, grandes poêles/sauteuses, plaques de four (60x40), four en mode chaleur tournante.
+# Table d'ordres de grandeur pour l'affichage : si une quantité dans `unit`
+# est un multiple entier de `factor`, elle est promue vers `upper`.
+# Ex: 1000 g -> 1 kg (1000 % 1000 == 0), 800 g -> 800 g (800 % 1000 != 0).
+# La promotion est itérative : 5000 ml -> 500 cl -> 5 L.
+unitScales:
+  mg: { upper: g, factor: 1000 }
+  g: { upper: kg, factor: 1000 }
+  ml: { upper: cl, factor: 10 }
+  cl: { upper: L, factor: 100 }
+  cc: { upper: cs, factor: 3 }
+
 recipes:
   taboulé:
     ingredients:

@@ -58,6 +58,7 @@ function renderRecipe(data) {
 
     const li = document.createElement('li');
     const labelStr = displayParts
+      .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
       .map((p) => `${Parser.formatAmount(p.amount)} ${p.unit}`.trim())
       .join(' + ');
     li.innerHTML = `<span class="ingr-name">${ingrName}</span> <span class="ingr-qty">${labelStr}</span>`;
