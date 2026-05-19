@@ -221,13 +221,7 @@ function renderEdit(data) {
       for (const s of decoupe) decoupeWrap.addStep(s);
       for (const s of cuisson) cuissonWrap.addStep(s);
     }
-  } else {
-    ingrList.appendChild(buildIngredientRow('', '', '', data, customIngredients));
-    decoupeWrap.addStep('');
-    cuissonWrap.addStep('');
   }
-  if (decoupeWrap.count() === 0) decoupeWrap.addStep('');
-  if (cuissonWrap.count() === 0) cuissonWrap.addStep('');
 
   // --- Actions
   const actions = document.createElement('div');
