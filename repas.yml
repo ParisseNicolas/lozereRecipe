@@ -70,7 +70,7 @@ recipes:
     ingredients:
       chèvre coulant: 1
       pain: 80g
-      herbe de provence: 0.5cc
+      herbes de provence: 0.5cc
       huile d'olive: 1cc
     steps:
       - "Préchauffer le four à 200°C (chaleur tournante)."
@@ -230,7 +230,7 @@ recipes:
       lentilles: 50g
       pois cassés: 50g
       vermicelle: 50g
-      concassé tomate: 100g
+      concassé tomates: 100g
       cumin: 0.5cc
       harissa: 0.5cc
       paprika: 0.5cc
@@ -358,7 +358,7 @@ recipes:
       pomme de terre: 80g
       oignon: 0.5
       ail: 0.25 gousse
-      herbe de provence: 0.5cc
+      herbes de provence: 0.5cc
       huile d'olive: 0.5cc
       persil: 1 feuille
       yaourt nature: 0.25
@@ -399,7 +399,7 @@ recipes:
       tomate: 1
       courgette: 80g
       carotte: 1
-      pois chiche: 50g
+      pois chiches: 50g
       huile d'olive: 1cs
       épices à couscous: 0.5cc
       harissa: 0.05 tube
@@ -677,11 +677,7 @@ ingredients:
     type: Sec
   raisin sec:
     type: Sec
-  concassé tomate:
-    type: Sec
   haricot rouge sec:
-    type: Sec
-  mais en boite:
     type: Sec
   petits pois boite:
     type: Sec
@@ -769,11 +765,6 @@ ingredients:
     preferred: g
     convert:
       g: { cc: 1, cs: 3 }
-  herbe de provence:
-    type: Épices
-    preferred: g
-    convert:
-      g: { cc: 1, cs: 3 }
   thym:
     type: Épices
     preferred: g
@@ -854,9 +845,6 @@ ingredients:
     type: Sec
     preferred: g
   pois chiches:
-    type: Sec
-    preferred: g
-  pois chiche:
     type: Sec
     preferred: g
   pois cassés:
