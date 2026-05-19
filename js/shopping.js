@@ -23,15 +23,15 @@ function aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec) {
   const preferred = spec.preferred || null;
   const convert = spec.convert || null;
 
-  // If only one unit, nothing to do.
   const units = Object.keys(totalsByUnit);
-  if (units.length === 1) {
-    const u = units[0];
-    return [{ amount: totalsByUnit[u], unit: u }];
-  }
 
   // Try to merge everything into `preferred` (or any common unit).
   const target = preferred || units[0];
+
+  // Single unit and no conversion needed.
+  if (units.length === 1 && units[0] === target) {
+    return [{ amount: totalsByUnit[target], unit: target }];
+  }
   let merged = 0;
   const leftovers = [];
   for (const u of units) {
