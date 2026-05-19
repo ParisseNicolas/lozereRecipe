@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recette</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Recette</h1>
+    <nav>
+      <a href="index.html">Menu</a>
+      <a href="courses.html">Liste de courses</a>
+    </nav>
+  </header>
+
+  <main>
+    <p><a href="index.html" class="back-link">← Retour au menu</a></p>
+    <div id="recipe-root"></div>
+    <p id="error" class="error" hidden></p>
+  </main>
+
+  <script src="vendor/js-yaml.min.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/shopping.js"></script>
+  <script src="js/recipe.js"></script>
+  <script>
+    App.loadData()
+      .then(Recipe.renderRecipe)
+      .catch((err) => {
+        const e = document.getElementById('error');
+        e.hidden = false;
+        e.textContent = 'Erreur de chargement : ' + err.message;
+      });
+  </script>
+</body>
+</html>

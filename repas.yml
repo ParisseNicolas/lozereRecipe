@@ -1,5 +1,7 @@
 # liste des repas et ingrédients pour calcul rapide des quantités avec le script qui va bien
 # WiP !
+# Les étapes (`steps`) sont rédigées pour une grande tablée (>20 personnes) :
+# grandes marmites, grandes poêles/sauteuses, plaques de four (60x40), four en mode chaleur tournante.
 recipes:
   taboulé:
     ingredients:
@@ -15,6 +17,17 @@ recipes:
       menthe: 2 feuille
       huile d'olive: 1cs
       avocat: 0.2
+    steps:
+      - "Verser la semoule dans un très grand saladier (ou bassine inox), saler."
+      - "Verser de l'eau bouillante à hauteur (1 volume d'eau pour 1 volume de semoule), couvrir, laisser gonfler 5 min puis aérer à la fourchette."
+      - "Laver les tomates et les concombres. Couper les tomates en petits dés (~1 cm). Peler et épépiner les concombres, couper en petits dés."
+      - "Émincer finement les échalotes."
+      - "Épépiner et couper les poivrons en très petits dés."
+      - "Presser les citrons (réserver le jus)."
+      - "Ciseler les feuilles de menthe au couteau."
+      - "Couper les avocats en dés juste avant le service (sinon ils noircissent), arroser d'un peu de jus de citron."
+      - "Mélanger semoule + tous les légumes + menthe + huile d'olive + jus de citron dans la bassine. Saler, poivrer."
+      - "Réserver au frais au moins 30 min avant le service. Ajouter les avocats au dernier moment."
 
   piperade poivrons:
     ingredients:
@@ -28,7 +41,16 @@ recipes:
       tomate: 100g
       huile d'olive: 1cc
       piment d'espelette: 0.5cc
-
+    steps:
+      - "Émincer finement les oignons et l'ail."
+      - "Épépiner les poivrons et les piments doux, couper en lanières (~5 mm)."
+      - "Couper les tomates en quartiers (ou utiliser des tomates concassées en boîte si quantité trop importante)."
+      - "Dans une très grande sauteuse / rondeau, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min à feu moyen."
+      - "Ajouter poivrons + piments doux. Saler. Cuire 15-20 min à feu moyen en remuant régulièrement (les poivrons doivent fondre)."
+      - "Ajouter tomates + herbes de Provence + sucre + piment d'Espelette. Laisser mijoter 20-25 min à feu doux jusqu'à obtention d'une compotée."
+      - "Rectifier l'assaisonnement."
+      - "En parallèle, faire cuire le boulgour dans une grande marmite : 1,5 volume d'eau bouillante salée pour 1 volume de boulgour, couvert, 12 min à feu doux puis laisser gonfler 5 min hors du feu."
+      - "Servir la piperade sur un lit de boulgour."
 
   chèvres chauds:
     # 2 chèvres par personne, plutôt une entrée quoi
@@ -37,6 +59,14 @@ recipes:
       pain: 80g
       herbe de provence: 0.5cc
       huile d'olive: 1cc
+    steps:
+      - "Préchauffer le four à 200°C (chaleur tournante)."
+      - "Couper le pain en tranches d'environ 1,5 cm d'épaisseur."
+      - "Disposer les tranches de pain sur des plaques recouvertes de papier cuisson."
+      - "Couper chaque chèvre en deux (ou en rondelles si gros format) et déposer sur chaque tranche de pain."
+      - "Saupoudrer d'herbes de Provence, verser un filet d'huile d'olive sur chaque toast."
+      - "Enfourner 8 à 10 min jusqu'à ce que le fromage soit fondant et légèrement doré."
+      - "Servir immédiatement, idéalement sur une salade verte."
 
   salade de tomates:
     ingredients:
@@ -44,6 +74,11 @@ recipes:
       huile d'olive: 1cs
       vinaigre balsamique: 1.5cc
       moutarde: 1cc
+    steps:
+      - "Laver les tomates. Couper en rondelles d'environ 5 mm ou en quartiers pour les grosses."
+      - "Préparer la vinaigrette dans un grand bol : moutarde + vinaigre balsamique + sel + poivre. Émulsionner avec l'huile d'olive (fouet)."
+      - "Disposer les tomates dans de grands plats de service."
+      - "Arroser de vinaigrette juste avant le service (sinon les tomates rendent de l'eau)."
 
   ratatouille:
     ingredients:
@@ -57,6 +92,18 @@ recipes:
       huile d'olive: 0.5cs
       laurier: 0.5 feuille
       thym: 1 petit peu
+    steps:
+      - "Émincer les oignons. Hacher l'ail."
+      - "Laver les courgettes et aubergines. Couper en cubes d'environ 2 cm (garder les peaux)."
+      - "Couper les tomates en gros dés (ou utiliser des tomates concassées en boîte pour gagner du temps)."
+      - "Dans une très grande marmite ou rondeau, faire chauffer la moitié de l'huile d'olive et faire revenir les aubergines 10 min à feu vif jusqu'à coloration. Réserver."
+      - "Dans la même marmite, ajouter le reste d'huile et faire revenir les courgettes 8 min. Réserver avec les aubergines."
+      - "Ajouter encore un filet d'huile, faire suer les oignons + ail 5 min."
+      - "Ajouter tomates + laurier + thym. Saler, poivrer. Laisser réduire 15 min à feu moyen."
+      - "Remettre tous les légumes dans la marmite. Couvrir et laisser mijoter 30 min à feu doux en remuant de temps en temps."
+      - "Rectifier l'assaisonnement, retirer laurier."
+      - "En parallèle, cuire l'ebly dans une grande casserole d'eau bouillante salée pendant 10 min, égoutter."
+      - "Servir la ratatouille sur un lit d'ebly."
 
   salade de pommes de terres:
     ingredients:
@@ -68,6 +115,17 @@ recipes:
       cornichon: 0.05 pot
       olive noire: 0.05 pot
       feta: 0.1 paquet
+    steps:
+      - "Laver les pommes de terre. Les faire cuire en robe des champs dans une très grande marmite d'eau salée 20-25 min (pointe de couteau)."
+      - "Pendant ce temps, faire cuire les œufs durs : 10 min dans l'eau bouillante. Refroidir dans l'eau froide, écaler."
+      - "Égoutter les pommes de terre, laisser tiédir, peler et couper en cubes de 2 cm."
+      - "Émincer finement oignons et échalotes."
+      - "Couper les tomates en dés, les cornichons en rondelles."
+      - "Couper les œufs durs en quartiers."
+      - "Émietter la feta."
+      - "Dans une très grande bassine, mélanger pommes de terre + oignons + échalotes + tomates + cornichons + olives + feta."
+      - "Préparer une vinaigrette (huile + moutarde + vinaigre + sel + poivre) et arroser. Mélanger délicatement."
+      - "Disposer les œufs sur le dessus avant le service."
 
   chili végé:
     ingredients:
@@ -84,25 +142,66 @@ recipes:
       piment poudre: 0.5cc
       chocolat: 0.33 carré
       origan: 1cc
+    steps:
+      - "La veille : faire tremper les haricots rouges dans un grand volume d'eau froide pendant 12h."
+      - "Le jour J : égoutter et rincer les haricots. Les faire cuire dans une grande marmite d'eau non salée 1h à 1h30 jusqu'à ce qu'ils soient tendres. Égoutter."
+      - "Émincer les oignons, hacher l'ail."
+      - "Épépiner et couper les poivrons en petits dés."
+      - "Couper les tomates en dés (ou utiliser de la tomate concassée en boîte)."
+      - "Dans une très grande marmite, faire revenir oignons + ail dans un peu d'huile 5 min."
+      - "Ajouter poivrons, cuire 5 min."
+      - "Ajouter cumin + paprika + piment + origan, remuer 1 min."
+      - "Ajouter tomates + haricots cuits + lentilles + maïs égoutté. Couvrir d'eau ou de bouillon."
+      - "Saler. Laisser mijoter 40 min à feu doux."
+      - "Râper / casser le chocolat noir et l'incorporer en fin de cuisson (apporte profondeur)."
+      - "En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert)."
+      - "Servir le chili sur le riz."
 
   entrée melon:
     ingredients:
       melon: 0.2
+    steps:
+      - "Choisir des melons mûrs (parfumés au pédoncule)."
+      - "Couper chaque melon en deux, retirer les pépins à la cuillère."
+      - "Couper chaque moitié en quartiers (4 à 6 par moitié selon la taille)."
+      - "Disposer sur des plats de service. Servir frais."
 
   salade:
     ingredients:
       salade: 0.2
+    steps:
+      - "Laver soigneusement les feuilles de salade (plusieurs bains d'eau froide), essorer."
+      - "Préparer une vinaigrette dans un grand bol (huile + vinaigre + moutarde + sel + poivre)."
+      - "Mettre la salade dans une très grande bassine. Assaisonner juste avant le service pour éviter qu'elle ne ramollisse."
 
   purée patate carotte:
     ingredients:
       pomme de terre: 200g
       carotte: 150g
       lait: 10cl
+    steps:
+      - "Éplucher les pommes de terre et les carottes."
+      - "Couper les pommes de terre en gros cubes, les carottes en rondelles épaisses."
+      - "Cuire dans une très grande marmite d'eau salée 20-25 min (pointe de couteau enfoncée sans résistance)."
+      - "Égoutter."
+      - "Faire chauffer le lait dans une casserole."
+      - "Passer pommes de terre + carottes au presse-purée (ou écraser au pilon dans la marmite)."
+      - "Incorporer progressivement le lait chaud jusqu'à consistance souhaitée. Saler, poivrer, ajouter une noix de beurre si disponible."
+
   camembert au four:
     ingredients:
       camembert: 0.333
       pain: 50g
       miel: 1cc
+    steps:
+      - "Préchauffer le four à 180°C (chaleur tournante)."
+      - "Retirer l'emballage plastique des camemberts mais conserver la boîte en bois (filmer si pas de boîte avec une feuille de papier alu)."
+      - "Inciser le dessus en croix avec un couteau."
+      - "Arroser d'une cuillère de miel sur le dessus de chaque camembert."
+      - "Disposer les camemberts dans leur boîte sur une plaque de four."
+      - "Enfourner 15-20 min jusqu'à ce que l'intérieur soit coulant."
+      - "Pendant ce temps, couper le pain en mouillettes / petits morceaux."
+      - "Servir immédiatement à la sortie du four avec le pain pour tremper."
 
   chorba:
     ingredients:
@@ -119,6 +218,17 @@ recipes:
       oignon: 0.25
       courgette: 0.25
       pomme de terre: 0.33
+    steps:
+      - "La veille : faire tremper les pois chiches dans un grand volume d'eau froide pendant 12h."
+      - "Le jour J : émincer oignons et ail. Couper courgettes et pommes de terre en petits dés (~1 cm)."
+      - "Dans une très grande marmite, faire revenir oignons + ail dans un filet d'huile 5 min."
+      - "Ajouter cumin + paprika + harissa + herbes de Provence, remuer 1 min."
+      - "Ajouter tomates concassées, cuire 5 min."
+      - "Ajouter pois chiches égouttés + lentilles + pois cassés + courgettes + pommes de terre."
+      - "Couvrir largement d'eau (ou de bouillon de légumes). Saler."
+      - "Porter à ébullition puis baisser le feu. Laisser mijoter 1h jusqu'à ce que les légumineuses soient tendres."
+      - "Ajouter les vermicelles 10 min avant la fin (ils cuisent dans le bouillon)."
+      - "Rectifier l'assaisonnement (sel, harissa). Servir bien chaud."
 
   aubergine curry:
     ingredients:
@@ -132,6 +242,17 @@ recipes:
       curry: 1.4cc
       gingembre poudre: 0.4cc
       huile d'olive: 1cc
+    steps:
+      - "La veille : faire tremper les pois chiches secs 12h (si secs). Sinon utiliser des pois chiches en conserve, à égoutter et rincer."
+      - "Si pois chiches secs : les cuire 1h dans l'eau non salée. Égoutter."
+      - "Émincer les oignons. Laver les aubergines et couper en cubes de 2 cm."
+      - "Dans une très grande sauteuse, faire chauffer l'huile et faire dorer les cubes d'aubergine 10 min à feu vif. Réserver."
+      - "Dans la même sauteuse, faire suer les oignons 5 min."
+      - "Ajouter curry + gingembre, remuer 1 min pour révéler les arômes."
+      - "Ajouter tomates concassées + lait de coco + aubergines + pois chiches. Saler."
+      - "Laisser mijoter 25-30 min à feu doux, couvert, en remuant de temps en temps."
+      - "En parallèle, cuire l'ebly dans une grande marmite d'eau bouillante salée pendant 10 min, égoutter."
+      - "Servir le curry sur le lit d'ebly."
 
   malak panner:
     ingredients:
@@ -145,6 +266,16 @@ recipes:
       curcuma: 0.5cc
       paprika: 0.5cc
       kiri: 1
+    steps:
+      - "Émincer finement oignons et ail."
+      - "Égoutter les petits pois."
+      - "Mixer les noix de cajou avec le lait pour obtenir une crème lisse (sinon, à défaut, hacher très finement les noix)."
+      - "Dans une grande sauteuse, faire revenir oignons + ail dans un peu d'huile 5 min."
+      - "Ajouter curcuma + gingembre + paprika, remuer 1 min."
+      - "Ajouter les petits pois + la crème de cajou. Saler. Cuire 10 min à feu doux."
+      - "Couper les Kiri en cubes et les ajouter en fin de cuisson, mélanger pour faire fondre (effet panner)."
+      - "En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert + 5 min repos)."
+      - "Servir le malak panner sur le riz."
 
   salade de pates:
     ingredients:
@@ -160,7 +291,18 @@ recipes:
       basilic: 2 feuille
       zataar: 1cc
       herbes de provence: 0.5cc
-
+    steps:
+      - "Cuire les pâtes torsades dans une très grande marmite d'eau bouillante salée selon le temps indiqué sur le paquet (~10 min). Égoutter, rincer à l'eau froide pour stopper la cuisson, réserver."
+      - "Émincer finement les échalotes et l'ail."
+      - "Épépiner et couper les poivrons en petits dés."
+      - "Laver les courgettes, couper en petits dés (~1 cm)."
+      - "Couper les tomates en dés."
+      - "Émietter la feta."
+      - "Ciseler le basilic."
+      - "Faire revenir rapidement les dés de courgette dans un peu d'huile d'olive 5 min (al dente), laisser refroidir."
+      - "Préparer la vinaigrette dans un grand bol : moutarde + huile d'olive + zataar + herbes de Provence + ail haché + sel + poivre."
+      - "Dans une très grande bassine, mélanger pâtes + tous les légumes + feta + basilic + vinaigrette."
+      - "Réserver au frais au moins 30 min avant le service."
 
   pates champignon roquefort:
     ingredients:
@@ -172,6 +314,17 @@ recipes:
       persil: 3 feuille
       huile d'olive: 1.5cc
       ail: 0.25 gousse
+    steps:
+      - "Émincer les oignons et l'ail."
+      - "Nettoyer les champignons à l'aide d'un torchon humide (ne pas les laver à grande eau). Couper en lamelles."
+      - "Émietter le roquefort."
+      - "Ciseler le persil."
+      - "Dans une très grande sauteuse, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min."
+      - "Ajouter les champignons, cuire 10 min à feu vif jusqu'à évaporation de l'eau."
+      - "Baisser le feu, ajouter la crème fraîche + roquefort émietté. Remuer jusqu'à ce que le roquefort fonde. Poivrer (peu de sel, le roquefort sale)."
+      - "En parallèle, cuire les spaghettis dans une très grande marmite d'eau bouillante salée selon le temps du paquet (al dente)."
+      - "Égoutter (garder un peu d'eau de cuisson) et mélanger directement avec la sauce. Ajouter un peu d'eau de cuisson si trop épais."
+      - "Parsemer de persil au service."
 
   velouté de courgette:
     ingredients:
@@ -184,7 +337,18 @@ recipes:
       persil: 1 feuille
       yaourt nature: 0.25
       bouillon cube légume: 0.15
-
+    steps:
+      - "Émincer les oignons et l'ail."
+      - "Laver les courgettes (ne pas peler), couper en rondelles."
+      - "Éplucher les pommes de terre, couper en cubes."
+      - "Dans une très grande marmite, faire suer oignons + ail dans l'huile d'olive 5 min."
+      - "Ajouter courgettes + pommes de terre + herbes de Provence. Couvrir d'eau bouillante."
+      - "Émietter les cubes de bouillon dans la marmite. Saler légèrement (le bouillon est déjà salé)."
+      - "Laisser cuire 25 min à feu moyen jusqu'à ce que les pommes de terre soient tendres."
+      - "Mixer au mixeur plongeant directement dans la marmite jusqu'à obtention d'un velouté lisse."
+      - "Ajouter le yaourt nature hors du feu, mélanger."
+      - "Rectifier l'assaisonnement, ajouter un peu d'eau si trop épais."
+      - "Parsemer de persil ciselé au service."
 
   omelette:
     ingredients:
@@ -192,7 +356,13 @@ recipes:
       poivron: 0.15
       oignon: 0.25
       parmesan: 10g
-
+    steps:
+      - "Casser tous les œufs dans une très grande bassine. Saler, poivrer, battre énergiquement au fouet."
+      - "Émincer les oignons. Épépiner et couper les poivrons en petits dés."
+      - "Râper le parmesan."
+      - "Dans une grande sauteuse, faire revenir les oignons + poivrons dans un filet d'huile 8 min jusqu'à ce qu'ils soient tendres. Laisser tiédir."
+      - "Pour grand nombre : préchauffer le four à 180°C. Verser les œufs battus + légumes + parmesan dans un grand plat à gratin huilé. Cuire au four 20-25 min jusqu'à ce que l'omelette soit prise mais encore moelleuse."
+      - "Couper en parts carrées pour servir."
 
   couscous:
     ingredients:
@@ -205,6 +375,19 @@ recipes:
       huile d'olive: 1cs
       épices à couscous: 0.5cc
       harissa: 0.05 tube
+    steps:
+      - "La veille : faire tremper les pois chiches 12h dans un grand volume d'eau (si secs)."
+      - "Le jour J : cuire les pois chiches 1h dans l'eau non salée. Égoutter."
+      - "Émincer les oignons. Couper les tomates en quartiers."
+      - "Éplucher les carottes, couper en gros tronçons."
+      - "Laver les courgettes, couper en gros tronçons."
+      - "Dans une très grande marmite (couscoussier si possible), faire revenir les oignons dans l'huile d'olive 5 min."
+      - "Ajouter les épices à couscous, remuer 1 min."
+      - "Ajouter tomates + carottes + pois chiches. Couvrir d'eau. Saler."
+      - "Cuire 30 min à feu moyen."
+      - "Ajouter les courgettes, cuire encore 15 min (elles doivent rester un peu fermes)."
+      - "Pendant ce temps, préparer la semoule : verser dans une très grande bassine, ajouter un filet d'huile, saler. Verser l'eau bouillante à hauteur, couvrir 5 min, aérer à la fourchette."
+      - "Servir la semoule, les légumes + bouillon par-dessus. Harissa à part."
 
   pates à l'oignon:
     ingredients:
@@ -215,20 +398,38 @@ recipes:
       parmesan: 20g
       laurier: 0.15 feuille
       bouillon cube légume: 0.25
+    steps:
+      - "Éplucher et émincer les oignons très finement (mandoline si disponible)."
+      - "Dans une très grande sauteuse, faire fondre le beurre à feu doux."
+      - "Ajouter les oignons + feuilles de laurier. Faire fondre 25-30 min à feu doux en remuant régulièrement jusqu'à ce qu'ils soient bien dorés et confits (ne pas brûler)."
+      - "Déglacer avec le vin blanc, laisser réduire 3 min."
+      - "Émietter le bouillon cube dans un peu d'eau chaude. Verser dans la sauteuse. Laisser mijoter 5 min."
+      - "Râper le parmesan."
+      - "En parallèle, cuire les pâtes dans une très grande marmite d'eau bouillante salée selon le temps du paquet (al dente)."
+      - "Égoutter en gardant un peu d'eau de cuisson. Mélanger les pâtes avec la sauce aux oignons. Ajouter un peu d'eau de cuisson si trop sec."
+      - "Retirer les feuilles de laurier. Servir avec le parmesan râpé par-dessus."
 
   tapenade:
     ingredients:
       olive noire: 40g
       huile d'olive: 3cl
       ail: 2 gousse
-
-
+    steps:
+      - "Dénoyauter les olives noires (si pas déjà fait)."
+      - "Éplucher les gousses d'ail, retirer le germe central."
+      - "Mettre olives + ail dans un grand bol mixeur (robot)."
+      - "Verser l'huile d'olive progressivement en mixant jusqu'à obtention d'une pâte un peu grossière (ne pas trop mixer)."
+      - "Poivrer. Goûter avant de saler (les olives sont souvent salées)."
+      - "Servir en tartinade sur du pain grillé."
 
   base journée:
     # petit dej, grignotage, pain, etc..
     ingredients:
       pain: 100g
       # TODO le reste, fromage, fruits, café, confiture
+    steps:
+      - "Couper le pain frais en tranches au moment du repas."
+      - "Disposer fromages, fruits et confitures sur la table en libre-service."
 
 meals:
   - name: Mardi midi
@@ -330,7 +531,7 @@ meals:
 
 
 
-   
+
 # additional spec for some ingredients
 ingredients:
   semoule:
@@ -394,16 +595,16 @@ ingredients:
 
 
   huile d'olive:
-    type: Autre
+    type: Condiments
     preferred: L
     convert:
       L: { cl: 0.01, cs: 0.015, cc: 0.005 }
-  
+
 
   chèvre coulant:
-    type: Fromage local
+    type: Fromages
   camembert:
-    type: Fromage supermarché
+    type: Fromages
 
   citron:
     type: Fruits et légumes
@@ -416,7 +617,7 @@ ingredients:
     type: Frais
   oeuf:
     type: Frais
-  
+
 
   ebly:
     type: Sec
@@ -434,7 +635,7 @@ ingredients:
   cornichon:
     type: Sec
   feta:
-    type: Fromage
+    type: Fromages
   olive noire:
     type: Sec
   raisin sec:
@@ -471,6 +672,6 @@ ingredients:
   cumin:
     type: Épices
     preferred: g
-  
+
 
 
