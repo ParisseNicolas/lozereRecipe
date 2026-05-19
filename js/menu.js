@@ -215,9 +215,15 @@ function openMealPicker(slot, currentRecipes, data) {
   } else {
     for (const name of currentRecipes) {
       const li = document.createElement('li');
-      const span = document.createElement('span');
-      span.textContent = name;
-      li.appendChild(span);
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'picker-recipe-name';
+      editBtn.textContent = name;
+      editBtn.title = 'Modifier cette recette';
+      editBtn.addEventListener('click', () => {
+        window.location.href = `editer-recette.html?nom=${encodeURIComponent(name)}`;
+      });
+      li.appendChild(editBtn);
       const rm = document.createElement('button');
       rm.type = 'button';
       rm.className = 'picker-remove';
