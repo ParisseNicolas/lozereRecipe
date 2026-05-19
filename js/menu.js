@@ -54,10 +54,19 @@ function renderMenu(data) {
     input.value = portions[day];
     input.dataset.day = day;
     input.className = 'portions-input';
-    input.addEventListener('change', (e) => {
+    const saveAndSync = (e) => {
       const v = Number(e.target.value) || 0;
       Store.setDayPortions(day, v);
-    });
+      // Update recipe links in this row so a click reflects the new value
+      // even if 'change' hasn't fired yet (e.g. user clicks while still focused).
+      tr.querySelectorAll('a.recipe-link').forEach((a) => {
+        const u = new URL(a.href, window.location.href);
+        u.searchParams.set('portions', String(v));
+        a.href = u.toString();
+      });
+    };
+    input.addEventListener('input', saveAndSync);
+    input.addEventListener('change', saveAndSync);
     tdPortions.appendChild(input);
     tr.appendChild(tdPortions);
 
