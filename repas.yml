@@ -37,6 +37,7 @@ recipes:
       - "Presser les citrons (réserver le jus)."
       - "Ciseler les feuilles de menthe au couteau."
       - "Couper les avocats en dés juste avant le service (sinon ils noircissent), arroser d'un peu de jus de citron."
+      - "--- cuisson ---"
       - "Mélanger semoule + tous les légumes + menthe + huile d'olive + jus de citron dans la bassine. Saler, poivrer."
       - "Réserver au frais au moins 30 min avant le service. Ajouter les avocats au dernier moment."
 
@@ -56,6 +57,7 @@ recipes:
       - "Émincer finement les oignons et l'ail."
       - "Épépiner les poivrons et les piments doux, couper en lanières (~5 mm)."
       - "Couper les tomates en quartiers (ou utiliser des tomates concassées en boîte si quantité trop importante)."
+      - "--- cuisson ---"
       - "Dans une très grande sauteuse / rondeau, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min à feu moyen."
       - "Ajouter poivrons + piments doux. Saler. Cuire 15-20 min à feu moyen en remuant régulièrement (les poivrons doivent fondre)."
       - "Ajouter tomates + herbes de Provence + sucre + piment d'Espelette. Laisser mijoter 20-25 min à feu doux jusqu'à obtention d'une compotée."
@@ -76,6 +78,7 @@ recipes:
       - "Disposer les tranches de pain sur des plaques recouvertes de papier cuisson."
       - "Couper chaque chèvre en deux (ou en rondelles si gros format) et déposer sur chaque tranche de pain."
       - "Saupoudrer d'herbes de Provence, verser un filet d'huile d'olive sur chaque toast."
+      - "--- cuisson ---"
       - "Enfourner 8 à 10 min jusqu'à ce que le fromage soit fondant et légèrement doré."
       - "Servir immédiatement, idéalement sur une salade verte."
 
@@ -89,6 +92,7 @@ recipes:
       - "Laver les tomates. Couper en rondelles d'environ 5 mm ou en quartiers pour les grosses."
       - "Préparer la vinaigrette dans un grand bol : moutarde + vinaigre balsamique + sel + poivre. Émulsionner avec l'huile d'olive (fouet)."
       - "Disposer les tomates dans de grands plats de service."
+      - "--- cuisson ---"
       - "Arroser de vinaigrette juste avant le service (sinon les tomates rendent de l'eau)."
 
   ratatouille:
@@ -107,6 +111,7 @@ recipes:
       - "Émincer les oignons. Hacher l'ail."
       - "Laver les courgettes et aubergines. Couper en cubes d'environ 2 cm (garder les peaux)."
       - "Couper les tomates en gros dés (ou utiliser des tomates concassées en boîte pour gagner du temps)."
+      - "--- cuisson ---"
       - "Dans une très grande marmite ou rondeau, faire chauffer la moitié de l'huile d'olive et faire revenir les aubergines 10 min à feu vif jusqu'à coloration. Réserver."
       - "Dans la même marmite, ajouter le reste d'huile et faire revenir les courgettes 8 min. Réserver avec les aubergines."
       - "Ajouter encore un filet d'huile, faire suer les oignons + ail 5 min."
@@ -134,6 +139,7 @@ recipes:
       - "Couper les tomates en dés, les cornichons en rondelles."
       - "Couper les œufs durs en quartiers."
       - "Émietter la feta."
+      - "--- cuisson ---"
       - "Dans une très grande bassine, mélanger pommes de terre + oignons + échalotes + tomates + cornichons + olives + feta."
       - "Préparer une vinaigrette (huile + moutarde + vinaigre + sel + poivre) et arroser. Mélanger délicatement."
       - "Disposer les œufs sur le dessus avant le service."
@@ -159,6 +165,7 @@ recipes:
       - "Émincer les oignons, hacher l'ail."
       - "Épépiner et couper les poivrons en petits dés."
       - "Couper les tomates en dés (ou utiliser de la tomate concassée en boîte)."
+      - "--- cuisson ---"
       - "Dans une très grande marmite, faire revenir oignons + ail dans un peu d'huile 5 min."
       - "Ajouter poivrons, cuire 5 min."
       - "Ajouter cumin + paprika + piment + origan, remuer 1 min."
@@ -183,6 +190,7 @@ recipes:
     steps:
       - "Laver soigneusement les feuilles de salade (plusieurs bains d'eau froide), essorer."
       - "Préparer une vinaigrette dans un grand bol (huile + vinaigre + moutarde + sel + poivre)."
+      - "--- cuisson ---"
       - "Mettre la salade dans une très grande bassine. Assaisonner juste avant le service pour éviter qu'elle ne ramollisse."
 
   purée patate carotte:
@@ -193,6 +201,7 @@ recipes:
     steps:
       - "Éplucher les pommes de terre et les carottes."
       - "Couper les pommes de terre en gros cubes, les carottes en rondelles épaisses."
+      - "--- cuisson ---"
       - "Cuire dans une très grande marmite d'eau salée 20-25 min (pointe de couteau enfoncée sans résistance)."
       - "Égoutter."
       - "Faire chauffer le lait dans une casserole."
@@ -210,6 +219,7 @@ recipes:
       - "Inciser le dessus en croix avec un couteau."
       - "Arroser d'une cuillère de miel sur le dessus de chaque camembert."
       - "Disposer les camemberts dans leur boîte sur une plaque de four."
+      - "--- cuisson ---"
       - "Enfourner 15-20 min jusqu'à ce que l'intérieur soit coulant."
       - "Pendant ce temps, couper le pain en mouillettes / petits morceaux."
       - "Servir immédiatement à la sortie du four avec le pain pour tremper."
@@ -232,6 +242,7 @@ recipes:
     steps:
       - "La veille : faire tremper les pois chiches dans un grand volume d'eau froide pendant 12h."
       - "Le jour J : émincer oignons et ail. Couper courgettes et pommes de terre en petits dés (~1 cm)."
+      - "--- cuisson ---"
       - "Dans une très grande marmite, faire revenir oignons + ail dans un filet d'huile 5 min."
       - "Ajouter cumin + paprika + harissa + herbes de Provence, remuer 1 min."
       - "Ajouter tomates concassées, cuire 5 min."
@@ -257,6 +268,7 @@ recipes:
       - "La veille : faire tremper les pois chiches secs 12h (si secs). Sinon utiliser des pois chiches en conserve, à égoutter et rincer."
       - "Si pois chiches secs : les cuire 1h dans l'eau non salée. Égoutter."
       - "Émincer les oignons. Laver les aubergines et couper en cubes de 2 cm."
+      - "--- cuisson ---"
       - "Dans une très grande sauteuse, faire chauffer l'huile et faire dorer les cubes d'aubergine 10 min à feu vif. Réserver."
       - "Dans la même sauteuse, faire suer les oignons 5 min."
       - "Ajouter curry + gingembre, remuer 1 min pour révéler les arômes."
@@ -281,6 +293,7 @@ recipes:
       - "Émincer finement oignons et ail."
       - "Égoutter les petits pois."
       - "Mixer les noix de cajou avec le lait pour obtenir une crème lisse (sinon, à défaut, hacher très finement les noix)."
+      - "--- cuisson ---"
       - "Dans une grande sauteuse, faire revenir oignons + ail dans un peu d'huile 5 min."
       - "Ajouter curcuma + gingembre + paprika, remuer 1 min."
       - "Ajouter les petits pois + la crème de cajou. Saler. Cuire 10 min à feu doux."
@@ -310,6 +323,7 @@ recipes:
       - "Couper les tomates en dés."
       - "Émietter la feta."
       - "Ciseler le basilic."
+      - "--- cuisson ---"
       - "Faire revenir rapidement les dés de courgette dans un peu d'huile d'olive 5 min (al dente), laisser refroidir."
       - "Préparer la vinaigrette dans un grand bol : moutarde + huile d'olive + zataar + herbes de Provence + ail haché + sel + poivre."
       - "Dans une très grande bassine, mélanger pâtes + tous les légumes + feta + basilic + vinaigrette."
@@ -330,6 +344,7 @@ recipes:
       - "Nettoyer les champignons à l'aide d'un torchon humide (ne pas les laver à grande eau). Couper en lamelles."
       - "Émietter le roquefort."
       - "Ciseler le persil."
+      - "--- cuisson ---"
       - "Dans une très grande sauteuse, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min."
       - "Ajouter les champignons, cuire 10 min à feu vif jusqu'à évaporation de l'eau."
       - "Baisser le feu, ajouter la crème fraîche + roquefort émietté. Remuer jusqu'à ce que le roquefort fonde. Poivrer (peu de sel, le roquefort sale)."
@@ -352,6 +367,7 @@ recipes:
       - "Émincer les oignons et l'ail."
       - "Laver les courgettes (ne pas peler), couper en rondelles."
       - "Éplucher les pommes de terre, couper en cubes."
+      - "--- cuisson ---"
       - "Dans une très grande marmite, faire suer oignons + ail dans l'huile d'olive 5 min."
       - "Ajouter courgettes + pommes de terre + herbes de Provence. Couvrir d'eau bouillante."
       - "Émietter les cubes de bouillon dans la marmite. Saler légèrement (le bouillon est déjà salé)."
@@ -371,6 +387,7 @@ recipes:
       - "Casser tous les œufs dans une très grande bassine. Saler, poivrer, battre énergiquement au fouet."
       - "Émincer les oignons. Épépiner et couper les poivrons en petits dés."
       - "Râper le parmesan."
+      - "--- cuisson ---"
       - "Dans une grande sauteuse, faire revenir les oignons + poivrons dans un filet d'huile 8 min jusqu'à ce qu'ils soient tendres. Laisser tiédir."
       - "Pour grand nombre : préchauffer le four à 180°C. Verser les œufs battus + légumes + parmesan dans un grand plat à gratin huilé. Cuire au four 20-25 min jusqu'à ce que l'omelette soit prise mais encore moelleuse."
       - "Couper en parts carrées pour servir."
@@ -392,6 +409,7 @@ recipes:
       - "Émincer les oignons. Couper les tomates en quartiers."
       - "Éplucher les carottes, couper en gros tronçons."
       - "Laver les courgettes, couper en gros tronçons."
+      - "--- cuisson ---"
       - "Dans une très grande marmite (couscoussier si possible), faire revenir les oignons dans l'huile d'olive 5 min."
       - "Ajouter les épices à couscous, remuer 1 min."
       - "Ajouter tomates + carottes + pois chiches. Couvrir d'eau. Saler."
@@ -411,6 +429,7 @@ recipes:
       bouillon cube légume: 0.25
     steps:
       - "Éplucher et émincer les oignons très finement (mandoline si disponible)."
+      - "--- cuisson ---"
       - "Dans une très grande sauteuse, faire fondre le beurre à feu doux."
       - "Ajouter les oignons + feuilles de laurier. Faire fondre 25-30 min à feu doux en remuant régulièrement jusqu'à ce qu'ils soient bien dorés et confits (ne pas brûler)."
       - "Déglacer avec le vin blanc, laisser réduire 3 min."
@@ -428,6 +447,7 @@ recipes:
     steps:
       - "Dénoyauter les olives noires (si pas déjà fait)."
       - "Éplucher les gousses d'ail, retirer le germe central."
+      - "--- cuisson ---"
       - "Mettre olives + ail dans un grand bol mixeur (robot)."
       - "Verser l'huile d'olive progressivement en mixant jusqu'à obtention d'une pâte un peu grossière (ne pas trop mixer)."
       - "Poivrer. Goûter avant de saler (les olives sont souvent salées)."

@@ -77,14 +77,31 @@ function renderRecipe(data) {
     p.textContent = 'Aucune étape de préparation renseignée pour cette recette.';
     root.appendChild(p);
   } else {
-    const ol = document.createElement('ol');
-    ol.className = 'steps-list';
-    for (const step of recipe.steps) {
-      const li = document.createElement('li');
-      li.textContent = step;
-      ol.appendChild(li);
+    const markerRe = /^\s*-{2,}\s*cuisson\s*-{2,}\s*$/i;
+    const splitIdx = recipe.steps.findIndex((s) => markerRe.test(String(s)));
+    const renderList = (items) => {
+      const ol = document.createElement('ol');
+      ol.className = 'steps-list';
+      for (const step of items) {
+        const li = document.createElement('li');
+        li.textContent = step;
+        ol.appendChild(li);
+      }
+      root.appendChild(ol);
+    };
+    const renderBlock = (title, items) => {
+      if (!items || items.length === 0) return;
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      root.appendChild(h3);
+      renderList(items);
+    };
+    if (splitIdx === -1) {
+      renderList(recipe.steps);
+    } else {
+      renderBlock('Découpe', recipe.steps.slice(0, splitIdx));
+      renderBlock('Cuisson', recipe.steps.slice(splitIdx + 1));
     }
-    root.appendChild(ol);
   }
 }
 
