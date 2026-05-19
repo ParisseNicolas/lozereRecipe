@@ -682,6 +682,8 @@ main {
   color: #555;
 }
 
+.conv-row[hidden] { display: none; }
+
 .conv-row input { max-width: 100px; }
 
 .add-row-btn {

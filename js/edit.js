@@ -102,6 +102,28 @@ function deriveConvertFactor(preferred, purchase, unitScales) {
   return null;
 }
 
+// Factor X such that 1 from = X to, using a preset block as the source of truth.
+// Walks through the preset's base unit if no direct entry exists.
+function factorFromPreset(preset, from, to) {
+  if (!preset || !from || !to) return null;
+  if (from === to) return 1;
+  // Direct: convert[to][from] = factor → 1 from = factor to.
+  if (preset[to] && preset[to][from] != null) return preset[to][from];
+  // Inverse: convert[from][to] = factor → 1 to = factor from → 1 from = 1/factor to.
+  if (preset[from] && preset[from][to] != null) {
+    const f = preset[from][to];
+    return f !== 0 ? 1 / f : null;
+  }
+  // Via the base unit (the first key of the preset).
+  const base = Object.keys(preset)[0];
+  if (!base || base === from || base === to) return null;
+  // 1 from = X base, 1 to = Y base → 1 from = (X / Y) to.
+  const fromInBase = preset[base] && preset[base][from] != null ? preset[base][from] : null;
+  const toInBase = preset[base] && preset[base][to] != null ? preset[base][to] : null;
+  if (fromInBase != null && toInBase != null && toInBase !== 0) return fromInBase / toInBase;
+  return null;
+}
+
 function renderEdit(data) {
   const root = document.getElementById('edit-root');
   root.innerHTML = '';
@@ -356,14 +378,14 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
   row.appendChild(unitSelect);
   row.appendChild(delBtn);
 
-  // Sub-block for unknown ingredients : type / preferred / purchase / convert.
+  // Sub-block for unknown ingredients : progressive flow preset → preferred → purchase → conversion.
   const sub = document.createElement('div');
   sub.className = 'new-ingr-sub';
   sub.hidden = true;
   row.appendChild(sub);
 
-  // Replace options of unitSelect based on a units array; keep previous selection if possible.
-  const setUnits = (units, fallback) => {
+  // Replace options of unitSelect, and gate amount/unit on `enable`.
+  const setUnits = (units, fallback, enable) => {
     const prev = unitSelect.value || fallback || '';
     unitSelect.innerHTML = '';
     const placeholder = document.createElement('option');
@@ -377,61 +399,44 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
       o.textContent = u;
       unitSelect.appendChild(o);
     }
-    if (prev && units.includes(prev)) {
-      unitSelect.value = prev;
-    } else if (units.length > 0) {
-      unitSelect.value = units[0];
-    } else {
-      unitSelect.value = '';
-    }
+    if (prev && units.includes(prev)) unitSelect.value = prev;
+    else if (units.length > 0) unitSelect.value = units[0];
+    else unitSelect.value = '';
+    const e = enable === undefined ? units.length > 0 : !!enable;
+    unitSelect.disabled = !e;
+    amountInput.disabled = !e;
   };
 
   let subBuiltFor = '';
-  let subRefs = null;
 
   const buildSub = (v) => {
     sub.hidden = false;
     sub.innerHTML = '';
     subBuiltFor = v;
 
-    const hint = document.createElement('p');
-    hint.className = 'edit-hint';
-    hint.innerHTML = `Nouvel ingrédient « <strong>${v}</strong> » : précise sa catégorie et ses unités.`;
-    sub.appendChild(hint);
-
-    const typeInput = document.createElement('input');
-    typeInput.type = 'text';
-    typeInput.placeholder = 'catégorie (ex: Fruits et légumes)';
-    typeInput.setAttribute('list', 'dl-types');
-    typeInput.className = 'new-ingr-type';
-    sub.appendChild(typeInput);
-
-    const prefInput = document.createElement('input');
-    prefInput.type = 'text';
-    prefInput.placeholder = 'unité recette (ex: g)';
-    prefInput.setAttribute('list', 'dl-units');
-    prefInput.className = 'new-ingr-pref';
-    sub.appendChild(prefInput);
-
-    const purchaseInput = document.createElement('input');
-    purchaseInput.type = 'text';
-    purchaseInput.placeholder = "unité d'achat (ex: u)";
-    purchaseInput.setAttribute('list', 'dl-units');
-    purchaseInput.className = 'new-ingr-purchase';
-    sub.appendChild(purchaseInput);
-
-    // Preset chooser : copies a predefined `convert` block at creation.
     const presets = (data && data.commonConverts) || {};
     const presetNames = Object.keys(presets);
+    const allUnits = collectKnownUnits(data);
+
+    const hint = document.createElement('p');
+    hint.className = 'edit-hint';
+    hint.innerHTML = `Nouvel ingrédient « <strong>${v}</strong> ». Réponds aux questions une à une.`;
+    sub.appendChild(hint);
+
+    // --- Step 1 : Preset.
     const presetRow = document.createElement('div');
     presetRow.className = 'conv-row';
-    const presetLabel = document.createElement('span');
-    presetLabel.textContent = 'Preset de conversion :';
-    presetRow.appendChild(presetLabel);
+    presetRow.appendChild(document.createTextNode('Preset : '));
     const presetSelect = document.createElement('select');
     presetSelect.className = 'new-ingr-preset';
+    const choosePresetOpt = document.createElement('option');
+    choosePresetOpt.value = '';
+    choosePresetOpt.textContent = '— choisir —';
+    choosePresetOpt.disabled = true;
+    choosePresetOpt.selected = true;
+    presetSelect.appendChild(choosePresetOpt);
     const noneOpt = document.createElement('option');
-    noneOpt.value = '';
+    noneOpt.value = '__none__';
     noneOpt.textContent = '(aucun)';
     presetSelect.appendChild(noneOpt);
     for (const pn of presetNames) {
@@ -448,13 +453,42 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     presetHint.hidden = true;
     sub.appendChild(presetHint);
 
-    const convHint = document.createElement('p');
-    convHint.className = 'edit-hint';
-    convHint.textContent = "Conversion (optionnelle) : 1 unité d'achat = X unités recette";
-    sub.appendChild(convHint);
+    // --- Step 2 : Preferred unit.
+    const prefRow = document.createElement('div');
+    prefRow.className = 'conv-row';
+    prefRow.hidden = true;
+    prefRow.appendChild(document.createTextNode('Unité recette : '));
+    const prefSelect = document.createElement('select');
+    prefSelect.className = 'new-ingr-pref';
+    prefRow.appendChild(prefSelect);
+    sub.appendChild(prefRow);
+
+    // --- Step 3 : Purchase unit (<select> if preset, free <input> otherwise).
+    const purchaseRow = document.createElement('div');
+    purchaseRow.className = 'conv-row';
+    purchaseRow.hidden = true;
+    purchaseRow.appendChild(document.createTextNode("Unité d'achat : "));
+    const purchaseSelect = document.createElement('select');
+    purchaseSelect.className = 'new-ingr-purchase';
+    purchaseRow.appendChild(purchaseSelect);
+    const purchaseInput = document.createElement('input');
+    purchaseInput.type = 'text';
+    purchaseInput.placeholder = 'ex: u, sachet, botte';
+    purchaseInput.setAttribute('list', 'dl-units');
+    purchaseInput.className = 'new-ingr-purchase';
+    purchaseInput.hidden = true;
+    purchaseRow.appendChild(purchaseInput);
+    sub.appendChild(purchaseRow);
+
+    // --- Step 4 : Conversion (auto hint OR manual factor row).
+    const autoHint = document.createElement('p');
+    autoHint.className = 'edit-hint';
+    autoHint.hidden = true;
+    sub.appendChild(autoHint);
 
     const convRow = document.createElement('div');
     convRow.className = 'conv-row';
+    convRow.hidden = true;
     convRow.appendChild(document.createTextNode('1 '));
     const fromLabel = document.createElement('span');
     fromLabel.className = 'conv-from-label';
@@ -463,9 +497,9 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     convRow.appendChild(document.createTextNode(' = '));
     const convFactor = document.createElement('input');
     convFactor.type = 'number';
-    convFactor.step = '0.01';
+    convFactor.step = '0.001';
     convFactor.min = '0';
-    convFactor.placeholder = 'facteur (ex: 120)';
+    convFactor.placeholder = 'facteur';
     convFactor.className = 'new-ingr-conv-factor';
     convRow.appendChild(convFactor);
     convRow.appendChild(document.createTextNode(' '));
@@ -475,17 +509,23 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     convRow.appendChild(toLabel);
     sub.appendChild(convRow);
 
-    const autoHint = document.createElement('p');
-    autoHint.className = 'edit-hint';
-    autoHint.hidden = true;
-    sub.appendChild(autoHint);
+    // --- Step 5 : Category.
+    const typeRow = document.createElement('div');
+    typeRow.className = 'conv-row';
+    typeRow.hidden = true;
+    typeRow.appendChild(document.createTextNode('Catégorie : '));
+    const typeInput = document.createElement('input');
+    typeInput.type = 'text';
+    typeInput.placeholder = 'ex: Fruits et légumes';
+    typeInput.setAttribute('list', 'dl-types');
+    typeInput.className = 'new-ingr-type';
+    typeRow.appendChild(typeInput);
+    sub.appendChild(typeRow);
 
     const formatFactor = (n) => {
       if (!isFinite(n)) return '0';
-      // Up to 4 significant digits, strip trailing zeros — handles 0.001 and 1234 alike.
       return Number(n.toPrecision(4)).toString();
     };
-
     const formatPreset = (block) => {
       const lines = [];
       for (const [tgt, srcs] of Object.entries(block || {})) {
@@ -495,70 +535,148 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
       }
       return lines.join(' · ');
     };
-
-    const suggestPreset = (pref, purch) => {
-      if (!pref || !purch || pref === purch) return '';
-      for (const [pn, block] of Object.entries(presets)) {
-        for (const [tgt, srcs] of Object.entries(block || {})) {
-          if (tgt === pref && Object.prototype.hasOwnProperty.call(srcs || {}, purch)) return pn;
-          if (tgt === purch && Object.prototype.hasOwnProperty.call(srcs || {}, pref)) return pn;
-        }
+    const presetUnitsOf = (block) => {
+      if (!block) return [];
+      const s = new Set();
+      for (const [tgt, srcs] of Object.entries(block)) {
+        s.add(tgt);
+        for (const src of Object.keys(srcs || {})) s.add(src);
       }
-      return '';
+      return Array.from(s);
     };
 
-    const refreshUnitsFromSub = () => {
-      const us = [];
-      const p = prefInput.value.trim();
-      const pu = purchaseInput.value.trim();
-      if (p) us.push(p);
-      if (pu && pu !== p) us.push(pu);
-      setUnits(us, p || pu);
-      fromLabel.textContent = pu || '(achat)';
-      toLabel.textContent = p || '(recette)';
-
-      // If user hasn't explicitly chosen a preset, propose one matching the (pref, purchase) pair.
-      if (!presetSelect.dataset.userChosen) {
-        const sug = suggestPreset(p, pu);
-        if (sug && presetSelect.value !== sug) presetSelect.value = sug;
+    const populateSelect = (sel, units, def) => {
+      const prev = sel.value;
+      sel.innerHTML = '';
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = '— choisir —';
+      ph.disabled = true;
+      ph.selected = true;
+      sel.appendChild(ph);
+      for (const u of units) {
+        const o = document.createElement('option');
+        o.value = u;
+        o.textContent = u;
+        sel.appendChild(o);
       }
+      if (prev && units.includes(prev)) sel.value = prev;
+      else if (def && units.includes(def)) sel.value = def;
+      else sel.value = '';
+    };
 
-      const chosen = presetSelect.value;
-      if (chosen && presets[chosen]) {
-        const baseUnit = Object.keys(presets[chosen])[0] || '';
-        convHint.hidden = false;
-        convHint.textContent = `Conversion (optionnelle) : 1 unité d'achat = X ${baseUnit}`;
-        convRow.hidden = false;
-        toLabel.textContent = baseUnit || '(base)';
+    const updateFlow = () => {
+      const presetRaw = presetSelect.value;
+      const presetChosen = presetRaw !== '';
+      const presetName = presetRaw === '__none__' ? '' : presetRaw;
+      const preset = presetName ? (presets[presetName] || null) : null;
+
+      // Step 1 not done → hide everything below.
+      if (!presetChosen) {
+        prefRow.hidden = true;
+        purchaseRow.hidden = true;
         autoHint.hidden = true;
-        presetHint.hidden = false;
-        presetHint.innerHTML = `Preset <strong>${chosen}</strong> appliqué : ${formatPreset(presets[chosen])}`;
+        convRow.hidden = true;
+        typeRow.hidden = true;
+        presetHint.hidden = true;
+        setUnits([], unit, false);
         return;
       }
-      presetHint.hidden = true;
 
-      // Auto-derive from unitScales when possible — hide manual factor.
-      const derived = deriveConvertFactor(p, pu, (data && data.unitScales) || {});
-      if (derived != null) {
-        convHint.hidden = true;
+      // Step 2 : recipe-unit select. Preset = locked to preset units, sinon libre.
+      if (preset) {
+        const units = presetUnitsOf(preset);
+        const baseUnit = Object.keys(preset)[0] || '';
+        populateSelect(prefSelect, units, baseUnit);
+        presetHint.hidden = false;
+        presetHint.innerHTML = `Preset <strong>${presetName}</strong> : ${formatPreset(preset)}`;
+        purchaseSelect.hidden = false;
+        purchaseInput.hidden = true;
+        populateSelect(purchaseSelect, units, '');
+      } else {
+        populateSelect(prefSelect, allUnits, '');
+        presetHint.hidden = true;
+        purchaseSelect.hidden = true;
+        purchaseInput.hidden = false;
+      }
+      prefRow.hidden = false;
+
+      const pref = prefSelect.value.trim();
+      if (!pref) {
+        purchaseRow.hidden = true;
+        autoHint.hidden = true;
+        convRow.hidden = true;
+        typeRow.hidden = true;
+        setUnits([], unit, false);
+        return;
+      }
+      purchaseRow.hidden = false;
+
+      const purchase = (preset ? purchaseSelect.value : purchaseInput.value).trim();
+      fromLabel.textContent = purchase || '(achat)';
+      toLabel.textContent = pref || '(recette)';
+
+      if (!purchase) {
+        autoHint.hidden = true;
+        convRow.hidden = true;
+        typeRow.hidden = true;
+        setUnits([], unit, false);
+        return;
+      }
+
+      // Step 4 : conversion.
+      let conversionOk = false;
+      if (pref === purchase) {
+        autoHint.hidden = true;
+        convRow.hidden = true;
+        conversionOk = true;
+      } else if (preset) {
+        // Preset = tout figé : facteur dérivé du preset, jamais saisi.
+        const derived = factorFromPreset(preset, purchase, pref);
         convRow.hidden = true;
         convFactor.value = '';
-        autoHint.hidden = false;
-        autoHint.innerHTML = `Conversion automatique : <strong>1 ${pu} = ${Parser.formatAmount(derived)} ${p}</strong>`;
+        if (derived != null) {
+          autoHint.hidden = false;
+          autoHint.innerHTML = `Conversion (preset) : <strong>1 ${purchase} = ${formatFactor(derived)} ${pref}</strong>`;
+          conversionOk = true;
+        } else {
+          autoHint.hidden = false;
+          autoHint.innerHTML = `<span style="color:#c62828">Pas de conversion dans le preset entre ${purchase} et ${pref}.</span>`;
+        }
       } else {
-        convHint.hidden = false;
-        convRow.hidden = false;
-        autoHint.hidden = true;
+        const derived = deriveConvertFactor(pref, purchase, (data && data.unitScales) || {});
+        if (derived != null) {
+          autoHint.hidden = false;
+          autoHint.innerHTML = `Conversion automatique : <strong>1 ${purchase} = ${formatFactor(derived)} ${pref}</strong>`;
+          convRow.hidden = true;
+          convFactor.value = '';
+          conversionOk = true;
+        } else {
+          autoHint.hidden = true;
+          convRow.hidden = false;
+          const f = parseFloat(convFactor.value);
+          conversionOk = isFinite(f) && f > 0;
+        }
       }
-    };
-    prefInput.addEventListener('input', refreshUnitsFromSub);
-    purchaseInput.addEventListener('input', refreshUnitsFromSub);
-    presetSelect.addEventListener('change', () => {
-      presetSelect.dataset.userChosen = '1';
-      refreshUnitsFromSub();
-    });
 
-    subRefs = { typeInput, prefInput, purchaseInput, convFactor, presetSelect };
+      if (!conversionOk) {
+        typeRow.hidden = true;
+        setUnits([], unit, false);
+        return;
+      }
+      typeRow.hidden = false;
+
+      // Top unit verrouillée sur l'unité recette.
+      setUnits([pref], unit, true);
+    };
+
+    presetSelect.addEventListener('change', updateFlow);
+    prefSelect.addEventListener('change', updateFlow);
+    purchaseSelect.addEventListener('change', updateFlow);
+    purchaseInput.addEventListener('input', updateFlow);
+    convFactor.addEventListener('input', updateFlow);
+
+    updateFlow();
   };
 
   const refresh = () => {
@@ -567,8 +685,7 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
       sub.hidden = true;
       sub.innerHTML = '';
       subBuiltFor = '';
-      subRefs = null;
-      setUnits([], unit);
+      setUnits([], unit, false);
       return;
     }
     const spec = findSpec(v, data, customIngredients);
@@ -576,8 +693,8 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
       sub.hidden = true;
       sub.innerHTML = '';
       subBuiltFor = '';
-      subRefs = null;
-      setUnits(unitsForSpec(spec), unit);
+      const lockedUnits = spec.preferred ? [spec.preferred] : unitsForSpec(spec);
+      setUnits(lockedUnits, unit, true);
       return;
     }
     if (subBuiltFor !== v) buildSub(v);
@@ -586,7 +703,6 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
   nameInput.addEventListener('input', refresh);
   nameInput.addEventListener('blur', refresh);
   refresh();
-  // Ensure prefilled unit is selected if the spec already exposes it.
   if (unit) {
     const opts = Array.from(unitSelect.options).map((o) => o.value);
     if (!opts.includes(unit) && unit) {
@@ -613,19 +729,16 @@ function readIngredientRow(row, data) {
   if (sub && !sub.hidden) {
     const type = (row.querySelector('.new-ingr-type') || {}).value || '';
     const pref = (row.querySelector('.new-ingr-pref') || {}).value || '';
-    const purchase = (row.querySelector('.new-ingr-purchase') || {}).value || '';
-    const factor = parseFloat((row.querySelector('.new-ingr-conv-factor') || {}).value || '');
+    // Two .new-ingr-purchase elements coexist (select + input) — pick the visible one.
+    const purchaseEl = row.querySelector('.new-ingr-purchase:not([hidden])');
+    const purchase = (purchaseEl || {}).value || '';
+    const factorEl = row.querySelector('.new-ingr-conv-factor');
+    const factor = factorEl && !factorEl.closest('.conv-row[hidden]') ? parseFloat(factorEl.value || '') : NaN;
     const presetName = (row.querySelector('.new-ingr-preset') || {}).value || '';
     const spec = { type: type.trim(), preferred: pref.trim(), purchase: purchase.trim() };
-    if (presetName && presets[presetName]) {
-      // Deep clone so further edits don't mutate the shared preset.
+    if (presetName && presetName !== '__none__' && presets[presetName]) {
+      // Preset = tout figé : deep clone, no manual merge.
       spec.convert = JSON.parse(JSON.stringify(presets[presetName]));
-      // If a manual factor is provided, merge it: 1 purchase = factor baseUnit.
-      const baseUnit = Object.keys(presets[presetName])[0];
-      if (isFinite(factor) && factor > 0 && baseUnit && spec.purchase && spec.purchase !== baseUnit) {
-        spec.convert[baseUnit] = spec.convert[baseUnit] || {};
-        spec.convert[baseUnit][spec.purchase] = factor;
-      }
     } else if (isFinite(factor) && factor > 0 && spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
       spec.convert = { [spec.preferred]: { [spec.purchase]: factor } };
     } else if (spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
