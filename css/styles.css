@@ -199,6 +199,44 @@ main {
   background: #1b5e20;
 }
 
+#reset-btn {
+  background: #c62828;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 0 1rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+#reset-btn:hover {
+  background: #8e0000;
+}
+
+.done-category h2 {
+  color: #888;
+  border-bottom-color: #eee;
+}
+
+.done-category .shopping-list li {
+  opacity: 0.7;
+}
+
+.done-wrapper {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #ccc;
+}
+
+.done-title {
+  color: #888;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* === Recipe detail === */
 .back-link {
   color: #1565c0;
