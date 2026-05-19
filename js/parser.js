@@ -35,6 +35,14 @@ function formatAmount(n) {
   return String(Math.ceil(n));
 }
 
+// Like formatAmount, but keeps fractional precision when |n| < 1 so a small
+// purchase-unit equivalent (e.g. 0.012 kg) isn't rounded up to 1.
+function formatAmountSmart(n) {
+  if (!isFinite(n)) return '0';
+  if (Math.abs(n) >= 1) return String(Math.ceil(n));
+  return Number(n.toPrecision(2)).toString();
+}
+
 // Promote a quantity to a larger unit when the result stays a whole number.
 // Iterative : 5000 ml -> 500 cl -> 5 L. Stops at the first non-integer step.
 // `scales` shape : { unit: { upper: <string>, factor: <number> } }
@@ -63,6 +71,23 @@ function promoteUnit(amount, unit, scales) {
   return { amount: a, unit: u };
 }
 
+// Like promoteUnit, but only promotes upward (never demotes). Useful when the
+// caller wants to keep small fractional values (e.g. 0.012 kg) as-is instead of
+// being demoted back to a smaller unit.
+function promoteOnly(amount, unit, scales) {
+  if (!scales || amount === 0) return { amount, unit };
+  let a = amount, u = unit;
+  while (scales[u]) {
+    const { upper, factor } = scales[u];
+    if (!upper || !factor) break;
+    const promoted = a / factor;
+    if (Math.abs(promoted) < 1) break;
+    a = promoted;
+    u = upper;
+  }
+  return { amount: a, unit: u };
+}
+
 // Pluralize a unit when amount > 1, except for measurement abbreviations.
 const INVARIANT_UNITS = new Set(['g', 'kg', 'mg', 'ml', 'cl', 'L', 'cs', 'cc', 'u', 'petit peu']);
 function pluralizeUnit(amount, unit) {
@@ -73,4 +98,4 @@ function pluralizeUnit(amount, unit) {
   return unit + 's';
 }
 
-window.Parser = { parseQuantity, formatAmount, promoteUnit, pluralizeUnit };
+window.Parser = { parseQuantity, formatAmount, formatAmountSmart, promoteUnit, promoteOnly, pluralizeUnit };

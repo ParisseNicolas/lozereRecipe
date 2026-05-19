@@ -569,7 +569,9 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
       const presetRaw = presetSelect.value;
       const presetChosen = presetRaw !== '';
       const presetName = presetRaw === '__none__' ? '' : presetRaw;
-      const preset = presetName ? (presets[presetName] || null) : null;
+      const presetEntry = presetName ? (presets[presetName] || null) : null;
+      const preset = presetEntry ? (presetEntry.convert || presetEntry) : null;
+      const presetDesc = presetEntry ? (presetEntry.desc || '') : '';
 
       // Step 1 not done → hide everything below.
       if (!presetChosen) {
@@ -589,7 +591,8 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
         const baseUnit = Object.keys(preset)[0] || '';
         populateSelect(prefSelect, units, baseUnit);
         presetHint.hidden = false;
-        presetHint.innerHTML = `Preset <strong>${presetName}</strong> : ${formatPreset(preset)}`;
+        const descLine = presetDesc ? `<em>${presetDesc}</em><br>` : '';
+        presetHint.innerHTML = `${descLine}Preset <strong>${presetName}</strong> : ${formatPreset(preset)}`;
         purchaseSelect.hidden = false;
         purchaseInput.hidden = true;
         populateSelect(purchaseSelect, units, '');
@@ -738,7 +741,9 @@ function readIngredientRow(row, data) {
     const spec = { type: type.trim(), preferred: pref.trim(), purchase: purchase.trim() };
     if (presetName && presetName !== '__none__' && presets[presetName]) {
       // Preset = tout figé : deep clone, no manual merge.
-      spec.convert = JSON.parse(JSON.stringify(presets[presetName]));
+      const entry = presets[presetName];
+      const block = entry.convert || entry;
+      spec.convert = JSON.parse(JSON.stringify(block));
     } else if (isFinite(factor) && factor > 0 && spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
       spec.convert = { [spec.preferred]: { [spec.purchase]: factor } };
     } else if (spec.preferred && spec.purchase && spec.preferred !== spec.purchase) {
@@ -870,8 +875,8 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
       }
       if (parts.length > 0) {
         const promoted = parts
-          .map((p) => Parser.promoteUnit(p.amount, p.unit, unitScales))
-          .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+          .map((p) => Parser.promoteOnly(p.amount, p.unit, unitScales))
+          .map((p) => `${Parser.formatAmountSmart(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
           .join(' + ');
         if (promoted !== labelStr) equivStr = promoted;
       }

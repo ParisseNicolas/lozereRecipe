@@ -17,21 +17,78 @@ unitScales:
 # Appliqués UNIQUEMENT à la création d'un ingrédient depuis le formulaire ;
 # le bloc convert résultant est copié tel quel dans la spec de l'ingrédient.
 # Format : nom_preset: { unite_cible: { unite_source: facteur } }  (1 source = facteur cible)
+# Chaque preset embarque ses unités d'achat « évidentes » avec les facteurs
+# pré-déterminés — l'utilisateur n'a plus qu'à choisir.
 commonConverts:
-  liquide:
-    L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005 }
-  épice_légère:
-    g: { cc: 2, cs: 6 }
-  épice_dense:
-    g: { cc: 5, cs: 15 }
-  herbe_sèche:
-    g: { cc: 1, cs: 3 }
-  miel:
-    g: { cc: 8, cs: 20 }
-  botte_dense:
-    botte: { feuille: 0.0333 }
-  botte_persil:
-    botte: { feuille: 0.025 }
+  # --- Liquides ---
+  Liquide:
+    desc: "Eau, sirop, jus, lait, bouillon. Brique standard = 1 L."
+    convert:
+      L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005, brique: 1 }
+  Vin:
+    desc: "Vin / champagne. Bouteille standard = 75 cl."
+    convert:
+      L: { ml: 0.001, cl: 0.01, bouteille: 0.75 }
+
+  # --- Épices en poudre ---
+  Épice légère:
+    desc: "Peu denses : paprika, curry, curcuma, gingembre poudre, cannelle. Tube ~40 g, sachet ~10 g."
+    convert:
+      g: { cc: 2, cs: 6, tube: 40, sachet: 10 }
+  Épice dense:
+    desc: "Denses / fines : cumin, piment d'Espelette, poivre moulu, sel fin, muscade. Tube ~40 g."
+    convert:
+      g: { cc: 5, cs: 15, tube: 40, sachet: 10 }
+  Herbe séchée:
+    desc: "Très peu denses : thym, origan, herbes de Provence, laurier moulu. Tube ~25 g."
+    convert:
+      g: { cc: 1, cs: 3, tube: 25, sachet: 10 }
+
+  # --- Pâteux / sirupeux ---
+  Miel / sirop:
+    desc: "Miel, sirop d'agave, sirop d'érable, confiture liquide. Pot standard 250 g."
+    convert:
+      g: { cc: 8, cs: 20, pot: 250 }
+
+  # --- Herbes fraîches en botte ---
+  Herbe fraîche (botte):
+    desc: "Bottes denses : menthe, basilic, coriandre. Env. 25 g et 30 feuilles par botte."
+    convert:
+      botte: { feuille: 0.0333, g: 0.04 }
+  Persil (botte):
+    desc: "Persil plat / frisé. Botte plus grosse : env. 60 g et 40 feuilles."
+    convert:
+      botte: { feuille: 0.025, g: 0.0167 }
+
+  # --- Féculents secs ---
+  Féculent sec (paquet):
+    desc: "Riz, pâtes, semoule, boulgour, lentilles, pois cassés. Paquet standard 500 g."
+    convert:
+      g: { paquet: 500 }
+
+  # --- Conserves ---
+  Conserve (boîte 400 g):
+    desc: "Grande boîte : tomates concassées, petits pois, lait de coco, maïs."
+    convert:
+      g: { boîte: 400 }
+  Conserve (boîte 250 g):
+    desc: "Petite boîte : haricots rouges, pois chiches, lentilles cuites."
+    convert:
+      g: { boîte: 250 }
+
+  # --- Légumes / fruits "à la pièce" ---
+  Petit légume / fruit:
+    desc: "~60 g/pièce : échalote, citron vert, abricot, radis, gousse d'ail."
+    convert:
+      g: { u: 60 }
+  Légume / fruit moyen:
+    desc: "~150 g/pièce : tomate, oignon, poivron, pomme de terre, citron, pomme, orange."
+    convert:
+      g: { u: 150 }
+  Gros légume / fruit:
+    desc: "~300 g/pièce : aubergine, courgette, concombre, poireau, fenouil, pamplemousse."
+    convert:
+      g: { u: 300 }
 
 recipes:
   taboulé:
@@ -678,8 +735,9 @@ ingredients:
   huile d'olive:
     type: Condiments
     preferred: L
+    purchase: L
     convert:
-      L: { cl: 0.01, cs: 0.015, cc: 0.005 }
+      L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005 }
 
 
   chèvre coulant:
@@ -960,18 +1018,21 @@ ingredients:
   menthe:
     type: Fruits et légumes
     preferred: botte
+    purchase: botte
     convert:
-      botte: { feuille: 0.0333 }
+      botte: { feuille: 0.0333, g: 0.04 }
   basilic:
     type: Fruits et légumes
     preferred: botte
+    purchase: botte
     convert:
-      botte: { feuille: 0.0333 }
+      botte: { feuille: 0.0333, g: 0.04 }
   persil:
     type: Fruits et légumes
     preferred: botte
+    purchase: botte
     convert:
-      botte: { feuille: 0.025 }
+      botte: { feuille: 0.025, g: 0.0167 }
 
   # === Légumes / fruits manquants ===
   piment doux:

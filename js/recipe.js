@@ -75,8 +75,8 @@ function renderRecipe(data) {
       }
       if (parts.length > 0) {
         const promoted = parts
-          .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
-          .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
+          .map((p) => Parser.promoteOnly(p.amount, p.unit, data.unitScales))
+          .map((p) => `${Parser.formatAmountSmart(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
           .join(' + ');
         if (promoted !== labelStr) equivStr = promoted;
       }
