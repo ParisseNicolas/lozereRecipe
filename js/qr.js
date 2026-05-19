@@ -21,7 +21,7 @@
     title.textContent = 'Partager cette page';
     modal.appendChild(title);
 
-    const url = window.location.href;
+    const url = window.location.href.replace(/127\.0\.0\.1|localhost/, '192.168.1.128');
     const qrWrap = document.createElement('div');
     qrWrap.className = 'qr-wrap';
     qrWrap.innerHTML = buildQrSvg(url);
