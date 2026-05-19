@@ -457,10 +457,16 @@ recipes:
     # petit dej, grignotage, pain, etc..
     ingredients:
       pain: 100g
-      # TODO le reste, fromage, fruits, café, confiture
+      fruit: 150g
+      fromage: 30g
+      confiture: 20g
+      café moulu: 15g
+      chips: 30g
+      cacahuète: 20g
     steps:
       - "Couper le pain frais en tranches au moment du repas."
-      - "Disposer fromages, fruits et confitures sur la table en libre-service."
+      - "Disposer fromages, fruits, confitures, chips et cacahuètes sur la table en libre-service."
+      - "Préparer le café en cafetière (filtre ou italienne) selon les habitudes."
 
 meals:
   - name: Mardi midi
@@ -871,4 +877,32 @@ ingredients:
   yaourt nature:
     type: Frais
     preferred: u
+
+  # === Petit-déjeuner et apéritifs ===
+  fruit:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+  fromage:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+  confiture:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+    convert:
+      g: { pot: 370 }
+  café moulu:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+    convert:
+      g: { paquet: 250 }
+  chips:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+    convert:
+      g: { paquet: 150 }
+  cacahuète:
+    type: Petit-déjeuner et apéritifs
+    preferred: g
+    convert:
+      g: { paquet: 200 }
 
