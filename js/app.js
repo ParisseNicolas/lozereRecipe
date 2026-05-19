@@ -47,7 +47,25 @@ async function loadData() {
   const resp = await fetch(YAML_URL);
   if (!resp.ok) throw new Error('Impossible de charger repas.yml');
   const text = await resp.text();
-  return jsyaml.load(text);
+  const data = jsyaml.load(text);
+
+  // Merge user-local customizations from localStorage on top of the YAML.
+  if (window.Store) {
+    const customR = Store.loadCustomRecipes();
+    const customI = Store.loadCustomIngredients();
+    const overrides = Store.loadMealOverrides();
+    data.recipes = Object.assign({}, data.recipes || {}, customR);
+    data.ingredients = Object.assign({}, data.ingredients || {}, customI);
+    if (Array.isArray(data.meals)) {
+      for (const m of data.meals) {
+        if (!(m.name in overrides)) continue;
+        const ov = overrides[m.name];
+        if (ov === null) m.recipes = [];
+        else if (ov && Array.isArray(ov.recipes)) m.recipes = ov.recipes.slice();
+      }
+    }
+  }
+  return data;
 }
 
 window.App = { loadData, dayOf, listDays, defaultPortionsByDay, effectivePortions };
