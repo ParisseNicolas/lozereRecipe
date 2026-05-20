@@ -1788,11 +1788,25 @@ main {
 .yaml-toast.error { border-color: var(--lp-red); color: #ffb1a3; }
 
 @media (max-width: 800px) {
+  .yaml-import-modal {
+    overflow-y: auto;
+  }
   .yaml-import-body {
     grid-template-columns: 1fr;
+    min-height: 0;
   }
-  .yaml-editor-wrap, .yaml-issues-panel {
-    height: 40vh;
+  .yaml-editor-wrap {
+    height: auto;
+    min-height: 200px;
+    max-height: 35vh;
+  }
+  .yaml-issues-panel {
+    height: auto;
+    min-height: 0;
+    max-height: 25vh;
+  }
+  .yaml-import-footer {
+    flex-wrap: wrap;
   }
 }
 
