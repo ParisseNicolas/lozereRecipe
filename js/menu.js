@@ -153,7 +153,7 @@ function renderMenuActions(data) {
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.id = 'reset-overrides-btn';
-    resetBtn.textContent = 'Réinitialiser les modifications';
+    resetBtn.textContent = 'Reset';
     resetBtn.addEventListener('click', () => {
       if (!confirm('Effacer toutes les modifications locales (repas, recettes, ingrédients, YAML importé) ?')) return;
       localStorage.removeItem('customRecipes');
