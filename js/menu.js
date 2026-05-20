@@ -155,18 +155,44 @@ function renderMenuActions(data) {
   }
 }
 
-function exportYaml() {
-  const payload = {
-    customRecipes: Store.loadCustomRecipes(),
-    customIngredients: Store.loadCustomIngredients(),
-    mealOverrides: Store.loadMealOverrides(),
-  };
-  const yamlStr = jsyaml.dump(payload, { lineWidth: 120, noRefs: true });
+async function exportYaml() {
+  // Export an updated repas.yml that includes every local modification
+  // (custom recipes/ingredients, meal slot overrides, day portions).
+  // The output keeps the same shape as repas.yml so it can be used as a
+  // drop-in replacement (future import feature).
+  let data;
+  try {
+    data = await App.loadData();
+  } catch (e) {
+    alert('Impossible de charger repas.yml pour export : ' + e.message);
+    return;
+  }
+
+  // Apply per-day portions overrides onto each meal's `portions` field.
+  const portionsByDay = Store.loadPortionsByDay();
+  if (Array.isArray(data.meals)) {
+    for (const m of data.meals) {
+      const d = App.dayOf(m.name);
+      if (portionsByDay[d] != null) m.portions = Number(portionsByDay[d]);
+    }
+  }
+
+  // Re-order top-level keys to match the canonical repas.yml layout.
+  const order = ['unitScales', 'ingredientPresets', 'recipes', 'meals', 'ingredients'];
+  const ordered = {};
+  for (const k of order) {
+    if (data[k] !== undefined) ordered[k] = data[k];
+  }
+  for (const k of Object.keys(data)) {
+    if (!(k in ordered)) ordered[k] = data[k];
+  }
+
+  const yamlStr = jsyaml.dump(ordered, { lineWidth: 120, noRefs: true, sortKeys: false });
   const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'modifications-repas.yml';
+  a.download = 'repas.yml';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
