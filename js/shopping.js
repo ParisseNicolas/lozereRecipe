@@ -90,9 +90,10 @@ function buildShoppingList(data, portionsByDay) {
     for (const recipeName of meal.recipes) {
       const recipe = recipes[recipeName];
       if (!recipe || !recipe.ingredients) continue;
+      const recipeBase = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
       for (const [ingrName, rawValue] of Object.entries(recipe.ingredients)) {
         const { amount, unit } = Parser.parseQuantity(rawValue);
-        const scaled = amount * portions;
+        const scaled = (amount * portions) / recipeBase;
         if (!totals[ingrName]) totals[ingrName] = {};
         totals[ingrName][unit] = (totals[ingrName][unit] || 0) + scaled;
       }

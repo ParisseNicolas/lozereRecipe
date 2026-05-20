@@ -149,10 +149,32 @@ function renderEdit(data) {
   nameRow.appendChild(nameInput);
   root.appendChild(nameRow);
 
+  // --- Recipe base servings (number of people the quantities are written for)
+  const portionsRow = document.createElement('div');
+  portionsRow.className = 'edit-row';
+  const portionsLabel = document.createElement('label');
+  portionsLabel.textContent = 'Recette pour combien de personnes';
+  portionsLabel.htmlFor = 'recipe-portions';
+  const portionsInput = document.createElement('input');
+  portionsInput.type = 'number';
+  portionsInput.id = 'recipe-portions';
+  portionsInput.min = '1';
+  portionsInput.step = '1';
+  portionsInput.value = '1';
+  portionsRow.appendChild(portionsLabel);
+  portionsRow.appendChild(portionsInput);
+  root.appendChild(portionsRow);
+
   // --- Ingredients section
   const h2i = document.createElement('h2');
-  h2i.textContent = 'Ingrédients (pour 1 personne)';
+  h2i.textContent = 'Ingrédients';
   root.appendChild(h2i);
+  const updateIngrTitle = () => {
+    const n = Math.max(1, parseInt(portionsInput.value, 10) || 1);
+    h2i.textContent = `Ingrédients (pour ${n} personne${n > 1 ? 's' : ''})`;
+  };
+  updateIngrTitle();
+  portionsInput.addEventListener('input', updateIngrTitle);
 
   const ingrList = document.createElement('div');
   ingrList.id = 'edit-ingr-list';
@@ -182,6 +204,10 @@ function renderEdit(data) {
   if (nom) {
     const existing = (data.recipes || {})[nom];
     if (existing) {
+      if (Number(existing.portions) > 0) {
+        portionsInput.value = String(Number(existing.portions));
+        updateIngrTitle();
+      }
       for (const [ingr, raw] of Object.entries(existing.ingredients || {})) {
         const { amount, unit } = Parser.parseQuantity(raw);
         ingrList.appendChild(buildIngredientRow(ingr, String(amount), unit, data, customIngredients));
@@ -203,14 +229,14 @@ function renderEdit(data) {
   previewBtn.type = 'button';
   previewBtn.className = 'preview-btn';
   previewBtn.textContent = '👁 Prévisualiser';
-  previewBtn.addEventListener('click', () => onPreview(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
+  previewBtn.addEventListener('click', () => onPreview(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
   actions.appendChild(previewBtn);
 
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'save-btn';
   saveBtn.textContent = 'Enregistrer';
-  saveBtn.addEventListener('click', () => onSave(data, slot, from, nom, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
+  saveBtn.addEventListener('click', () => onSave(data, slot, from, nom, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
   actions.appendChild(saveBtn);
 
   const cancelBtn = document.createElement('button');
@@ -480,9 +506,11 @@ function readIngredientRow(row) {
 }
 
 // Build a recipe object from the current form state. Returns { name, recipe, mergedIngredients } or { error }.
-function buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName = true } = {}) {
+function buildRecipeFromForm(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName = true } = {}) {
   const name = nameInput.value.trim();
   if (requireName && !name) return { error: 'Le nom de la recette est obligatoire.' };
+
+  const portions = Math.max(1, parseInt(portionsInput && portionsInput.value, 10) || 1);
 
   const decoupe = decoupeWrap.readSteps();
   const cuisson = cuissonWrap.readSteps();
@@ -509,15 +537,16 @@ function buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap
     ingredients[r.name] = `${a}${r.unit}`;
   }
   const recipe = { ingredients, steps };
+  if (portions > 1) recipe.portions = portions;
 
   const mergedIngredients = Object.assign({}, data.ingredients || {}, customIngredients);
   return { name, recipe, mergedIngredients };
 }
 
-function onPreview(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+function onPreview(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
   const errEl = document.getElementById('error');
   errEl.hidden = true;
-  const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: false });
+  const built = buildRecipeFromForm(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: false });
   if (built.error) { errEl.hidden = false; errEl.textContent = built.error; return; }
   openPreviewModal(built.name || '(sans nom)', built.recipe, built.mergedIngredients, data.unitScales || {});
 }
@@ -544,7 +573,8 @@ function openPreviewModal(name, recipe, ingredientsSpec, unitScales) {
   inner.id = 'preview-root';
   modal.appendChild(inner);
 
-  renderRecipePreview(inner, name, recipe, 1, ingredientsSpec, unitScales);
+  const previewPortions = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
+  renderRecipePreview(inner, name, recipe, previewPortions, ingredientsSpec, unitScales);
   document.body.appendChild(modal);
 }
 
@@ -557,7 +587,9 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
 
   const subtitle = document.createElement('p');
   subtitle.className = 'recipe-subtitle';
-  subtitle.textContent = `Prévisualisation — ${portions} portion${portions > 1 ? 's' : ''}`;
+  const recipeBase = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
+  const baseSuffix = recipeBase > 1 ? ` (recette de base pour ${recipeBase} personnes)` : '';
+  subtitle.textContent = `Prévisualisation — ${portions} portion${portions > 1 ? 's' : ''}${baseSuffix}`;
   root.appendChild(subtitle);
 
   const h2i = document.createElement('h2');
@@ -568,7 +600,7 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
   ulIngr.className = 'ingredients-list';
   for (const [ingrName, rawValue] of Object.entries(recipe.ingredients || {})) {
     const { amount, unit } = Parser.parseQuantity(rawValue);
-    const scaled = amount * portions;
+    const scaled = (amount * portions) / recipeBase;
     const spec = ingredientsSpec[ingrName] || {};
     const displayParts = Shopping.aggregateIngredient(ingrName, { [unit]: scaled }, ingredientsSpec);
 
@@ -654,6 +686,9 @@ function normalizeStep(s) {
 // and their step sequences (after normalization) match exactly.
 function recipesEqual(r1, r2) {
   if (!r1 || !r2) return false;
+  const base1 = Number(r1.portions) > 0 ? Number(r1.portions) : 1;
+  const base2 = Number(r2.portions) > 0 ? Number(r2.portions) : 1;
+  if (base1 !== base2) return false;
   const i1 = r1.ingredients || {};
   const i2 = r2.ingredients || {};
   const k1 = Object.keys(i1).sort();
@@ -673,10 +708,10 @@ function recipesEqual(r1, r2) {
   return true;
 }
 
-function onSave(data, slot, from, originalNom, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
   const errEl = document.getElementById('error');
   errEl.hidden = true;
-  const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
+  const built = buildRecipeFromForm(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
   if (built.error) { errEl.hidden = false; errEl.textContent = built.error; return; }
 
   const customRecipes = Store.loadCustomRecipes();

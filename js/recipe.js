@@ -35,9 +35,11 @@ function renderRecipe(data) {
   const subtitle = document.createElement('p');
   subtitle.className = 'recipe-subtitle';
   const ctx = [jour, moment].filter(Boolean).join(' ');
+  const recipeBase = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
+  const baseSuffix = recipeBase > 1 ? ` (recette de base pour ${recipeBase} personnes)` : '';
   subtitle.textContent = ctx
-    ? `${ctx} — ${portions} portion${portions > 1 ? 's' : ''}`
-    : `${portions} portion${portions > 1 ? 's' : ''}`;
+    ? `${ctx} — ${portions} portion${portions > 1 ? 's' : ''}${baseSuffix}`
+    : `${portions} portion${portions > 1 ? 's' : ''}${baseSuffix}`;
   root.appendChild(subtitle);
 
   const printBtn = document.createElement('button');
@@ -57,7 +59,7 @@ function renderRecipe(data) {
   ulIngr.className = 'ingredients-list';
   for (const [ingrName, rawValue] of Object.entries(recipe.ingredients || {})) {
     const { amount, unit } = Parser.parseQuantity(rawValue);
-    const scaled = amount * portions;
+    const scaled = (amount * portions) / recipeBase;
 
     // Try to convert into the preferred unit for display.
     const spec = ingredientsSpec[ingrName] || {};

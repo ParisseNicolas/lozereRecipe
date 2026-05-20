@@ -827,7 +827,18 @@ main {
   color: var(--lp-text);
 }
 
-.edit-row input[type="text"]:focus {
+.edit-row input[type="number"] {
+  width: 5rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--lp-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  background: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+.edit-row input[type="text"]:focus,
+.edit-row input[type="number"]:focus {
   outline: none;
   border-color: var(--lp-green);
   box-shadow: 0 0 0 2px var(--lp-green-glow);
@@ -1242,16 +1253,24 @@ main {
     justify-content: center;
   }
   header nav {
-    display: none;
+    display: flex;
     flex-direction: column;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--lp-border);
     border-radius: 6px;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    border-color: transparent;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
   }
   header nav.open {
-    display: flex;
+    max-height: 320px;
+    opacity: 1;
+    padding: 0.5rem;
+    border-color: var(--lp-border);
   }
   header nav a {
     display: block;
