@@ -1315,16 +1315,83 @@ main {
 }
 
 /* === Print === */
+/* Shopping list print layout. These rules are activated by the
+   body.print-courses class added by courses.js *before* window.print().
+   They live OUTSIDE @media print so JS can measure the resulting layout
+   and apply --print-zoom to fit everything onto a single A4 page. */
+body.print-courses {
+  background: white;
+}
+body.print-courses header,
+body.print-courses nav,
+body.print-courses #print-btn,
+body.print-courses #reset-btn,
+body.print-courses #share-btn,
+body.print-courses .courses-actions,
+body.print-courses .intro {
+  display: none !important;
+}
+body.print-courses main {
+  /* JS sets --print-zoom dynamically; default 1 */
+  zoom: var(--print-zoom, 1);
+  padding: 0;
+  max-width: none;
+}
+body.print-courses #courses-root {
+  column-count: 2;
+  column-gap: 8mm;
+  column-fill: balance;
+}
+body.print-courses .category {
+  box-shadow: none;
+  border: 1px solid #ddd;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 0 0 4mm 0;
+  padding: 4px 6px;
+  background: white;
+  color: #000;
+  display: inline-block;
+  width: 100%;
+}
+body.print-courses .category h2 {
+  font-size: 0.95rem;
+  margin: 0 0 2px 0;
+  color: #000;
+  break-after: avoid-page;
+  page-break-after: avoid;
+}
+body.print-courses .shopping-list { margin: 0; padding-left: 1em; }
+body.print-courses .shopping-list li { margin: 0; padding: 1px 0; line-height: 1.2; color: #000; }
+body.print-courses .item-check { transform: scale(0.85); margin-right: 2px; }
+body.print-courses .ingr-qty-equiv { display: none; }
+body.print-courses .portions-summary { font-size: 0.85rem; margin: 0 0 4mm 0; color: #000; }
+body.print-courses .done-wrapper, body.print-courses .done-title { break-before: avoid; page-break-before: avoid; }
+body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
+
 @media print {
-  header, nav, #print-btn, #reset-btn, #share-btn, .courses-actions, .intro {
-    display: none;
+  @page { margin: 10mm; size: A4; }
+  body { background: white; }
+
+  /* Recipe sections: keep title with its content */
+  .recipe-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 4mm;
   }
-  body {
-    background: white;
+  .recipe-block > h2,
+  .recipe-block > h3 {
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
-  .category {
-    box-shadow: none;
-    border: 1px solid #ddd;
+  /* Generic safety: never leave a heading orphaned */
+  h1, h2, h3 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  h1 + *, h2 + *, h3 + * {
+    break-before: avoid;
+    page-break-before: avoid;
   }
 }
 
@@ -1661,6 +1728,7 @@ main {
 
 /* === Print styles === */
 @media print {
+  @page { margin: 10mm; }
   header nav,
   .back-link,
   #menu-actions,
@@ -1689,6 +1757,66 @@ main {
     -webkit-appearance: none;
     margin: 0;
   }
+  /* When printing the menu via the chooser, hide the live menu and show the
+     dedicated print container instead. */
+  body.print-menu-selection #menu-table,
+  body.print-menu-selection .intro,
+  body.print-menu-selection #error,
+  body.print-menu-selection #menu-actions { display: none !important; }
+  body.print-menu-selection #print-menu-output { display: block !important; }
+  .print-day-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 6mm; }
+  .print-day-block > h2 { break-after: avoid-page; page-break-after: avoid; margin: 0 0 2mm; }
+  .print-meal { margin-bottom: 3mm; break-inside: avoid; page-break-inside: avoid; }
+  .print-meal > h3 { margin: 0 0 1mm; break-after: avoid-page; page-break-after: avoid; }
+  .print-recipe { break-inside: auto; }
+  .print-recipe > h2:first-child { margin-top: 2mm; break-after: avoid-page; page-break-after: avoid; }
+}
+
+/* === Menu print chooser modal === */
+#print-menu-output { display: none; }
+.print-menu-modal {
+  width: min(420px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.print-menu-modal h3 { margin: 0; }
+.print-menu-modal .pm-days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--lp-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.print-menu-modal .pm-day-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.print-menu-modal label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.print-menu-modal .pm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.print-menu-modal .pm-toggle-all {
+  background: transparent;
+  border: 1px solid var(--lp-border);
+  color: inherit;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
 }
 
 /* ============================================================

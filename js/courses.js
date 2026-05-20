@@ -156,3 +156,53 @@ function buildItem(category, item, data, isDone) {
 }
 
 window.Courses = { renderCourses };
+
+// --- Single-page print scaling ---
+// Before printing, apply the `print-courses` class so the dedicated print
+// layout (2 columns, hidden chrome) is active. Measure the resulting
+// rendered size against an A4 page and shrink with `zoom` if needed so the
+// shopping list always fits on a single page. Reset on `afterprint`.
+(function () {
+  // A4 portrait at 96dpi minus the 10mm @page margin on all sides.
+  // 297mm - 20mm = 277mm tall, 210mm - 20mm = 190mm wide.
+  const MM_TO_PX = 96 / 25.4;
+  const PAGE_W = 190 * MM_TO_PX;
+  const PAGE_H = 277 * MM_TO_PX;
+
+  function fitToOnePage() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    document.body.classList.add('print-courses');
+    // Reset any previous zoom before measuring so we always start from 1.
+    main.style.setProperty('--print-zoom', '1');
+    // Force reflow so the just-applied class (column-count, etc.) is in effect.
+    void main.offsetHeight;
+    const w = main.scrollWidth;
+    const h = main.scrollHeight;
+    if (w <= 0 || h <= 0) return;
+    const scale = Math.min(1, PAGE_W / w, PAGE_H / h);
+    if (scale < 1) {
+      // Slight safety margin so rounding doesn't push to a 2nd page.
+      main.style.setProperty('--print-zoom', String(scale * 0.97));
+    }
+  }
+
+  function resetScale() {
+    const main = document.querySelector('main');
+    if (main) main.style.removeProperty('--print-zoom');
+    document.body.classList.remove('print-courses');
+  }
+
+  window.addEventListener('beforeprint', fitToOnePage);
+  window.addEventListener('afterprint', resetScale);
+  // Some browsers (Safari) only fire matchMedia change for print.
+  if (window.matchMedia) {
+    const mql = window.matchMedia('print');
+    if (mql && mql.addEventListener) {
+      mql.addEventListener('change', (e) => {
+        if (e.matches) fitToOnePage();
+        else resetScale();
+      });
+    }
+  }
+})();

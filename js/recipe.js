@@ -49,10 +49,27 @@ function renderRecipe(data) {
   printBtn.addEventListener('click', () => window.print());
   root.appendChild(printBtn);
 
-  // Ingredients
+  const fragment = buildRecipeContent(data, nom, portions, { interactive: true });
+  root.appendChild(fragment);
+}
+
+// Build the recipe content (without page header / print button) as a DocumentFragment.
+// `opts.interactive` enables click-to-show-conversions popovers (recipe page only).
+// Used both by the recipe page and by the menu print dialog when including details.
+function buildRecipeContent(data, nom, portions, opts) {
+  opts = opts || {};
+  const interactive = opts.interactive !== false;
+  const frag = document.createDocumentFragment();
+  const recipe = data.recipes && data.recipes[nom];
+  if (!recipe) return frag;
+  const recipeBase = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
+
+  // Ingredients section
+  const ingrSection = document.createElement('section');
+  ingrSection.className = 'recipe-block';
   const h2i = document.createElement('h2');
   h2i.textContent = 'Ingrédients';
-  root.appendChild(h2i);
+  ingrSection.appendChild(h2i);
 
   const ingredientsSpec = data.ingredients || {};
   const ulIngr = document.createElement('ul');
@@ -101,54 +118,70 @@ function renderRecipe(data) {
       }
     }
 
-    li.innerHTML = `<span class="ingr-name">${ingrName}</span><span class="ingr-qtys"><span class="ingr-qty has-popover" title="Voir les conversions">${labelStr}</span>${equivStr ? `<span class="ingr-qty-equiv">≈ ${equivStr}</span>` : ''}</span>`;
-    const qtyEl = li.querySelector('.ingr-qty');
-    qtyEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      Popover.showConversions(ingrName, spec, qtyEl, displayParts, data.unitScales);
-    });
+    li.innerHTML = `<span class="ingr-name">${ingrName}</span><span class="ingr-qtys"><span class="ingr-qty${interactive ? ' has-popover' : ''}"${interactive ? ' title="Voir les conversions"' : ''}>${labelStr}</span>${equivStr ? `<span class="ingr-qty-equiv">≈ ${equivStr}</span>` : ''}</span>`;
+    if (interactive) {
+      const qtyEl = li.querySelector('.ingr-qty');
+      qtyEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        Popover.showConversions(ingrName, spec, qtyEl, displayParts, data.unitScales);
+      });
+    }
     ulIngr.appendChild(li);
   }
-  root.appendChild(ulIngr);
+  ingrSection.appendChild(ulIngr);
+  frag.appendChild(ingrSection);
 
   // Steps
+  const stepsSection = document.createElement('section');
+  stepsSection.className = 'recipe-block';
   const h2s = document.createElement('h2');
   h2s.textContent = 'Préparation';
-  root.appendChild(h2s);
+  stepsSection.appendChild(h2s);
 
   if (!recipe.steps || recipe.steps.length === 0) {
     const p = document.createElement('p');
     p.className = 'no-steps';
     p.textContent = 'Aucune étape de préparation renseignée pour cette recette.';
-    root.appendChild(p);
+    stepsSection.appendChild(p);
+    frag.appendChild(stepsSection);
+    return frag;
+  }
+
+  const markerRe = /^\s*-{2,}\s*cuisson\s*-{2,}\s*$/i;
+  const splitIdx = recipe.steps.findIndex((s) => markerRe.test(String(s)));
+  const renderList = (parent, items) => {
+    const ol = document.createElement('ol');
+    ol.className = 'steps-list';
+    for (const step of items) {
+      const li = document.createElement('li');
+      li.textContent = step;
+      ol.appendChild(li);
+    }
+    parent.appendChild(ol);
+  };
+
+  if (splitIdx === -1) {
+    renderList(stepsSection, recipe.steps);
+    frag.appendChild(stepsSection);
   } else {
-    const markerRe = /^\s*-{2,}\s*cuisson\s*-{2,}\s*$/i;
-    const splitIdx = recipe.steps.findIndex((s) => markerRe.test(String(s)));
-    const renderList = (items) => {
-      const ol = document.createElement('ol');
-      ol.className = 'steps-list';
-      for (const step of items) {
-        const li = document.createElement('li');
-        li.textContent = step;
-        ol.appendChild(li);
-      }
-      root.appendChild(ol);
-    };
-    const renderBlock = (title, items) => {
+    // "Préparation" wrapper holds the h2; sub-blocks "Découpe" / "Cuisson" each
+    // get their own .recipe-block so the sub-title stays with its list on print.
+    frag.appendChild(stepsSection);
+    const renderSubBlock = (title, items) => {
       if (!items || items.length === 0) return;
+      const sub = document.createElement('section');
+      sub.className = 'recipe-block recipe-subblock';
       const h3 = document.createElement('h3');
       h3.textContent = title;
-      root.appendChild(h3);
-      renderList(items);
+      sub.appendChild(h3);
+      renderList(sub, items);
+      frag.appendChild(sub);
     };
-    if (splitIdx === -1) {
-      renderList(recipe.steps);
-    } else {
-      renderBlock('Découpe', recipe.steps.slice(0, splitIdx));
-      renderBlock('Cuisson', recipe.steps.slice(splitIdx + 1));
-    }
+    renderSubBlock('Découpe', recipe.steps.slice(0, splitIdx));
+    renderSubBlock('Cuisson', recipe.steps.slice(splitIdx + 1));
   }
+  return frag;
 }
 
-window.Recipe = { renderRecipe };
+window.Recipe = { renderRecipe, buildRecipeContent };

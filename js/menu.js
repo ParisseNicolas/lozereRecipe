@@ -141,7 +141,10 @@ function renderMenuActions(data) {
   printBtn.type = 'button';
   printBtn.id = 'print-menu-btn';
   printBtn.textContent = '🖨 Imprimer';
-  printBtn.addEventListener('click', () => window.print());
+  printBtn.addEventListener('click', () => {
+    if (window.PrintMenu && PrintMenu.open) PrintMenu.open(data);
+    else window.print();
+  });
   actions.appendChild(printBtn);
 
   const hasOverrides =
