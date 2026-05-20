@@ -3,27 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Liste de courses</title>
+  <title>Recettes</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header>
-    <h1>Liste de courses</h1>
+    <h1>Recettes</h1>
     <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">☰</button>
     <nav id="nav-menu">
       <a href="index.html">Menu</a>
-      <a href="courses.html" class="active">Liste de courses</a>
-      <a href="recettes.html">Recettes</a>
+      <a href="courses.html">Liste de courses</a>
+      <a href="recettes.html" class="active">Recettes</a>
     </nav>
   </header>
 
   <main>
     <p class="intro">
-      Quantités agrégées et groupées par catégorie pour tous les repas de la semaine,
-      calculées à partir du nombre de personnes défini sur la page Menu.
+      Toutes les recettes disponibles. Clique une carte pour voir le détail, ou utilise les boutons pour modifier ou supprimer une recette personnelle.
     </p>
-    <button id="print-btn" onclick="window.print()">Imprimer</button>
-    <div id="courses-root"></div>
+
+    <div id="recipes-actions">
+      <button id="create-recipe-btn" type="button">+ Créer une recette</button>
+    </div>
+
+    <div id="recipes-grid"></div>
+
     <p id="error" class="error" hidden></p>
   </main>
 
@@ -34,12 +38,12 @@
   <script src="js/app.js"></script>
   <script src="js/shopping.js"></script>
   <script src="js/popover.js"></script>
-  <script src="js/courses.js"></script>
+  <script src="js/recipes.js"></script>
   <script src="js/qr.js"></script>
   <script src="js/nav.js"></script>
   <script>
     App.loadData()
-      .then(Courses.renderCourses)
+      .then(Recipes.render)
       .catch((err) => {
         const e = document.getElementById('error');
         e.hidden = false;

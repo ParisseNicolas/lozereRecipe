@@ -6,7 +6,12 @@
 
 function getParams() {
   const p = new URLSearchParams(window.location.search);
-  return { slot: p.get('slot') || '', nom: p.get('nom') || '' };
+  return { slot: p.get('slot') || '', nom: p.get('nom') || '', from: p.get('from') || '' };
+}
+
+function backUrl(from) {
+  if (from === 'recettes') return 'recettes.html';
+  return 'index.html';
 }
 
 const STEP_MARKER = '--- cuisson ---';
@@ -107,9 +112,16 @@ function factorFromPreset(preset, from, to) {
 function renderEdit(data) {
   const root = document.getElementById('edit-root');
   root.innerHTML = '';
-  const { slot, nom } = getParams();
+  const { slot, nom, from } = getParams();
 
   const customIngredients = Store.loadCustomIngredients();
+
+  // Adjust the back-link based on where the user came from.
+  const backLink = document.getElementById('back-link');
+  if (backLink && from === 'recettes') {
+    backLink.textContent = '← Retour aux recettes';
+    backLink.href = backUrl(from);
+  }
 
   // Slot context banner.
   if (slot) {
@@ -196,14 +208,14 @@ function renderEdit(data) {
   saveBtn.type = 'button';
   saveBtn.className = 'save-btn';
   saveBtn.textContent = 'Enregistrer';
-  saveBtn.addEventListener('click', () => onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
+  saveBtn.addEventListener('click', () => onSave(data, slot, from, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
   actions.appendChild(saveBtn);
 
   const cancelBtn = document.createElement('button');
   cancelBtn.type = 'button';
   cancelBtn.className = 'cancel-btn';
   cancelBtn.textContent = 'Annuler';
-  cancelBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
+  cancelBtn.addEventListener('click', () => { window.location.href = backUrl(from); });
   actions.appendChild(cancelBtn);
 
   if (nom) {
@@ -214,7 +226,7 @@ function renderEdit(data) {
     delBtn.addEventListener('click', () => {
       if (!confirm(`Supprimer la recette « ${nom} » ?`)) return;
       Store.deleteCustomRecipe(nom);
-      window.location.href = 'index.html';
+      window.location.href = backUrl(from);
     });
     actions.appendChild(delBtn);
   }
@@ -631,7 +643,7 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
   }
 }
 
-function onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+function onSave(data, slot, from, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
   const errEl = document.getElementById('error');
   errEl.hidden = true;
   const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
@@ -659,7 +671,7 @@ function onSave(data, slot, nameInput, ingrList, decoupeWrap, cuissonWrap, custo
       })
       .catch(() => { window.location.href = `index.html?openPicker=${encodeURIComponent(slot)}`; });
   } else {
-    window.location.href = 'index.html';
+    window.location.href = backUrl(from);
   }
 }
 
