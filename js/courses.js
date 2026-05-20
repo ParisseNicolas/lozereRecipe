@@ -23,7 +23,10 @@ function renderCourses(data) {
     .join(' &middot; ');
   root.appendChild(summary);
 
-  // Reset button
+  // Action buttons (reset + partager)
+  const actions = document.createElement('div');
+  actions.className = 'courses-actions';
+
   const resetBtn = document.createElement('button');
   resetBtn.id = 'reset-btn';
   resetBtn.textContent = 'Réinitialiser la liste';
@@ -31,7 +34,17 @@ function renderCourses(data) {
     Store.clearCheckedItems();
     renderCourses(data);
   });
-  root.appendChild(resetBtn);
+  actions.appendChild(resetBtn);
+
+  if (window.Share) {
+    const shareBtn = document.createElement('button');
+    shareBtn.id = 'share-btn';
+    shareBtn.textContent = '📤 Partager';
+    shareBtn.addEventListener('click', () => Share.shareCoursesList());
+    actions.appendChild(shareBtn);
+  }
+
+  root.appendChild(actions);
 
   const byCategory = Shopping.buildShoppingList(data, portions);
   const categories = Object.keys(byCategory).sort((a, b) => a.localeCompare(b, 'fr'));

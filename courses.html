@@ -35,9 +35,11 @@
   <script src="js/shopping.js"></script>
   <script src="js/popover.js"></script>
   <script src="js/courses.js"></script>
+  <script src="js/share.js"></script>
   <script src="js/qr.js"></script>
   <script src="js/nav.js"></script>
   <script>
+    if (window.Share) Share.applySharedState();
     App.loadData()
       .then(Courses.renderCourses)
       .catch((err) => {
