@@ -128,6 +128,15 @@ function renderMenuActions(data) {
   exportBtn.addEventListener('click', exportYaml);
   actions.appendChild(exportBtn);
 
+  const importBtn = document.createElement('button');
+  importBtn.type = 'button';
+  importBtn.id = 'import-yaml-btn';
+  importBtn.textContent = 'Importer YAML';
+  importBtn.addEventListener('click', () => {
+    if (window.YamlImport && window.YamlImport.open) window.YamlImport.open();
+  });
+  actions.appendChild(importBtn);
+
   const printBtn = document.createElement('button');
   printBtn.type = 'button';
   printBtn.id = 'print-menu-btn';
@@ -138,17 +147,20 @@ function renderMenuActions(data) {
   const hasOverrides =
     Object.keys(Store.loadCustomRecipes()).length > 0 ||
     Object.keys(Store.loadCustomIngredients()).length > 0 ||
-    Object.keys(Store.loadMealOverrides()).length > 0;
+    Object.keys(Store.loadMealOverrides()).length > 0 ||
+    localStorage.getItem('importedYamlData') != null;
   if (hasOverrides) {
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.id = 'reset-overrides-btn';
     resetBtn.textContent = 'Réinitialiser les modifications';
     resetBtn.addEventListener('click', () => {
-      if (!confirm('Effacer toutes les modifications locales (repas, recettes, ingrédients) ?')) return;
+      if (!confirm('Effacer toutes les modifications locales (repas, recettes, ingrédients, YAML importé) ?')) return;
       localStorage.removeItem('customRecipes');
       localStorage.removeItem('customIngredients');
       localStorage.removeItem('mealOverrides');
+      localStorage.removeItem('importedYamlData');
+      localStorage.removeItem('importedYamlText');
       window.location.reload();
     });
     actions.appendChild(resetBtn);

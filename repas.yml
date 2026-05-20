@@ -1,95 +1,109 @@
-# liste des repas et ingrédients pour calcul rapide des quantités avec le script qui va bien
-# WiP !
-# Les étapes (`steps`) sont rédigées pour une grande tablée (>20 personnes) :
-# grandes marmites, grandes poêles/sauteuses, plaques de four (60x40), four en mode chaleur tournante.
-# Table d'ordres de grandeur pour l'affichage : si une quantité dans `unit`
-# est un multiple entier de `factor`, elle est promue vers `upper`.
-# Ex: 1000 g -> 1 kg (1000 % 1000 == 0), 800 g -> 800 g (800 % 1000 != 0).
-# La promotion est itérative : 5000 ml -> 500 cl -> 5 L.
 unitScales:
-  mg: { upper: g, factor: 1000 }
-  g: { upper: kg, factor: 1000 }
-  ml: { upper: cl, factor: 10 }
-  cl: { upper: L, factor: 100 }
-  cc: { upper: cs, factor: 3 }
-
-# Presets de conversion réutilisables pour les nouveaux ingrédients.
-# Appliqués UNIQUEMENT à la création d'un ingrédient depuis le formulaire ;
-# le bloc convert résultant est copié tel quel dans la spec de l'ingrédient.
-# Format : nom_preset: { unite_cible: { unite_source: facteur } }  (1 source = facteur cible)
-# Chaque preset embarque ses unités d'achat « évidentes » avec les facteurs
-# pré-déterminés — l'utilisateur n'a plus qu'à choisir.
-commonConverts:
-  # --- Liquides ---
+  mg:
+    upper: g
+    factor: 1000
+  g:
+    upper: kg
+    factor: 1000
+  ml:
+    upper: cl
+    factor: 10
+  cl:
+    upper: L
+    factor: 100
+  cc:
+    upper: cs
+    factor: 3
+ingredientPresets:
   Liquide:
-    desc: "Eau, sirop, jus, lait, bouillon. Brique standard = 1 L."
+    desc: Eau, sirop, jus, lait, bouillon. Brique standard = 1 L.
     convert:
-      L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005, brique: 1 }
+      L:
+        ml: 0.001
+        cl: 0.01
+        cs: 0.015
+        cc: 0.005
+        brique: 1
   Vin:
-    desc: "Vin / champagne. Bouteille standard = 75 cl."
+    desc: Vin / champagne. Bouteille standard = 75 cl.
     convert:
-      L: { ml: 0.001, cl: 0.01, bouteille: 0.75 }
-
-  # --- Épices en poudre ---
+      L:
+        ml: 0.001
+        cl: 0.01
+        bouteille: 0.75
   Épice légère:
-    desc: "Peu denses : paprika, curry, curcuma, gingembre poudre, cannelle. Tube ~40 g, sachet ~10 g."
+    desc: 'Peu denses : paprika, curry, curcuma, gingembre poudre, cannelle. Tube ~40 g, sachet ~10 g.'
     convert:
-      g: { cc: 2, cs: 6, tube: 40, sachet: 10 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
+        sachet: 10
   Épice dense:
-    desc: "Denses / fines : cumin, piment d'Espelette, poivre moulu, sel fin, muscade. Tube ~40 g."
+    desc: 'Denses / fines : cumin, piment d''Espelette, poivre moulu, sel fin, muscade. Tube ~40 g.'
     convert:
-      g: { cc: 5, cs: 15, tube: 40, sachet: 10 }
+      g:
+        cc: 5
+        cs: 15
+        tube: 40
+        sachet: 10
   Herbe séchée:
-    desc: "Très peu denses : thym, origan, herbes de Provence, laurier moulu. Tube ~25 g."
+    desc: 'Très peu denses : thym, origan, herbes de Provence, laurier moulu. Tube ~25 g.'
     convert:
-      g: { cc: 1, cs: 3, tube: 25, sachet: 10 }
-
-  # --- Pâteux / sirupeux ---
+      g:
+        cc: 1
+        cs: 3
+        tube: 25
+        sachet: 10
   Miel / sirop:
-    desc: "Miel, sirop d'agave, sirop d'érable, confiture liquide. Pot standard 250 g."
+    desc: Miel, sirop d'agave, sirop d'érable, confiture liquide. Pot standard 250 g.
     convert:
-      g: { cc: 8, cs: 20, pot: 250 }
-
-  # --- Herbes fraîches en botte ---
+      g:
+        cc: 8
+        cs: 20
+        pot: 250
   Herbe fraîche (botte):
-    desc: "Bottes denses : menthe, basilic, coriandre. Env. 25 g et 30 feuilles par botte."
+    desc: 'Bottes denses : menthe, basilic, coriandre. Env. 25 g et 30 feuilles par botte.'
     convert:
-      botte: { feuille: 0.0333, g: 0.04 }
+      botte:
+        feuille: 0.0333
+        g: 0.04
   Persil (botte):
-    desc: "Persil plat / frisé. Botte plus grosse : env. 60 g et 40 feuilles."
+    desc: 'Persil plat / frisé. Botte plus grosse : env. 60 g et 40 feuilles.'
     convert:
-      botte: { feuille: 0.025, g: 0.0167 }
-
-  # --- Féculents secs ---
+      botte:
+        feuille: 0.025
+        g: 0.0167
   Féculent sec (paquet):
-    desc: "Riz, pâtes, semoule, boulgour, lentilles, pois cassés. Paquet standard 500 g."
+    desc: Riz, pâtes, semoule, boulgour, lentilles, pois cassés. Paquet standard 500 g.
     convert:
-      g: { paquet: 500 }
-
-  # --- Conserves ---
+      g:
+        paquet: 500
   Conserve (boîte 400 g):
-    desc: "Grande boîte : tomates concassées, petits pois, lait de coco, maïs."
+    desc: 'Grande boîte : tomates concassées, petits pois, lait de coco, maïs.'
     convert:
-      g: { boîte: 400 }
+      g:
+        boîte: 400
   Conserve (boîte 250 g):
-    desc: "Petite boîte : haricots rouges, pois chiches, lentilles cuites."
+    desc: 'Petite boîte : haricots rouges, pois chiches, lentilles cuites.'
     convert:
-      g: { boîte: 250 }
-
-  # --- Légumes / fruits "à la pièce" ---
+      g:
+        boîte: 250
   Petit légume / fruit:
-    desc: "~60 g/pièce : échalote, citron vert, abricot, radis, gousse d'ail."
+    desc: '~60 g/pièce : échalote, citron vert, abricot, radis, gousse d''ail.'
     convert:
-      g: { u: 60 }
+      g:
+        u: 60
   Légume / fruit moyen:
-    desc: "~150 g/pièce : tomate, oignon, poivron, pomme de terre, citron, pomme, orange."
+    desc: '~150 g/pièce : tomate, oignon, poivron, pomme de terre, citron, pomme, orange.'
     convert:
-      g: { u: 150 }
+      g:
+        u: 150
   Gros légume / fruit:
-    desc: "~300 g/pièce : aubergine, courgette, concombre, poireau, fenouil, pamplemousse."
+    desc: '~300 g/pièce : aubergine, courgette, concombre, poireau, fenouil, pamplemousse.'
     convert:
-      g: { u: 300 }
-
+      g:
+        u: 300
 recipes:
   taboulé:
     ingredients:
@@ -101,23 +115,25 @@ recipes:
       échalote: 0.33
       poivron: 0.1
       citron: 0.2
-      #raisin sec: 0.1 paquet
       menthe: 2 feuille
       huile d'olive: 1cs
       avocat: 0.2
     steps:
-      - "Verser la semoule dans un très grand saladier (ou bassine inox), saler."
-      - "Verser de l'eau bouillante à hauteur (1 volume d'eau pour 1 volume de semoule), couvrir, laisser gonfler 5 min puis aérer à la fourchette."
-      - "Laver les tomates et les concombres. Couper les tomates en petits dés (~1 cm). Peler et épépiner les concombres, couper en petits dés."
-      - "Émincer finement les échalotes."
-      - "Épépiner et couper les poivrons en très petits dés."
-      - "Presser les citrons (réserver le jus)."
-      - "Ciseler les feuilles de menthe au couteau."
-      - "Couper les avocats en dés juste avant le service (sinon ils noircissent), arroser d'un peu de jus de citron."
-      - "--- cuisson ---"
-      - "Mélanger semoule + tous les légumes + menthe + huile d'olive + jus de citron dans la bassine. Saler, poivrer."
-      - "Réserver au frais au moins 30 min avant le service. Ajouter les avocats au dernier moment."
-
+      - Verser la semoule dans un très grand saladier (ou bassine inox), saler.
+      - >-
+        Verser de l'eau bouillante à hauteur (1 volume d'eau pour 1 volume de semoule), couvrir, laisser gonfler 5 min
+        puis aérer à la fourchette.
+      - >-
+        Laver les tomates et les concombres. Couper les tomates en petits dés (~1 cm). Peler et épépiner les concombres,
+        couper en petits dés.
+      - Émincer finement les échalotes.
+      - Épépiner et couper les poivrons en très petits dés.
+      - Presser les citrons (réserver le jus).
+      - Ciseler les feuilles de menthe au couteau.
+      - Couper les avocats en dés juste avant le service (sinon ils noircissent), arroser d'un peu de jus de citron.
+      - '--- cuisson ---'
+      - Mélanger semoule + tous les légumes + menthe + huile d'olive + jus de citron dans la bassine. Saler, poivrer.
+      - Réserver au frais au moins 30 min avant le service. Ajouter les avocats au dernier moment.
   piperade poivrons:
     ingredients:
       boulgour: 60g
@@ -131,34 +147,39 @@ recipes:
       huile d'olive: 1cc
       piment d'espelette: 0.5cc
     steps:
-      - "Émincer finement les oignons et l'ail."
-      - "Épépiner les poivrons et les piments doux, couper en lanières (~5 mm)."
-      - "Couper les tomates en quartiers (ou utiliser des tomates concassées en boîte si quantité trop importante)."
-      - "--- cuisson ---"
-      - "Dans une très grande sauteuse / rondeau, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min à feu moyen."
-      - "Ajouter poivrons + piments doux. Saler. Cuire 15-20 min à feu moyen en remuant régulièrement (les poivrons doivent fondre)."
-      - "Ajouter tomates + herbes de Provence + sucre + piment d'Espelette. Laisser mijoter 20-25 min à feu doux jusqu'à obtention d'une compotée."
-      - "Rectifier l'assaisonnement."
-      - "En parallèle, faire cuire le boulgour dans une grande marmite : 1,5 volume d'eau bouillante salée pour 1 volume de boulgour, couvert, 12 min à feu doux puis laisser gonfler 5 min hors du feu."
-      - "Servir la piperade sur un lit de boulgour."
-
+      - Émincer finement les oignons et l'ail.
+      - Épépiner les poivrons et les piments doux, couper en lanières (~5 mm).
+      - Couper les tomates en quartiers (ou utiliser des tomates concassées en boîte si quantité trop importante).
+      - '--- cuisson ---'
+      - >-
+        Dans une très grande sauteuse / rondeau, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min à feu
+        moyen.
+      - >-
+        Ajouter poivrons + piments doux. Saler. Cuire 15-20 min à feu moyen en remuant régulièrement (les poivrons
+        doivent fondre).
+      - >-
+        Ajouter tomates + herbes de Provence + sucre + piment d'Espelette. Laisser mijoter 20-25 min à feu doux jusqu'à
+        obtention d'une compotée.
+      - Rectifier l'assaisonnement.
+      - >-
+        En parallèle, faire cuire le boulgour dans une grande marmite : 1,5 volume d'eau bouillante salée pour 1 volume
+        de boulgour, couvert, 12 min à feu doux puis laisser gonfler 5 min hors du feu.
+      - Servir la piperade sur un lit de boulgour.
   chèvres chauds:
-    # 2 chèvres par personne, plutôt une entrée quoi
     ingredients:
       chèvre coulant: 1
       pain: 80g
       herbes de provence: 0.5cc
       huile d'olive: 1cc
     steps:
-      - "Préchauffer le four à 200°C (chaleur tournante)."
-      - "Couper le pain en tranches d'environ 1,5 cm d'épaisseur."
-      - "Disposer les tranches de pain sur des plaques recouvertes de papier cuisson."
-      - "Couper chaque chèvre en deux (ou en rondelles si gros format) et déposer sur chaque tranche de pain."
-      - "Saupoudrer d'herbes de Provence, verser un filet d'huile d'olive sur chaque toast."
-      - "--- cuisson ---"
-      - "Enfourner 8 à 10 min jusqu'à ce que le fromage soit fondant et légèrement doré."
-      - "Servir immédiatement, idéalement sur une salade verte."
-
+      - Préchauffer le four à 200°C (chaleur tournante).
+      - Couper le pain en tranches d'environ 1,5 cm d'épaisseur.
+      - Disposer les tranches de pain sur des plaques recouvertes de papier cuisson.
+      - Couper chaque chèvre en deux (ou en rondelles si gros format) et déposer sur chaque tranche de pain.
+      - Saupoudrer d'herbes de Provence, verser un filet d'huile d'olive sur chaque toast.
+      - '--- cuisson ---'
+      - Enfourner 8 à 10 min jusqu'à ce que le fromage soit fondant et légèrement doré.
+      - Servir immédiatement, idéalement sur une salade verte.
   salade de tomates:
     ingredients:
       tomate: 200g
@@ -166,15 +187,15 @@ recipes:
       vinaigre balsamique: 1.5cc
       moutarde: 1cc
     steps:
-      - "Laver les tomates. Couper en rondelles d'environ 5 mm ou en quartiers pour les grosses."
-      - "Préparer la vinaigrette dans un grand bol : moutarde + vinaigre balsamique + sel + poivre. Émulsionner avec l'huile d'olive (fouet)."
-      - "Disposer les tomates dans de grands plats de service."
-      - "--- cuisson ---"
-      - "Arroser de vinaigrette juste avant le service (sinon les tomates rendent de l'eau)."
-
+      - Laver les tomates. Couper en rondelles d'environ 5 mm ou en quartiers pour les grosses.
+      - >-
+        Préparer la vinaigrette dans un grand bol : moutarde + vinaigre balsamique + sel + poivre. Émulsionner avec
+        l'huile d'olive (fouet).
+      - Disposer les tomates dans de grands plats de service.
+      - '--- cuisson ---'
+      - Arroser de vinaigrette juste avant le service (sinon les tomates rendent de l'eau).
   ratatouille:
     ingredients:
-      #riz: 60g # XXX ou semoule???
       ebly: 60g
       tomate: 125g
       aubergine: 90g
@@ -185,19 +206,24 @@ recipes:
       laurier: 0.5 feuille
       thym: 1 petit peu
     steps:
-      - "Émincer les oignons. Hacher l'ail."
-      - "Laver les courgettes et aubergines. Couper en cubes d'environ 2 cm (garder les peaux)."
-      - "Couper les tomates en gros dés (ou utiliser des tomates concassées en boîte pour gagner du temps)."
-      - "--- cuisson ---"
-      - "Dans une très grande marmite ou rondeau, faire chauffer la moitié de l'huile d'olive et faire revenir les aubergines 10 min à feu vif jusqu'à coloration. Réserver."
-      - "Dans la même marmite, ajouter le reste d'huile et faire revenir les courgettes 8 min. Réserver avec les aubergines."
-      - "Ajouter encore un filet d'huile, faire suer les oignons + ail 5 min."
-      - "Ajouter tomates + laurier + thym. Saler, poivrer. Laisser réduire 15 min à feu moyen."
-      - "Remettre tous les légumes dans la marmite. Couvrir et laisser mijoter 30 min à feu doux en remuant de temps en temps."
-      - "Rectifier l'assaisonnement, retirer laurier."
-      - "En parallèle, cuire l'ebly dans une grande casserole d'eau bouillante salée pendant 10 min, égoutter."
-      - "Servir la ratatouille sur un lit d'ebly."
-
+      - Émincer les oignons. Hacher l'ail.
+      - Laver les courgettes et aubergines. Couper en cubes d'environ 2 cm (garder les peaux).
+      - Couper les tomates en gros dés (ou utiliser des tomates concassées en boîte pour gagner du temps).
+      - '--- cuisson ---'
+      - >-
+        Dans une très grande marmite ou rondeau, faire chauffer la moitié de l'huile d'olive et faire revenir les
+        aubergines 10 min à feu vif jusqu'à coloration. Réserver.
+      - >-
+        Dans la même marmite, ajouter le reste d'huile et faire revenir les courgettes 8 min. Réserver avec les
+        aubergines.
+      - Ajouter encore un filet d'huile, faire suer les oignons + ail 5 min.
+      - Ajouter tomates + laurier + thym. Saler, poivrer. Laisser réduire 15 min à feu moyen.
+      - >-
+        Remettre tous les légumes dans la marmite. Couvrir et laisser mijoter 30 min à feu doux en remuant de temps en
+        temps.
+      - Rectifier l'assaisonnement, retirer laurier.
+      - En parallèle, cuire l'ebly dans une grande casserole d'eau bouillante salée pendant 10 min, égoutter.
+      - Servir la ratatouille sur un lit d'ebly.
   salade de pommes de terres:
     ingredients:
       pomme de terre: 200g
@@ -209,23 +235,26 @@ recipes:
       olive noire: 0.05 pot
       feta: 0.1 paquet
     steps:
-      - "Laver les pommes de terre. Les faire cuire en robe des champs dans une très grande marmite d'eau salée 20-25 min (pointe de couteau)."
-      - "Pendant ce temps, faire cuire les œufs durs : 10 min dans l'eau bouillante. Refroidir dans l'eau froide, écaler."
-      - "Égoutter les pommes de terre, laisser tiédir, peler et couper en cubes de 2 cm."
-      - "Émincer finement oignons et échalotes."
-      - "Couper les tomates en dés, les cornichons en rondelles."
-      - "Couper les œufs durs en quartiers."
-      - "Émietter la feta."
-      - "--- cuisson ---"
-      - "Dans une très grande bassine, mélanger pommes de terre + oignons + échalotes + tomates + cornichons + olives + feta."
-      - "Préparer une vinaigrette (huile + moutarde + vinaigre + sel + poivre) et arroser. Mélanger délicatement."
-      - "Disposer les œufs sur le dessus avant le service."
-
+      - >-
+        Laver les pommes de terre. Les faire cuire en robe des champs dans une très grande marmite d'eau salée 20-25 min
+        (pointe de couteau).
+      - 'Pendant ce temps, faire cuire les œufs durs : 10 min dans l''eau bouillante. Refroidir dans l''eau froide, écaler.'
+      - Égoutter les pommes de terre, laisser tiédir, peler et couper en cubes de 2 cm.
+      - Émincer finement oignons et échalotes.
+      - Couper les tomates en dés, les cornichons en rondelles.
+      - Couper les œufs durs en quartiers.
+      - Émietter la feta.
+      - '--- cuisson ---'
+      - >-
+        Dans une très grande bassine, mélanger pommes de terre + oignons + échalotes + tomates + cornichons + olives +
+        feta.
+      - Préparer une vinaigrette (huile + moutarde + vinaigre + sel + poivre) et arroser. Mélanger délicatement.
+      - Disposer les œufs sur le dessus avant le service.
   chili végé:
     ingredients:
       riz: 60g
       haricot rouge sec: 50g
-      tomate: 125g #ou grosse boîte tomate pelée: 0.25u (Nanou)
+      tomate: 125g
       mais en boîte: 30g
       oignon: 50g
       lentilles: 20g
@@ -237,70 +266,73 @@ recipes:
       chocolat: 0.33 carré
       origan: 1cc
     steps:
-      - "La veille : faire tremper les haricots rouges dans un grand volume d'eau froide pendant 12h."
-      - "Le jour J : égoutter et rincer les haricots. Les faire cuire dans une grande marmite d'eau non salée 1h à 1h30 jusqu'à ce qu'ils soient tendres. Égoutter."
-      - "Émincer les oignons, hacher l'ail."
-      - "Épépiner et couper les poivrons en petits dés."
-      - "Couper les tomates en dés (ou utiliser de la tomate concassée en boîte)."
-      - "--- cuisson ---"
-      - "Dans une très grande marmite, faire revenir oignons + ail dans un peu d'huile 5 min."
-      - "Ajouter poivrons, cuire 5 min."
-      - "Ajouter cumin + paprika + piment + origan, remuer 1 min."
-      - "Ajouter tomates + haricots cuits + lentilles + maïs égoutté. Couvrir d'eau ou de bouillon."
-      - "Saler. Laisser mijoter 40 min à feu doux."
-      - "Râper / casser le chocolat noir et l'incorporer en fin de cuisson (apporte profondeur)."
-      - "En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert)."
-      - "Servir le chili sur le riz."
-
+      - 'La veille : faire tremper les haricots rouges dans un grand volume d''eau froide pendant 12h.'
+      - >-
+        Le jour J : égoutter et rincer les haricots. Les faire cuire dans une grande marmite d'eau non salée 1h à 1h30
+        jusqu'à ce qu'ils soient tendres. Égoutter.
+      - Émincer les oignons, hacher l'ail.
+      - Épépiner et couper les poivrons en petits dés.
+      - Couper les tomates en dés (ou utiliser de la tomate concassée en boîte).
+      - '--- cuisson ---'
+      - Dans une très grande marmite, faire revenir oignons + ail dans un peu d'huile 5 min.
+      - Ajouter poivrons, cuire 5 min.
+      - Ajouter cumin + paprika + piment + origan, remuer 1 min.
+      - Ajouter tomates + haricots cuits + lentilles + maïs égoutté. Couvrir d'eau ou de bouillon.
+      - Saler. Laisser mijoter 40 min à feu doux.
+      - Râper / casser le chocolat noir et l'incorporer en fin de cuisson (apporte profondeur).
+      - En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert).
+      - Servir le chili sur le riz.
   entrée melon:
     ingredients:
       melon: 0.2
     steps:
-      - "Choisir des melons mûrs (parfumés au pédoncule)."
-      - "Couper chaque melon en deux, retirer les pépins à la cuillère."
-      - "Couper chaque moitié en quartiers (4 à 6 par moitié selon la taille)."
-      - "Disposer sur des plats de service. Servir frais."
-
+      - Choisir des melons mûrs (parfumés au pédoncule).
+      - Couper chaque melon en deux, retirer les pépins à la cuillère.
+      - Couper chaque moitié en quartiers (4 à 6 par moitié selon la taille).
+      - Disposer sur des plats de service. Servir frais.
   salade:
     ingredients:
       salade: 0.2
     steps:
-      - "Laver soigneusement les feuilles de salade (plusieurs bains d'eau froide), essorer."
-      - "Préparer une vinaigrette dans un grand bol (huile + vinaigre + moutarde + sel + poivre)."
-      - "--- cuisson ---"
-      - "Mettre la salade dans une très grande bassine. Assaisonner juste avant le service pour éviter qu'elle ne ramollisse."
-
+      - Laver soigneusement les feuilles de salade (plusieurs bains d'eau froide), essorer.
+      - Préparer une vinaigrette dans un grand bol (huile + vinaigre + moutarde + sel + poivre).
+      - '--- cuisson ---'
+      - >-
+        Mettre la salade dans une très grande bassine. Assaisonner juste avant le service pour éviter qu'elle ne
+        ramollisse.
   purée patate carotte:
     ingredients:
       pomme de terre: 200g
       carotte: 150g
       lait: 10cl
     steps:
-      - "Éplucher les pommes de terre et les carottes."
-      - "Couper les pommes de terre en gros cubes, les carottes en rondelles épaisses."
-      - "--- cuisson ---"
-      - "Cuire dans une très grande marmite d'eau salée 20-25 min (pointe de couteau enfoncée sans résistance)."
-      - "Égoutter."
-      - "Faire chauffer le lait dans une casserole."
-      - "Passer pommes de terre + carottes au presse-purée (ou écraser au pilon dans la marmite)."
-      - "Incorporer progressivement le lait chaud jusqu'à consistance souhaitée. Saler, poivrer, ajouter une noix de beurre si disponible."
-
+      - Éplucher les pommes de terre et les carottes.
+      - Couper les pommes de terre en gros cubes, les carottes en rondelles épaisses.
+      - '--- cuisson ---'
+      - Cuire dans une très grande marmite d'eau salée 20-25 min (pointe de couteau enfoncée sans résistance).
+      - Égoutter.
+      - Faire chauffer le lait dans une casserole.
+      - Passer pommes de terre + carottes au presse-purée (ou écraser au pilon dans la marmite).
+      - >-
+        Incorporer progressivement le lait chaud jusqu'à consistance souhaitée. Saler, poivrer, ajouter une noix de
+        beurre si disponible.
   camembert au four:
     ingredients:
       camembert: 0.333
       pain: 50g
       miel: 1cc
     steps:
-      - "Préchauffer le four à 180°C (chaleur tournante)."
-      - "Retirer l'emballage plastique des camemberts mais conserver la boîte en bois (filmer si pas de boîte avec une feuille de papier alu)."
-      - "Inciser le dessus en croix avec un couteau."
-      - "Arroser d'une cuillère de miel sur le dessus de chaque camembert."
-      - "Disposer les camemberts dans leur boîte sur une plaque de four."
-      - "--- cuisson ---"
-      - "Enfourner 15-20 min jusqu'à ce que l'intérieur soit coulant."
-      - "Pendant ce temps, couper le pain en mouillettes / petits morceaux."
-      - "Servir immédiatement à la sortie du four avec le pain pour tremper."
-
+      - Préchauffer le four à 180°C (chaleur tournante).
+      - >-
+        Retirer l'emballage plastique des camemberts mais conserver la boîte en bois (filmer si pas de boîte avec une
+        feuille de papier alu).
+      - Inciser le dessus en croix avec un couteau.
+      - Arroser d'une cuillère de miel sur le dessus de chaque camembert.
+      - Disposer les camemberts dans leur boîte sur une plaque de four.
+      - '--- cuisson ---'
+      - Enfourner 15-20 min jusqu'à ce que l'intérieur soit coulant.
+      - Pendant ce temps, couper le pain en mouillettes / petits morceaux.
+      - Servir immédiatement à la sortie du four avec le pain pour tremper.
   chorba:
     ingredients:
       pois chiches: 50g
@@ -317,22 +349,20 @@ recipes:
       courgette: 0.25
       pomme de terre: 0.33
     steps:
-      - "La veille : faire tremper les pois chiches dans un grand volume d'eau froide pendant 12h."
-      - "Le jour J : émincer oignons et ail. Couper courgettes et pommes de terre en petits dés (~1 cm)."
-      - "--- cuisson ---"
-      - "Dans une très grande marmite, faire revenir oignons + ail dans un filet d'huile 5 min."
-      - "Ajouter cumin + paprika + harissa + herbes de Provence, remuer 1 min."
-      - "Ajouter tomates concassées, cuire 5 min."
-      - "Ajouter pois chiches égouttés + lentilles + pois cassés + courgettes + pommes de terre."
-      - "Couvrir largement d'eau (ou de bouillon de légumes). Saler."
-      - "Porter à ébullition puis baisser le feu. Laisser mijoter 1h jusqu'à ce que les légumineuses soient tendres."
-      - "Ajouter les vermicelles 10 min avant la fin (ils cuisent dans le bouillon)."
-      - "Rectifier l'assaisonnement (sel, harissa). Servir bien chaud."
-
+      - 'La veille : faire tremper les pois chiches dans un grand volume d''eau froide pendant 12h.'
+      - 'Le jour J : émincer oignons et ail. Couper courgettes et pommes de terre en petits dés (~1 cm).'
+      - '--- cuisson ---'
+      - Dans une très grande marmite, faire revenir oignons + ail dans un filet d'huile 5 min.
+      - Ajouter cumin + paprika + harissa + herbes de Provence, remuer 1 min.
+      - Ajouter tomates concassées, cuire 5 min.
+      - Ajouter pois chiches égouttés + lentilles + pois cassés + courgettes + pommes de terre.
+      - Couvrir largement d'eau (ou de bouillon de légumes). Saler.
+      - Porter à ébullition puis baisser le feu. Laisser mijoter 1h jusqu'à ce que les légumineuses soient tendres.
+      - Ajouter les vermicelles 10 min avant la fin (ils cuisent dans le bouillon).
+      - Rectifier l'assaisonnement (sel, harissa). Servir bien chaud.
   aubergine curry:
     ingredients:
       ebly: 60g
-      # ou riz: 50g ?
       aubergine: 0.5
       lait de coco: 50ml
       concassé tomates: 100g
@@ -342,18 +372,21 @@ recipes:
       gingembre poudre: 0.4cc
       huile d'olive: 1cc
     steps:
-      - "La veille : faire tremper les pois chiches secs 12h (si secs). Sinon utiliser des pois chiches en conserve, à égoutter et rincer."
-      - "Si pois chiches secs : les cuire 1h dans l'eau non salée. Égoutter."
-      - "Émincer les oignons. Laver les aubergines et couper en cubes de 2 cm."
-      - "--- cuisson ---"
-      - "Dans une très grande sauteuse, faire chauffer l'huile et faire dorer les cubes d'aubergine 10 min à feu vif. Réserver."
-      - "Dans la même sauteuse, faire suer les oignons 5 min."
-      - "Ajouter curry + gingembre, remuer 1 min pour révéler les arômes."
-      - "Ajouter tomates concassées + lait de coco + aubergines + pois chiches. Saler."
-      - "Laisser mijoter 25-30 min à feu doux, couvert, en remuant de temps en temps."
-      - "En parallèle, cuire l'ebly dans une grande marmite d'eau bouillante salée pendant 10 min, égoutter."
-      - "Servir le curry sur le lit d'ebly."
-
+      - >-
+        La veille : faire tremper les pois chiches secs 12h (si secs). Sinon utiliser des pois chiches en conserve, à
+        égoutter et rincer.
+      - 'Si pois chiches secs : les cuire 1h dans l''eau non salée. Égoutter.'
+      - Émincer les oignons. Laver les aubergines et couper en cubes de 2 cm.
+      - '--- cuisson ---'
+      - >-
+        Dans une très grande sauteuse, faire chauffer l'huile et faire dorer les cubes d'aubergine 10 min à feu vif.
+        Réserver.
+      - Dans la même sauteuse, faire suer les oignons 5 min.
+      - Ajouter curry + gingembre, remuer 1 min pour révéler les arômes.
+      - Ajouter tomates concassées + lait de coco + aubergines + pois chiches. Saler.
+      - Laisser mijoter 25-30 min à feu doux, couvert, en remuant de temps en temps.
+      - En parallèle, cuire l'ebly dans une grande marmite d'eau bouillante salée pendant 10 min, égoutter.
+      - Servir le curry sur le lit d'ebly.
   malak panner:
     ingredients:
       riz: 60g
@@ -367,17 +400,20 @@ recipes:
       paprika: 0.5cc
       kiri: 1
     steps:
-      - "Émincer finement oignons et ail."
-      - "Égoutter les petits pois."
-      - "Mixer les noix de cajou avec le lait pour obtenir une crème lisse (sinon, à défaut, hacher très finement les noix)."
-      - "--- cuisson ---"
-      - "Dans une grande sauteuse, faire revenir oignons + ail dans un peu d'huile 5 min."
-      - "Ajouter curcuma + gingembre + paprika, remuer 1 min."
-      - "Ajouter les petits pois + la crème de cajou. Saler. Cuire 10 min à feu doux."
-      - "Couper les Kiri en cubes et les ajouter en fin de cuisson, mélanger pour faire fondre (effet panner)."
-      - "En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert + 5 min repos)."
-      - "Servir le malak panner sur le riz."
-
+      - Émincer finement oignons et ail.
+      - Égoutter les petits pois.
+      - >-
+        Mixer les noix de cajou avec le lait pour obtenir une crème lisse (sinon, à défaut, hacher très finement les
+        noix).
+      - '--- cuisson ---'
+      - Dans une grande sauteuse, faire revenir oignons + ail dans un peu d'huile 5 min.
+      - Ajouter curcuma + gingembre + paprika, remuer 1 min.
+      - Ajouter les petits pois + la crème de cajou. Saler. Cuire 10 min à feu doux.
+      - Couper les Kiri en cubes et les ajouter en fin de cuisson, mélanger pour faire fondre (effet panner).
+      - >-
+        En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert + 5 min
+        repos).
+      - Servir le malak panner sur le riz.
   salade de pates:
     ingredients:
       pates tortillis: 100g
@@ -393,19 +429,22 @@ recipes:
       zataar: 1cc
       herbes de provence: 0.5cc
     steps:
-      - "Cuire les pâtes torsades dans une très grande marmite d'eau bouillante salée selon le temps indiqué sur le paquet (~10 min). Égoutter, rincer à l'eau froide pour stopper la cuisson, réserver."
-      - "Émincer finement les échalotes et l'ail."
-      - "Épépiner et couper les poivrons en petits dés."
-      - "Laver les courgettes, couper en petits dés (~1 cm)."
-      - "Couper les tomates en dés."
-      - "Émietter la feta."
-      - "Ciseler le basilic."
-      - "--- cuisson ---"
-      - "Faire revenir rapidement les dés de courgette dans un peu d'huile d'olive 5 min (al dente), laisser refroidir."
-      - "Préparer la vinaigrette dans un grand bol : moutarde + huile d'olive + zataar + herbes de Provence + ail haché + sel + poivre."
-      - "Dans une très grande bassine, mélanger pâtes + tous les légumes + feta + basilic + vinaigrette."
-      - "Réserver au frais au moins 30 min avant le service."
-
+      - >-
+        Cuire les pâtes torsades dans une très grande marmite d'eau bouillante salée selon le temps indiqué sur le
+        paquet (~10 min). Égoutter, rincer à l'eau froide pour stopper la cuisson, réserver.
+      - Émincer finement les échalotes et l'ail.
+      - Épépiner et couper les poivrons en petits dés.
+      - Laver les courgettes, couper en petits dés (~1 cm).
+      - Couper les tomates en dés.
+      - Émietter la feta.
+      - Ciseler le basilic.
+      - '--- cuisson ---'
+      - Faire revenir rapidement les dés de courgette dans un peu d'huile d'olive 5 min (al dente), laisser refroidir.
+      - >-
+        Préparer la vinaigrette dans un grand bol : moutarde + huile d'olive + zataar + herbes de Provence + ail haché +
+        sel + poivre.
+      - Dans une très grande bassine, mélanger pâtes + tous les légumes + feta + basilic + vinaigrette.
+      - Réserver au frais au moins 30 min avant le service.
   pates champignon roquefort:
     ingredients:
       spaghettis: 120g
@@ -417,18 +456,23 @@ recipes:
       huile d'olive: 1.5cc
       ail: 0.25 gousse
     steps:
-      - "Émincer les oignons et l'ail."
-      - "Nettoyer les champignons à l'aide d'un torchon humide (ne pas les laver à grande eau). Couper en lamelles."
-      - "Émietter le roquefort."
-      - "Ciseler le persil."
-      - "--- cuisson ---"
-      - "Dans une très grande sauteuse, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min."
-      - "Ajouter les champignons, cuire 10 min à feu vif jusqu'à évaporation de l'eau."
-      - "Baisser le feu, ajouter la crème fraîche + roquefort émietté. Remuer jusqu'à ce que le roquefort fonde. Poivrer (peu de sel, le roquefort sale)."
-      - "En parallèle, cuire les spaghettis dans une très grande marmite d'eau bouillante salée selon le temps du paquet (al dente)."
-      - "Égoutter (garder un peu d'eau de cuisson) et mélanger directement avec la sauce. Ajouter un peu d'eau de cuisson si trop épais."
-      - "Parsemer de persil au service."
-
+      - Émincer les oignons et l'ail.
+      - Nettoyer les champignons à l'aide d'un torchon humide (ne pas les laver à grande eau). Couper en lamelles.
+      - Émietter le roquefort.
+      - Ciseler le persil.
+      - '--- cuisson ---'
+      - Dans une très grande sauteuse, faire chauffer l'huile d'olive et faire suer oignons + ail 5 min.
+      - Ajouter les champignons, cuire 10 min à feu vif jusqu'à évaporation de l'eau.
+      - >-
+        Baisser le feu, ajouter la crème fraîche + roquefort émietté. Remuer jusqu'à ce que le roquefort fonde. Poivrer
+        (peu de sel, le roquefort sale).
+      - >-
+        En parallèle, cuire les spaghettis dans une très grande marmite d'eau bouillante salée selon le temps du paquet
+        (al dente).
+      - >-
+        Égoutter (garder un peu d'eau de cuisson) et mélanger directement avec la sauce. Ajouter un peu d'eau de cuisson
+        si trop épais.
+      - Parsemer de persil au service.
   velouté de courgette:
     ingredients:
       courgette: 150g
@@ -441,19 +485,18 @@ recipes:
       yaourt nature: 0.25
       bouillon cube légume: 0.15
     steps:
-      - "Émincer les oignons et l'ail."
-      - "Laver les courgettes (ne pas peler), couper en rondelles."
-      - "Éplucher les pommes de terre, couper en cubes."
-      - "--- cuisson ---"
-      - "Dans une très grande marmite, faire suer oignons + ail dans l'huile d'olive 5 min."
-      - "Ajouter courgettes + pommes de terre + herbes de Provence. Couvrir d'eau bouillante."
-      - "Émietter les cubes de bouillon dans la marmite. Saler légèrement (le bouillon est déjà salé)."
-      - "Laisser cuire 25 min à feu moyen jusqu'à ce que les pommes de terre soient tendres."
-      - "Mixer au mixeur plongeant directement dans la marmite jusqu'à obtention d'un velouté lisse."
-      - "Ajouter le yaourt nature hors du feu, mélanger."
-      - "Rectifier l'assaisonnement, ajouter un peu d'eau si trop épais."
-      - "Parsemer de persil ciselé au service."
-
+      - Émincer les oignons et l'ail.
+      - Laver les courgettes (ne pas peler), couper en rondelles.
+      - Éplucher les pommes de terre, couper en cubes.
+      - '--- cuisson ---'
+      - Dans une très grande marmite, faire suer oignons + ail dans l'huile d'olive 5 min.
+      - Ajouter courgettes + pommes de terre + herbes de Provence. Couvrir d'eau bouillante.
+      - Émietter les cubes de bouillon dans la marmite. Saler légèrement (le bouillon est déjà salé).
+      - Laisser cuire 25 min à feu moyen jusqu'à ce que les pommes de terre soient tendres.
+      - Mixer au mixeur plongeant directement dans la marmite jusqu'à obtention d'un velouté lisse.
+      - Ajouter le yaourt nature hors du feu, mélanger.
+      - Rectifier l'assaisonnement, ajouter un peu d'eau si trop épais.
+      - Parsemer de persil ciselé au service.
   omelette:
     ingredients:
       oeuf: 1.5
@@ -461,14 +504,17 @@ recipes:
       oignon: 0.25
       parmesan: 10g
     steps:
-      - "Casser tous les œufs dans une très grande bassine. Saler, poivrer, battre énergiquement au fouet."
-      - "Émincer les oignons. Épépiner et couper les poivrons en petits dés."
-      - "Râper le parmesan."
-      - "--- cuisson ---"
-      - "Dans une grande sauteuse, faire revenir les oignons + poivrons dans un filet d'huile 8 min jusqu'à ce qu'ils soient tendres. Laisser tiédir."
-      - "Pour grand nombre : préchauffer le four à 180°C. Verser les œufs battus + légumes + parmesan dans un grand plat à gratin huilé. Cuire au four 20-25 min jusqu'à ce que l'omelette soit prise mais encore moelleuse."
-      - "Couper en parts carrées pour servir."
-
+      - Casser tous les œufs dans une très grande bassine. Saler, poivrer, battre énergiquement au fouet.
+      - Émincer les oignons. Épépiner et couper les poivrons en petits dés.
+      - Râper le parmesan.
+      - '--- cuisson ---'
+      - >-
+        Dans une grande sauteuse, faire revenir les oignons + poivrons dans un filet d'huile 8 min jusqu'à ce qu'ils
+        soient tendres. Laisser tiédir.
+      - >-
+        Pour grand nombre : préchauffer le four à 180°C. Verser les œufs battus + légumes + parmesan dans un grand plat
+        à gratin huilé. Cuire au four 20-25 min jusqu'à ce que l'omelette soit prise mais encore moelleuse.
+      - Couper en parts carrées pour servir.
   couscous:
     ingredients:
       semoule: 60g
@@ -481,20 +527,21 @@ recipes:
       épices à couscous: 0.5cc
       harissa: 0.05 tube
     steps:
-      - "La veille : faire tremper les pois chiches 12h dans un grand volume d'eau (si secs)."
-      - "Le jour J : cuire les pois chiches 1h dans l'eau non salée. Égoutter."
-      - "Émincer les oignons. Couper les tomates en quartiers."
-      - "Éplucher les carottes, couper en gros tronçons."
-      - "Laver les courgettes, couper en gros tronçons."
-      - "--- cuisson ---"
-      - "Dans une très grande marmite (couscoussier si possible), faire revenir les oignons dans l'huile d'olive 5 min."
-      - "Ajouter les épices à couscous, remuer 1 min."
-      - "Ajouter tomates + carottes + pois chiches. Couvrir d'eau. Saler."
-      - "Cuire 30 min à feu moyen."
-      - "Ajouter les courgettes, cuire encore 15 min (elles doivent rester un peu fermes)."
-      - "Pendant ce temps, préparer la semoule : verser dans une très grande bassine, ajouter un filet d'huile, saler. Verser l'eau bouillante à hauteur, couvrir 5 min, aérer à la fourchette."
-      - "Servir la semoule, les légumes + bouillon par-dessus. Harissa à part."
-
+      - 'La veille : faire tremper les pois chiches 12h dans un grand volume d''eau (si secs).'
+      - 'Le jour J : cuire les pois chiches 1h dans l''eau non salée. Égoutter.'
+      - Émincer les oignons. Couper les tomates en quartiers.
+      - Éplucher les carottes, couper en gros tronçons.
+      - Laver les courgettes, couper en gros tronçons.
+      - '--- cuisson ---'
+      - Dans une très grande marmite (couscoussier si possible), faire revenir les oignons dans l'huile d'olive 5 min.
+      - Ajouter les épices à couscous, remuer 1 min.
+      - Ajouter tomates + carottes + pois chiches. Couvrir d'eau. Saler.
+      - Cuire 30 min à feu moyen.
+      - Ajouter les courgettes, cuire encore 15 min (elles doivent rester un peu fermes).
+      - >-
+        Pendant ce temps, préparer la semoule : verser dans une très grande bassine, ajouter un filet d'huile, saler.
+        Verser l'eau bouillante à hauteur, couvrir 5 min, aérer à la fourchette.
+      - Servir la semoule, les légumes + bouillon par-dessus. Harissa à part.
   pates à l'oignon:
     ingredients:
       pates: 150g
@@ -505,33 +552,38 @@ recipes:
       laurier: 0.15 feuille
       bouillon cube légume: 0.25
     steps:
-      - "Éplucher et émincer les oignons très finement (mandoline si disponible)."
-      - "--- cuisson ---"
-      - "Dans une très grande sauteuse, faire fondre le beurre à feu doux."
-      - "Ajouter les oignons + feuilles de laurier. Faire fondre 25-30 min à feu doux en remuant régulièrement jusqu'à ce qu'ils soient bien dorés et confits (ne pas brûler)."
-      - "Déglacer avec le vin blanc, laisser réduire 3 min."
-      - "Émietter le bouillon cube dans un peu d'eau chaude. Verser dans la sauteuse. Laisser mijoter 5 min."
-      - "Râper le parmesan."
-      - "En parallèle, cuire les pâtes dans une très grande marmite d'eau bouillante salée selon le temps du paquet (al dente)."
-      - "Égoutter en gardant un peu d'eau de cuisson. Mélanger les pâtes avec la sauce aux oignons. Ajouter un peu d'eau de cuisson si trop sec."
-      - "Retirer les feuilles de laurier. Servir avec le parmesan râpé par-dessus."
-
+      - Éplucher et émincer les oignons très finement (mandoline si disponible).
+      - '--- cuisson ---'
+      - Dans une très grande sauteuse, faire fondre le beurre à feu doux.
+      - >-
+        Ajouter les oignons + feuilles de laurier. Faire fondre 25-30 min à feu doux en remuant régulièrement jusqu'à ce
+        qu'ils soient bien dorés et confits (ne pas brûler).
+      - Déglacer avec le vin blanc, laisser réduire 3 min.
+      - Émietter le bouillon cube dans un peu d'eau chaude. Verser dans la sauteuse. Laisser mijoter 5 min.
+      - Râper le parmesan.
+      - >-
+        En parallèle, cuire les pâtes dans une très grande marmite d'eau bouillante salée selon le temps du paquet (al
+        dente).
+      - >-
+        Égoutter en gardant un peu d'eau de cuisson. Mélanger les pâtes avec la sauce aux oignons. Ajouter un peu d'eau
+        de cuisson si trop sec.
+      - Retirer les feuilles de laurier. Servir avec le parmesan râpé par-dessus.
   tapenade:
     ingredients:
       olive noire: 40g
       huile d'olive: 3cl
       ail: 2 gousse
     steps:
-      - "Dénoyauter les olives noires (si pas déjà fait)."
-      - "Éplucher les gousses d'ail, retirer le germe central."
-      - "--- cuisson ---"
-      - "Mettre olives + ail dans un grand bol mixeur (robot)."
-      - "Verser l'huile d'olive progressivement en mixant jusqu'à obtention d'une pâte un peu grossière (ne pas trop mixer)."
-      - "Poivrer. Goûter avant de saler (les olives sont souvent salées)."
-      - "Servir en tartinade sur du pain grillé."
-
+      - Dénoyauter les olives noires (si pas déjà fait).
+      - Éplucher les gousses d'ail, retirer le germe central.
+      - '--- cuisson ---'
+      - Mettre olives + ail dans un grand bol mixeur (robot).
+      - >-
+        Verser l'huile d'olive progressivement en mixant jusqu'à obtention d'une pâte un peu grossière (ne pas trop
+        mixer).
+      - Poivrer. Goûter avant de saler (les olives sont souvent salées).
+      - Servir en tartinade sur du pain grillé.
   base journée:
-    # petit dej, grignotage, pain, etc..
     ingredients:
       pain: 100g
       fruit: 150g
@@ -541,565 +593,617 @@ recipes:
       chips: 30g
       cacahuète: 20g
     steps:
-      - "Couper le pain frais en tranches au moment du repas."
-      - "Disposer fromages, fruits, confitures, chips et cacahuètes sur la table en libre-service."
-      - "Préparer le café en cafetière (filtre ou italienne) selon les habitudes."
-
+      - Couper le pain frais en tranches au moment du repas.
+      - Disposer fromages, fruits, confitures, chips et cacahuètes sur la table en libre-service.
+      - Préparer le café en cafetière (filtre ou italienne) selon les habitudes.
 meals:
   - name: Mardi midi
-    portions:
-      15
+    portions: 15
     recipes:
       - base journée
       - pates champignon roquefort
   - name: Mardi soir
-    portions:
-      40
+    portions: 40
     recipes:
       - velouté de courgette
       - omelette
-
   - name: Mercredi midi
-    portions:
-      40
+    portions: 40
     recipes:
       - base journée
       - purée patate carotte
       - camembert au four
   - name: Mercredi soir
-    portions:
-      45
+    portions: 45
     recipes:
       - piperade poivrons
-
   - name: Jeudi midi
-    portions:
-      45
+    portions: 45
     recipes:
       - base journée
       - chèvres chauds
       - salade de tomates
   - name: Jeudi soir
-    portions:
-      60
+    portions: 60
     recipes:
       - ratatouille
-
   - name: Vendredi midi
-    portions:
-      65
+    portions: 65
     recipes:
       - base journée
       - malak panner
   - name: Vendredi soir
-    portions:
-      80
+    portions: 80
     recipes:
       - chorba
-
   - name: Samedi midi
     recipes:
       - base journée
       - taboulé
-    portions:
-      80
+    portions: 80
   - name: Samedi soir
-    portions:
-      80
+    portions: 80
     recipes:
       - aubergine curry
-
   - name: Dimanche midi
-    portions:
-      80
+    portions: 80
     recipes:
       - base journée
       - salade de pates
   - name: Dimanche soir
-    portions:
-      45
+    portions: 45
     recipes:
       - chili végé
-
   - name: Lundi midi
-    portions:
-      40
+    portions: 40
     recipes:
       - base journée
       - couscous
   - name: Lundi soir
-    portions:
-      35
+    portions: 35
     recipes:
       - pates à l'oignon
       - tapenade
-
   - name: Re-Mardi midi
-    portions:
-      30
-    # les restes
+    portions: 30
   - name: Re-Mardi soir
-    portions:
-      15
-    # les restes
-
-
-
-
-# additional spec for some ingredients
+    portions: 15
 ingredients:
   semoule:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   tomate:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 120 }
+      g:
+        u: 120
   concombre:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 300 }
+      g:
+        u: 300
   courgette:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 200 }
+      g:
+        u: 200
   carotte:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 80 }
-
+      g:
+        u: 80
   aubergine:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 400 }
+      g:
+        u: 400
   ail:
     type: Fruits et légumes
     preferred: tête
     convert:
-      tête: {gousse: 0.167}
+      tête:
+        gousse: 0.167
   oignon:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 150 }
-
+      g:
+        u: 150
   poivron:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 150 }
+      g:
+        u: 150
   pomme de terre:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 150 }
-
+      g:
+        u: 150
   avocat:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 200 }
-
+      g:
+        u: 200
   champignon de paris:
     type: Fruits et légumes
     preferred: g
     purchase: barquette
     convert:
-      g: { barquette: 250 }
-
+      g:
+        barquette: 250
   concassé tomates:
     type: Sec
     preferred: g
     purchase: boîte
     convert:
-      g: { boîte: 400 }
-
-
+      g:
+        boîte: 400
   huile d'olive:
     type: Condiments
     preferred: L
     purchase: L
     convert:
-      L: { ml: 0.001, cl: 0.01, cs: 0.015, cc: 0.005 }
-
-
+      L:
+        ml: 0.001
+        cl: 0.01
+        cs: 0.015
+        cc: 0.005
   chèvre coulant:
     type: Fromages
     preferred: g
     purchase: u
     convert:
-      g: { u: 100 }
+      g:
+        u: 100
   camembert:
     type: Fromages
     preferred: g
     purchase: u
     convert:
-      g: { u: 250 }
-
+      g:
+        u: 250
   citron:
     type: Fruits et légumes
     preferred: g
     purchase: u
     convert:
-      g: { u: 100 }
-
+      g:
+        u: 100
   crème fraîche:
     type: Frais
     preferred: g
     purchase: pot
     convert:
-      g: { ml: 1, cl: 10, pot: 200 }
+      g:
+        ml: 1
+        cl: 10
+        pot: 200
   beurre:
     type: Frais
     preferred: g
     purchase: plaquette
     convert:
-      g: { plaquette: 250 }
+      g:
+        plaquette: 250
   lait:
     type: Frais
     preferred: L
     purchase: brique
     convert:
-      L: { ml: 0.001, cl: 0.01, brique: 1 }
+      L:
+        ml: 0.001
+        cl: 0.01
+        brique: 1
   oeuf:
     type: Frais
     preferred: u
     purchase: boîte
     convert:
-      u: { boîte: 6 }
-
-
+      u:
+        boîte: 6
   ebly:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   boulgour:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   lentilles:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   pates:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   pates tortillis:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   spaghettis:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
-
+      g:
+        paquet: 500
   cornichon:
     type: Sec
     preferred: g
     purchase: pot
     convert:
-      g: { pot: 300 }
+      g:
+        pot: 300
   feta:
     type: Fromages
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 200 }
+      g:
+        paquet: 200
   olive noire:
     type: Sec
     preferred: g
     purchase: pot
     convert:
-      g: { pot: 200 }
+      g:
+        pot: 200
   raisin sec:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 250 }
+      g:
+        paquet: 250
   haricot rouge sec:
     type: Sec
     preferred: g
     purchase: boîte
     convert:
-      g: { boîte: 250, paquet: 500 }
+      g:
+        boîte: 250
+        paquet: 500
   petits pois boîte:
     type: Sec
     preferred: g
     purchase: boîte
     convert:
-      g: { boîte: 400 }
+      g:
+        boîte: 400
   moutarde:
     type: Sec
     preferred: pot
     convert:
-      pot: { cc: 0.02, cs: 0.06, g: 0.005 }
-
+      pot:
+        cc: 0.02
+        cs: 0.06
+        g: 0.005
   pain:
     type: Boulangerie
     preferred: g
     purchase: baguette
     convert:
-      g: { baguette: 250 }
-
-
+      g:
+        baguette: 250
   chocolat:
     type: Sec
     preferred: tablette
     convert:
-      tablette: { carré: 0.05, g: 0.01 }
-
-
-
+      tablette:
+        carré: 0.05
+        g: 0.01
   échalote:
     type: Fruits et légumes
-
   salade:
     type: Fruits et légumes
-
   melon:
     type: Fruits et légumes
-
   cumin:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
-
-  # === Épices et herbes sèches ===
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   paprika:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   piment poudre:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   piment d'espelette:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   curry:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   curcuma:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   gingembre poudre:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   zataar:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   épices à couscous:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 2, cs: 6, tube: 40 }
+      g:
+        cc: 2
+        cs: 6
+        tube: 40
   origan:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 1, cs: 3, tube: 25 }
+      g:
+        cc: 1
+        cs: 3
+        tube: 25
   herbes de provence:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 1, cs: 3, tube: 25 }
+      g:
+        cc: 1
+        cs: 3
+        tube: 25
   thym:
     type: Épices
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 1, cs: 3, tube: 25 }
+      g:
+        cc: 1
+        cs: 3
+        tube: 25
   laurier:
     type: Épices
     preferred: sachet
     convert:
-      sachet: { feuille: 0.04 }
+      sachet:
+        feuille: 0.04
   sucre:
     type: Condiments
     preferred: g
     convert:
-      g: { cc: 5, cs: 15 }
+      g:
+        cc: 5
+        cs: 15
   sel:
     type: Condiments
     preferred: g
     convert:
-      g: { cc: 5, cs: 15 }
-
-  # === Condiments / liquides ===
+      g:
+        cc: 5
+        cs: 15
   vinaigre balsamique:
     type: Condiments
     preferred: L
     convert:
-      L: { cl: 0.01, cs: 0.015, cc: 0.005, ml: 0.001 }
+      L:
+        cl: 0.01
+        cs: 0.015
+        cc: 0.005
+        ml: 0.001
   miel:
     type: Condiments
     preferred: g
     purchase: pot
     convert:
-      g: { cc: 8, cs: 20, pot: 250 }
+      g:
+        cc: 8
+        cs: 20
+        pot: 250
   harissa:
     type: Condiments
     preferred: g
     purchase: tube
     convert:
-      g: { cc: 5, cs: 15, tube: 100 }
+      g:
+        cc: 5
+        cs: 15
+        tube: 100
   lait de coco:
     type: Condiments
     preferred: L
     purchase: boîte
     convert:
-      L: { ml: 0.001, cl: 0.01, boîte: 0.4 }
+      L:
+        ml: 0.001
+        cl: 0.01
+        boîte: 0.4
   vin blanc:
     type: Boissons
     preferred: L
     purchase: bouteille
     convert:
-      L: { cl: 0.01, ml: 0.001, bouteille: 0.75 }
+      L:
+        cl: 0.01
+        ml: 0.001
+        bouteille: 0.75
   bouillon cube légume:
     type: Condiments
     preferred: u
-
-  # === Herbes fraîches / aromatiques ===
   menthe:
     type: Fruits et légumes
     preferred: botte
     purchase: botte
     convert:
-      botte: { feuille: 0.0333, g: 0.04 }
+      botte:
+        feuille: 0.0333
+        g: 0.04
   basilic:
     type: Fruits et légumes
     preferred: botte
     purchase: botte
     convert:
-      botte: { feuille: 0.0333, g: 0.04 }
+      botte:
+        feuille: 0.0333
+        g: 0.04
   persil:
     type: Fruits et légumes
     preferred: botte
     purchase: botte
     convert:
-      botte: { feuille: 0.025, g: 0.0167 }
-
-  # === Légumes / fruits manquants ===
+      botte:
+        feuille: 0.025
+        g: 0.0167
   piment doux:
     type: Fruits et légumes
     preferred: g
     convert:
-      g: { u: 80 }
-
-  # === Sec / féculents / conserves manquants ===
+      g:
+        u: 80
   riz:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 1000 }
+      g:
+        paquet: 1000
   pois chiches:
     type: Sec
     preferred: g
     purchase: boîte
     convert:
-      g: { boîte: 250, paquet: 500 }
+      g:
+        boîte: 250
+        paquet: 500
   pois cassés:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 500 }
+      g:
+        paquet: 500
   vermicelle:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 250 }
+      g:
+        paquet: 250
   noix de cajou:
     type: Sec
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 200 }
+      g:
+        paquet: 200
   mais en boîte:
     type: Sec
     preferred: g
     purchase: boîte
     convert:
-      g: { boîte: 285 }
-
-  # === Fromages / frais manquants ===
+      g:
+        boîte: 285
   parmesan:
     type: Fromages
     preferred: g
     purchase: bloc
     convert:
-      g: { bloc: 100 }
+      g:
+        bloc: 100
   roquefort:
     type: Fromages
     preferred: g
     purchase: portion
     convert:
-      g: { portion: 100 }
+      g:
+        portion: 100
   kiri:
     type: Fromages
     preferred: u
   yaourt nature:
     type: Frais
     preferred: u
-
-  # === Petit-déjeuner et apéritifs ===
   fruit:
     type: Petit-déjeuner et apéritifs
     preferred: g
@@ -1108,29 +1212,33 @@ ingredients:
     preferred: g
     purchase: u
     convert:
-      g: { u: 250 }
+      g:
+        u: 250
   confiture:
     type: Petit-déjeuner et apéritifs
     preferred: g
     purchase: pot
     convert:
-      g: { pot: 370 }
+      g:
+        pot: 370
   café moulu:
     type: Petit-déjeuner et apéritifs
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 250 }
+      g:
+        paquet: 250
   chips:
     type: Petit-déjeuner et apéritifs
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 150 }
+      g:
+        paquet: 150
   cacahuète:
     type: Petit-déjeuner et apéritifs
     preferred: g
     purchase: paquet
     convert:
-      g: { paquet: 200 }
-
+      g:
+        paquet: 200

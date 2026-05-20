@@ -729,7 +729,8 @@ main {
   gap: 0.5rem;
 }
 
-#export-yaml-btn {
+#export-yaml-btn,
+#import-yaml-btn {
   background: transparent;
   color: var(--lp-blue);
   border: 1px solid var(--lp-blue);
@@ -742,7 +743,8 @@ main {
   text-transform: uppercase;
 }
 
-#export-yaml-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
+#export-yaml-btn:hover,
+#import-yaml-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
 
 #reset-overrides-btn {
   background: transparent;
@@ -1265,6 +1267,7 @@ main {
   #print-btn,
   #reset-btn,
   #export-yaml-btn,
+  #import-yaml-btn,
   #reset-overrides-btn,
   #print-menu-btn,
   .print-btn {
@@ -1559,3 +1562,225 @@ main {
     margin: 0;
   }
 }
+
+/* ============================================================
+   YAML import modal
+   ============================================================ */
+.yaml-import-modal {
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+.yaml-import-modal h3 {
+  margin: 0;
+  color: var(--lp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.yaml-import-intro {
+  margin: 0;
+  color: var(--lp-text-dim);
+  font-size: 0.9rem;
+}
+.yaml-import-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.yaml-import-body {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.yaml-editor-wrap {
+  position: relative;
+  display: flex;
+  background: var(--lp-bg-2);
+  border: 1px solid var(--lp-border);
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 360px;
+  height: 55vh;
+}
+.yaml-editor-gutter {
+  flex: 0 0 3.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  background: var(--lp-bg);
+  color: var(--lp-text-mute);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+  border-right: 1px solid var(--lp-border);
+}
+.yaml-editor-gutter > div {
+  height: 18px;
+  white-space: nowrap;
+  border-radius: 2px;
+  padding: 0 4px;
+}
+.yaml-editor-gutter > div.has-error {
+  background: rgba(184, 52, 28, 0.4);
+  color: #fff;
+}
+.yaml-editor-gutter > div.has-warning {
+  background: rgba(249, 168, 37, 0.3);
+  color: #fff;
+}
+.yaml-editor-textarea {
+  flex: 1;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--lp-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0.5rem;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 2;
+}
+.yaml-issues-panel {
+  background: var(--lp-bg-2);
+  border: 1px solid var(--lp-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  overflow: auto;
+  height: 55vh;
+}
+.yaml-issues-empty {
+  margin: 0;
+  color: var(--lp-text-mute);
+  font-style: italic;
+  padding: 0.5rem;
+}
+.yaml-issues-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.yaml-issue {
+  border-left: 3px solid var(--lp-border);
+  padding: 0.4rem 0.5rem;
+  background: var(--lp-surface);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.85rem;
+}
+.yaml-issue.error { border-left-color: var(--lp-red); }
+.yaml-issue.warning { border-left-color: var(--lp-amber); }
+.yaml-issue-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+.yaml-issue-badge {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+.yaml-issue.error .yaml-issue-badge {
+  background: var(--lp-red);
+  color: #fff;
+}
+.yaml-issue.warning .yaml-issue-badge {
+  background: var(--lp-amber);
+  color: #1a1410;
+}
+.yaml-issue-line {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  background: var(--lp-bg);
+  color: var(--lp-green);
+  border: 1px solid var(--lp-border);
+  padding: 1px 5px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.yaml-issue-line:hover {
+  border-color: var(--lp-green);
+}
+.yaml-issue-path {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--lp-text-dim);
+  word-break: break-all;
+}
+.yaml-issue-msg {
+  color: var(--lp-text);
+}
+.yaml-issue-suggestion {
+  margin-top: 0.2rem;
+  color: var(--lp-text-dim);
+  font-style: italic;
+  font-size: 0.8rem;
+}
+.yaml-import-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--lp-border);
+  padding-top: 0.5rem;
+}
+.yaml-import-status {
+  flex: 1;
+  font-size: 0.9rem;
+}
+.yaml-import-status .ok { color: var(--lp-green); font-weight: bold; }
+.yaml-import-status .warn { color: var(--lp-amber); font-weight: bold; }
+.yaml-import-status .err { color: var(--lp-red); font-weight: bold; }
+.yaml-import-footer button.primary {
+  background: var(--lp-green-dark);
+  color: #fff;
+  border-color: var(--lp-green);
+}
+.yaml-import-footer button.primary:disabled {
+  background: var(--lp-bg-2);
+  color: var(--lp-text-mute);
+  border-color: var(--lp-border);
+  cursor: not-allowed;
+}
+
+/* Toast */
+.yaml-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lp-surface);
+  color: var(--lp-text);
+  border: 1px solid var(--lp-border);
+  border-radius: 4px;
+  padding: 0.75rem 1.25rem;
+  z-index: 10000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  font-size: 0.95rem;
+}
+.yaml-toast.success { border-color: var(--lp-green); color: var(--lp-green); }
+.yaml-toast.error { border-color: var(--lp-red); color: #ffb1a3; }
+
+@media (max-width: 800px) {
+  .yaml-import-body {
+    grid-template-columns: 1fr;
+  }
+  .yaml-editor-wrap, .yaml-issues-panel {
+    height: 40vh;
+  }
+}
+

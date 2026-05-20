@@ -44,10 +44,23 @@ function effectivePortions(data, savedPortions) {
 }
 
 async function loadData() {
-  const resp = await fetch(YAML_URL);
-  if (!resp.ok) throw new Error('Impossible de charger repas.yml');
-  const text = await resp.text();
-  const data = jsyaml.load(text);
+  let data;
+  // If the user imported a YAML file, prefer that over the bundled one.
+  const imported = (typeof localStorage !== 'undefined') ? localStorage.getItem('importedYamlData') : null;
+  if (imported) {
+    try {
+      data = JSON.parse(imported);
+    } catch (e) {
+      console.warn('importedYamlData corrompu, fallback sur repas.yml', e);
+      data = null;
+    }
+  }
+  if (!data) {
+    const resp = await fetch(YAML_URL);
+    if (!resp.ok) throw new Error('Impossible de charger repas.yml');
+    const text = await resp.text();
+    data = jsyaml.load(text);
+  }
 
   // Merge user-local customizations from localStorage on top of the YAML.
   if (window.Store) {
