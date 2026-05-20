@@ -61,7 +61,17 @@ function renderRecipe(data) {
 
     // Try to convert into the preferred unit for display.
     const spec = ingredientsSpec[ingrName] || {};
-    let displayParts = Shopping.aggregateIngredient(ingrName, { [unit]: scaled }, ingredientsSpec);
+    // Smart unit switch: when the recipe is scaled high enough that the total
+    // in the purchase unit is >= 1, prefer the purchase unit (e.g. "10 baguettes"
+    // instead of "2.3 kg de pain"). Falls back to `preferred` otherwise.
+    let displayTarget;
+    if (spec.purchase && spec.preferred && spec.purchase !== spec.preferred) {
+      const inPurchase = Shopping.convertAmount(scaled, unit, spec.purchase, spec.convert);
+      if (inPurchase != null && isFinite(inPurchase) && inPurchase >= 1) {
+        displayTarget = spec.purchase;
+      }
+    }
+    let displayParts = Shopping.aggregateIngredient(ingrName, { [unit]: scaled }, ingredientsSpec, displayTarget);
 
     const li = document.createElement('li');
     const labelStr = displayParts
