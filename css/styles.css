@@ -528,7 +528,7 @@ main {
   font-style: italic;
 }
 
-.error {
+.error:not(.yaml-issue) {
   background: rgba(184, 52, 28, 0.15);
   color: #ffb3a8;
   padding: 1rem 2.75rem 1rem 1rem;
@@ -552,7 +552,7 @@ main {
 .error-close:hover { color: var(--lp-red); }
 
 @media (max-width: 768px) {
-  .error {
+  .error:not(.yaml-issue) {
     position: fixed;
     top: 0.75rem;
     left: 0.75rem;
