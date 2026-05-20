@@ -55,8 +55,8 @@ function findSpec(name, data, customIngredients) {
 }
 
 // Returns the factor X such that 1 purchase = X preferred, derived from unitScales.
-// Also bridges cc/cs ↔ g (1 cc = 5 g, 1 cs = 15 g), chaining through unitScales for kg/mg.
-// Returns null if no chain exists.
+// Only returns a value when both units belong to the same scale chain (intra-dimension).
+// Cross-dimension conversions (e.g. g ↔ cs) require a preset or manual factor.
 function deriveConvertFactor(preferred, purchase, unitScales) {
   if (!preferred || !purchase || preferred === purchase || !unitScales) return null;
   const walk = (start, target) => {
@@ -79,26 +79,6 @@ function deriveConvertFactor(preferred, purchase, unitScales) {
   // Or walk purchase → ... → preferred, inverted.
   f = walk(purchase, preferred);
   if (f != null) return 1 / f;
-  // Bridge via grams for spoon units.
-  const SPOON_G = { cc: 5, cs: 15 };
-  const inGrams = (u) => {
-    if (u === 'g') return 1;
-    const a = walk('g', u);
-    if (a != null) return a;
-    const b = walk(u, 'g');
-    if (b != null) return 1 / b;
-    return null;
-  };
-  if (SPOON_G[purchase]) {
-    const grams = SPOON_G[purchase];
-    const prefInG = preferred === 'g' ? 1 : inGrams(preferred);
-    if (prefInG != null && prefInG > 0) return grams / prefInG;
-  }
-  if (SPOON_G[preferred]) {
-    const gramsPerSpoon = SPOON_G[preferred];
-    const purInG = purchase === 'g' ? 1 : inGrams(purchase);
-    if (purInG != null) return purInG / gramsPerSpoon;
-  }
   return null;
 }
 
@@ -584,15 +564,15 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
       .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
       .join(' + ');
 
-    const purchase = spec.purchase || null;
     const convert = spec.convert || null;
+    const metricTarget = Shopping.pickMetricTarget(spec);
     let equivStr = '';
-    if (purchase) {
+    if (metricTarget) {
       const parts = [];
       for (const p of displayParts) {
-        if (p.unit === purchase) { parts.push(p); continue; }
-        const v = Shopping.convertAmount(p.amount, p.unit, purchase, convert);
-        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: purchase });
+        if (p.unit === metricTarget) { parts.push(p); continue; }
+        const v = Shopping.convertAmount(p.amount, p.unit, metricTarget, convert);
+        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: metricTarget });
       }
       if (parts.length > 0) {
         const promoted = parts

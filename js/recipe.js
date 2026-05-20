@@ -69,16 +69,16 @@ function renderRecipe(data) {
       .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
       .join(' + ');
 
-    // Equivalent in the purchase unit, shown next to the recipe qty.
-    const purchase = spec.purchase || null;
+    // Equivalent in a metric unit (mass/volume), shown next to the recipe qty.
+    const metricTarget = Shopping.pickMetricTarget(spec);
     const convert = spec.convert || null;
     let equivStr = '';
-    if (purchase) {
+    if (metricTarget) {
       const parts = [];
       for (const p of displayParts) {
-        if (p.unit === purchase) { parts.push(p); continue; }
-        const v = Shopping.convertAmount(p.amount, p.unit, purchase, convert);
-        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: purchase });
+        if (p.unit === metricTarget) { parts.push(p); continue; }
+        const v = Shopping.convertAmount(p.amount, p.unit, metricTarget, convert);
+        if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: metricTarget });
       }
       if (parts.length > 0) {
         const promoted = parts

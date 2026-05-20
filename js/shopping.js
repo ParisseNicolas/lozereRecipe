@@ -118,4 +118,24 @@ function buildShoppingList(data, portionsByDay) {
   return byCategory;
 }
 
-window.Shopping = { buildShoppingList, aggregateIngredient, convertAmount };
+// Pick a target unit reachable from the ingredient's spec, used for the
+// secondary `.ingr-qty-equiv` display. Prefers metric mass/volume; falls back
+// to countable "piece" units (u, gousse, feuille) which are themselves
+// self-explanatory and need no further conversion. Returns null if no path.
+function pickMetricTarget(spec) {
+  if (!spec) return null;
+  if (spec.preferred && Parser.isEquivUnit(spec.preferred)) return spec.preferred;
+  if (spec.purchase && Parser.isEquivUnit(spec.purchase)) return spec.purchase;
+  const convert = spec.convert || null;
+  if (convert) {
+    for (const tgt of Object.keys(convert)) {
+      if (Parser.isEquivUnit(tgt)) return tgt;
+      for (const src of Object.keys(convert[tgt] || {})) {
+        if (Parser.isEquivUnit(src)) return src;
+      }
+    }
+  }
+  return null;
+}
+
+window.Shopping = { buildShoppingList, aggregateIngredient, convertAmount, pickMetricTarget };

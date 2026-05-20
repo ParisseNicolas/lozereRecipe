@@ -32,6 +32,12 @@ function parseQuantity(value) {
 // Format a number for display : 2 decimals max, no trailing zeros.
 function formatAmount(n) {
   if (!isFinite(n)) return '0';
+  // Allow one decimal between 1 and 10 so promoted values like 1.125 kg show
+  // as "1.2 kg" instead of being ceil'd to "2 kg" (which inflates the number
+  // and breaks consistency with secondary equiv displays).
+  if (Math.abs(n) >= 1 && Math.abs(n) < 10 && Math.abs(n - Math.round(n)) > 1e-9) {
+    return String(Math.ceil(n * 10) / 10);
+  }
   return String(Math.ceil(n));
 }
 
@@ -39,7 +45,7 @@ function formatAmount(n) {
 // purchase-unit equivalent (e.g. 0.012 kg) isn't rounded up to 1.
 function formatAmountSmart(n) {
   if (!isFinite(n)) return '0';
-  if (Math.abs(n) >= 1) return String(Math.ceil(n));
+  if (Math.abs(n) >= 1) return formatAmount(n);
   return Number(n.toPrecision(2)).toString();
 }
 
@@ -49,7 +55,8 @@ function formatAmountSmart(n) {
 function promoteUnit(amount, unit, scales) {
   if (!scales || amount === 0) return { amount, unit };
   let a = amount, u = unit;
-  // Promote upward while value >= 1 in the larger unit.
+  // Promote upward only while the result is a whole number (avoids surprises
+  // like 1125 g -> 1.125 kg displaying as "2 kg" after Math.ceil).
   while (scales[u]) {
     const { upper, factor } = scales[u];
     if (!upper || !factor) break;
@@ -90,6 +97,13 @@ function promoteOnly(amount, unit, scales) {
 
 // Pluralize a unit when amount > 1, except for measurement abbreviations.
 const INVARIANT_UNITS = new Set(['g', 'kg', 'mg', 'ml', 'cl', 'L', 'cs', 'cc', 'u', 'petit peu']);
+const METRIC_UNITS = new Set(['mg', 'g', 'kg', 'ml', 'cl', 'L']);
+function isMetricUnit(u) { return METRIC_UNITS.has(u); }
+// Countable "piece" units : already self-explanatory, treated like metric
+// for the purpose of `.ingr-qty-equiv` (no further conversion possible).
+const PIECE_UNITS = new Set(['u', 'gousse', 'feuille']);
+function isPieceUnit(u) { return PIECE_UNITS.has(u); }
+function isEquivUnit(u) { return METRIC_UNITS.has(u) || PIECE_UNITS.has(u); }
 function pluralizeUnit(amount, unit) {
   if (!unit) return unit;
   if (Math.ceil(amount) <= 1) return unit;
@@ -98,4 +112,4 @@ function pluralizeUnit(amount, unit) {
   return unit + 's';
 }
 
-window.Parser = { parseQuantity, formatAmount, formatAmountSmart, promoteUnit, promoteOnly, pluralizeUnit };
+window.Parser = { parseQuantity, formatAmount, formatAmountSmart, promoteUnit, promoteOnly, pluralizeUnit, isMetricUnit, METRIC_UNITS, isPieceUnit, PIECE_UNITS, isEquivUnit };

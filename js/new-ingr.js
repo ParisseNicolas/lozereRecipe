@@ -158,7 +158,41 @@
     convRow.appendChild(toLabel);
     root.appendChild(convRow);
 
-    // --- Step 5 : Category.
+    // --- Step 5 : Metric reference (only when no metric path exists yet).
+    const metricRow = document.createElement('div');
+    metricRow.className = 'conv-row';
+    metricRow.hidden = true;
+    metricRow.appendChild(document.createTextNode('1 '));
+    const metricFromLabel = document.createElement('span');
+    metricFromLabel.className = 'metric-from-label';
+    metricFromLabel.textContent = '(recette)';
+    metricRow.appendChild(metricFromLabel);
+    metricRow.appendChild(document.createTextNode(' = '));
+    const metricFactor = document.createElement('input');
+    metricFactor.type = 'number';
+    metricFactor.step = '0.001';
+    metricFactor.min = '0';
+    metricFactor.placeholder = 'facteur';
+    metricFactor.className = 'new-ingr-metric-factor';
+    metricRow.appendChild(metricFactor);
+    metricRow.appendChild(document.createTextNode(' '));
+    const metricSelect = document.createElement('select');
+    metricSelect.className = 'new-ingr-metric-select';
+    for (const u of ['g', 'mL']) {
+      const o = document.createElement('option');
+      o.value = u === 'mL' ? 'ml' : u;
+      o.textContent = u;
+      metricSelect.appendChild(o);
+    }
+    metricRow.appendChild(metricSelect);
+    const metricHint = document.createElement('p');
+    metricHint.className = 'edit-hint';
+    metricHint.hidden = true;
+    metricHint.innerHTML = "Pour afficher un équivalent en masse/volume, indique combien pèse (ou fait) 1 unité recette.";
+    root.appendChild(metricHint);
+    root.appendChild(metricRow);
+
+    // --- Step 6 : Category.
     const typeRow = document.createElement('div');
     typeRow.className = 'conv-row';
     typeRow.hidden = true;
@@ -296,7 +330,28 @@
 
       if (!conversionOk) {
         typeRow.hidden = true;
+        metricRow.hidden = true;
+        metricHint.hidden = true;
         return;
+      }
+
+      // Metric reference step : only required when neither pref/purchase nor
+      // any unit reachable through the preset is an equiv unit (metric or piece).
+      const presetMetric = preset && presetUnitsOf(preset).some((u) => Parser.isEquivUnit(u));
+      const needMetric = !Parser.isEquivUnit(pref) && !Parser.isEquivUnit(purchase) && !presetMetric;
+      if (needMetric) {
+        metricRow.hidden = false;
+        metricHint.hidden = false;
+        metricFromLabel.textContent = pref;
+        const f = parseFloat(metricFactor.value);
+        const metricOk = isFinite(f) && f > 0;
+        if (!metricOk) {
+          typeRow.hidden = true;
+          return;
+        }
+      } else {
+        metricRow.hidden = true;
+        metricHint.hidden = true;
       }
       typeRow.hidden = false;
     }
@@ -315,6 +370,8 @@
     });
     purchaseInput.addEventListener('input', updateFlow);
     convFactor.addEventListener('input', updateFlow);
+    metricFactor.addEventListener('input', updateFlow);
+    metricSelect.addEventListener('change', updateFlow);
 
     updateFlow();
 
@@ -365,6 +422,19 @@
       const type = typeInput.value.trim();
       if (!type) return { error: 'Choisis une catégorie.' };
       spec.type = type;
+
+      // Metric reference : if neither pref/purchase nor any preset unit is an
+      // equiv unit, require a factor toward g or mL so `.ingr-qty-equiv` works.
+      const presetMetric = preset && presetUnitsOf(preset).some((u) => Parser.isEquivUnit(u));
+      const needMetric = !Parser.isEquivUnit(pref) && !Parser.isEquivUnit(purchase) && !presetMetric;
+      if (needMetric) {
+        const mf = parseFloat(metricFactor.value);
+        if (!isFinite(mf) || mf <= 0) return { error: 'Saisis un facteur vers g ou mL.' };
+        const metricUnit = metricSelect.value;
+        spec.convert = spec.convert || {};
+        spec.convert[metricUnit] = spec.convert[metricUnit] || {};
+        spec.convert[metricUnit][pref] = mf;
+      }
 
       return { name, spec };
     }

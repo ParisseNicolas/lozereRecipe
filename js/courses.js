@@ -101,20 +101,20 @@ function buildItem(category, item, data, isDone) {
 
   const label = document.createElement('label');
   const spec = (data.ingredients || {})[item.name] || {};
-  const preferred = spec.preferred || null;
   const convert = spec.convert || null;
   const qtyStr = item.parts
     .map((p) => Parser.promoteUnit(p.amount, p.unit, data.unitScales))
     .map((p) => `${Parser.formatAmount(p.amount)} ${Parser.pluralizeUnit(p.amount, p.unit)}`.trim())
     .join(' + ');
-  // Equivalent in the preferred (recipe) unit, shown next to the purchase qty.
+  // Equivalent in a metric unit (mass/volume), shown next to the purchase qty.
+  const metricTarget = Shopping.pickMetricTarget(spec);
   let equivStr = '';
-  if (preferred) {
+  if (metricTarget) {
     const parts = [];
     for (const p of item.parts) {
-      if (p.unit === preferred) { parts.push(p); continue; }
-      const v = Shopping.convertAmount(p.amount, p.unit, preferred, convert);
-      if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: preferred });
+      if (p.unit === metricTarget) { parts.push(p); continue; }
+      const v = Shopping.convertAmount(p.amount, p.unit, metricTarget, convert);
+      if (v != null && isFinite(v) && v > 0) parts.push({ amount: v, unit: metricTarget });
     }
     if (parts.length > 0) {
       const promoted = parts
