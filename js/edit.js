@@ -115,6 +115,8 @@ function renderEdit(data) {
   const { slot, nom, from } = getParams();
 
   const customIngredients = Store.loadCustomIngredients();
+  const customRecipes = Store.loadCustomRecipes();
+  const isCustom = !!nom && (nom in customRecipes);
 
   // Adjust the back-link based on where the user came from.
   const backLink = document.getElementById('back-link');
@@ -208,7 +210,7 @@ function renderEdit(data) {
   saveBtn.type = 'button';
   saveBtn.className = 'save-btn';
   saveBtn.textContent = 'Enregistrer';
-  saveBtn.addEventListener('click', () => onSave(data, slot, from, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
+  saveBtn.addEventListener('click', () => onSave(data, slot, from, nom, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients));
   actions.appendChild(saveBtn);
 
   const cancelBtn = document.createElement('button');
@@ -218,7 +220,7 @@ function renderEdit(data) {
   cancelBtn.addEventListener('click', () => { window.location.href = backUrl(from); });
   actions.appendChild(cancelBtn);
 
-  if (nom) {
+  if (nom && isCustom) {
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'delete-btn';
@@ -643,13 +645,69 @@ function renderRecipePreview(root, name, recipe, portions, ingredientsSpec, unit
   }
 }
 
-function onSave(data, slot, from, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+function normalizeStep(s) {
+  const str = String(s);
+  return MARKER_RE.test(str) ? STEP_MARKER : str.trim();
+}
+
+// Two recipes are considered identical when their ingredient sets (name + parsed amount + unit)
+// and their step sequences (after normalization) match exactly.
+function recipesEqual(r1, r2) {
+  if (!r1 || !r2) return false;
+  const i1 = r1.ingredients || {};
+  const i2 = r2.ingredients || {};
+  const k1 = Object.keys(i1).sort();
+  const k2 = Object.keys(i2).sort();
+  if (k1.length !== k2.length) return false;
+  for (let i = 0; i < k1.length; i++) {
+    if (k1[i] !== k2[i]) return false;
+    const p1 = Parser.parseQuantity(i1[k1[i]]);
+    const p2 = Parser.parseQuantity(i2[k2[i]]);
+    if (Math.abs((p1.amount || 0) - (p2.amount || 0)) > 1e-9) return false;
+    if ((p1.unit || '') !== (p2.unit || '')) return false;
+  }
+  const s1 = (r1.steps || []).map(normalizeStep);
+  const s2 = (r2.steps || []).map(normalizeStep);
+  if (s1.length !== s2.length) return false;
+  for (let i = 0; i < s1.length; i++) if (s1[i] !== s2[i]) return false;
+  return true;
+}
+
+function onSave(data, slot, from, originalNom, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
   const errEl = document.getElementById('error');
   errEl.hidden = true;
   const built = buildRecipeFromForm(data, nameInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
   if (built.error) { errEl.hidden = false; errEl.textContent = built.error; return; }
 
-  Store.saveCustomRecipe(built.name, built.recipe);
+  const customRecipes = Store.loadCustomRecipes();
+  const yamlRecipes = data.recipesYaml || {};
+  const yamlOriginal = yamlRecipes[built.name];
+  const matchesYamlOriginal = yamlOriginal && recipesEqual(built.recipe, yamlOriginal);
+
+  // In create mode (no originalNom), a name collision with an existing recipe is a duplicate.
+  if (!originalNom && built.name in (data.recipes || {})) {
+    errEl.hidden = false;
+    errEl.textContent = 'Cette recette existe déjà.';
+    return;
+  }
+
+  // Duplicate detection: identical content under a different name.
+  // Only skip the recipe currently being edited (originalNom), never the new name itself.
+  for (const [otherName, otherRecipe] of Object.entries(data.recipes || {})) {
+    if (originalNom && otherName === originalNom) continue;
+    if (recipesEqual(built.recipe, otherRecipe)) {
+      errEl.hidden = false;
+      errEl.textContent = 'Cette recette existe déjà.';
+      return;
+    }
+  }
+
+  if (matchesYamlOriginal) {
+    // The recipe is back to its original YAML form: it should not be perso.
+    if (built.name in customRecipes) Store.deleteCustomRecipe(built.name);
+  } else {
+    Store.saveCustomRecipe(built.name, built.recipe);
+  }
 
   if (slot) {
     fetch('repas.yml')

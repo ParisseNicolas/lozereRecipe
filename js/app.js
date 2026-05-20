@@ -63,6 +63,9 @@ async function loadData() {
   }
 
   // Merge user-local customizations from localStorage on top of the YAML.
+  // Preserve the original YAML recipes so the edit page can detect when a
+  // modified recipe has been reverted to its original (non-perso) state.
+  data.recipesYaml = Object.assign({}, data.recipes || {});
   if (window.Store) {
     const customR = Store.loadCustomRecipes();
     const customI = Store.loadCustomIngredients();
