@@ -26,7 +26,7 @@
     }
     return Array.from(s);
   }
-  function populateSelect(sel, units, def) {
+  function populateSelect(sel, units, def, opts) {
     const prev = sel.value;
     sel.innerHTML = '';
     const ph = document.createElement('option');
@@ -41,7 +41,13 @@
       o.textContent = u;
       sel.appendChild(o);
     }
-    if (prev && units.includes(prev)) sel.value = prev;
+    if (opts && opts.addNew) {
+      const n = document.createElement('option');
+      n.value = '__new__';
+      n.textContent = '+ Nouvelle unité';
+      sel.appendChild(n);
+    }
+    if (prev && (units.includes(prev) || prev === '__new__')) sel.value = prev;
     else if (def && units.includes(def)) sel.value = def;
     else sel.value = '';
   }
@@ -51,7 +57,7 @@
     const root = document.createElement('div');
     root.className = 'new-ingr-form';
 
-    const presets = (data && data.commonConverts) || {};
+    const presets = (data && data.ingredientPresets) || {};
     const presetNames = Object.keys(presets);
     const allUnits = collectKnownUnits(data);
 
@@ -113,12 +119,11 @@
     purchaseRow.hidden = true;
     purchaseRow.appendChild(document.createTextNode("Unité d'achat : "));
     const purchaseSelect = document.createElement('select');
-    purchaseSelect.className = 'new-ingr-purchase';
+    purchaseSelect.className = 'new-ingr-purchase-select';
     purchaseRow.appendChild(purchaseSelect);
     const purchaseInput = document.createElement('input');
     purchaseInput.type = 'text';
     purchaseInput.placeholder = 'ex: u, sachet, botte';
-    purchaseInput.setAttribute('list', 'dl-units');
     purchaseInput.className = 'new-ingr-purchase';
     purchaseInput.hidden = true;
     purchaseRow.appendChild(purchaseInput);
@@ -227,8 +232,9 @@
       } else {
         populateSelect(prefSelect, allUnits, '');
         presetHint.hidden = true;
-        purchaseSelect.hidden = true;
-        purchaseInput.hidden = false;
+        purchaseSelect.hidden = false;
+        populateSelect(purchaseSelect, allUnits, '', { addNew: true });
+        if (purchaseSelect.value !== '__new__') purchaseInput.hidden = true;
       }
       prefRow.hidden = false;
 
@@ -242,7 +248,9 @@
       }
       purchaseRow.hidden = false;
 
-      const purchase = (preset ? purchaseSelect.value : purchaseInput.value).trim();
+      const purchase = (!preset && purchaseSelect.value === '__new__')
+        ? purchaseInput.value.trim()
+        : purchaseSelect.value.trim();
       fromLabel.textContent = purchase || '(achat)';
       toLabel.textContent = pref || '(recette)';
 
@@ -295,7 +303,16 @@
 
     presetSelect.addEventListener('change', updateFlow);
     prefSelect.addEventListener('change', updateFlow);
-    purchaseSelect.addEventListener('change', updateFlow);
+    purchaseSelect.addEventListener('change', () => {
+      if (purchaseSelect.value === '__new__') {
+        purchaseInput.hidden = false;
+        purchaseInput.value = '';
+        purchaseInput.focus();
+      } else {
+        purchaseInput.hidden = true;
+      }
+      updateFlow();
+    });
     purchaseInput.addEventListener('input', updateFlow);
     convFactor.addEventListener('input', updateFlow);
 
@@ -319,7 +336,9 @@
 
       const pref = prefSelect.value.trim();
       if (!pref) return { error: 'Choisis une unité recette.' };
-      const purchase = (preset ? purchaseSelect.value : purchaseInput.value).trim();
+      const purchase = (!preset && purchaseSelect.value === '__new__')
+        ? purchaseInput.value.trim()
+        : purchaseSelect.value.trim();
       if (!purchase) return { error: "Choisis une unité d'achat." };
 
       const spec = { preferred: pref, purchase: purchase };

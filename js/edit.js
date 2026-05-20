@@ -129,29 +129,7 @@ function renderEdit(data) {
   root.innerHTML = '';
   const { slot, nom } = getParams();
 
-  const knownIngredients = Object.keys(data.ingredients || {}).sort((a, b) => a.localeCompare(b, 'fr'));
-  const knownUnits = collectKnownUnits(data);
-  const knownTypes = collectKnownTypes(data);
   const customIngredients = Store.loadCustomIngredients();
-
-  // Datalists.
-  const dlUnits = document.createElement('datalist');
-  dlUnits.id = 'dl-units';
-  for (const u of knownUnits) {
-    const o = document.createElement('option');
-    o.value = u;
-    dlUnits.appendChild(o);
-  }
-  root.appendChild(dlUnits);
-
-  const dlTypes = document.createElement('datalist');
-  dlTypes.id = 'dl-types';
-  for (const t of knownTypes) {
-    const o = document.createElement('option');
-    o.value = t;
-    dlTypes.appendChild(o);
-  }
-  root.appendChild(dlTypes);
 
   // Slot context banner.
   if (slot) {
