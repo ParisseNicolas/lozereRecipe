@@ -1406,6 +1406,10 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   header h1 {
     font-size: clamp(1.2rem, 5vw, 1.5rem);
     padding-right: 56px; /* leave room for hamburger */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    margin: 0;
   }
   .nav-toggle {
     display: inline-flex;
@@ -1415,7 +1419,7 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   header nav {
     display: flex;
     flex-direction: column;
-    margin-top: 0.75rem;
+    margin-top: 0;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--lp-border);
     border-radius: 6px;
@@ -1424,9 +1428,10 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
     overflow: hidden;
     opacity: 0;
     border-color: transparent;
-    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.2s ease, margin-top 0.25s ease;
   }
   header nav.open {
+    margin-top: 0.75rem;
     max-height: 320px;
     opacity: 1;
     padding: 0.5rem;
@@ -2058,6 +2063,9 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
 
 #recipes-actions {
   margin: 0 0 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 #create-recipe-btn {
@@ -2066,6 +2074,7 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   border: none;
   border-radius: 6px;
   padding: 0.55rem 1rem;
+  font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
@@ -2307,5 +2316,136 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
 
 #scan-recipe-btn {
   margin-left: 0.5rem;
+  background: var(--lp-green);
+  color: var(--lp-bg);
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#scan-recipe-btn:hover {
+  filter: brightness(1.1);
+}
+
+@media (max-width: 600px) {
+  #recipes-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #scan-recipe-btn {
+    margin-left: 0;
+  }
+}
+
+.similar-recipe-modal {
+  width: min(480px, 92vw);
+  box-sizing: border-box;
+}
+
+.similar-recipe-title {
+  margin: 0 0 0.6rem 0;
+  color: var(--lp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px var(--lp-green-glow);
+  font-size: 1.05rem;
+}
+
+.similar-recipe-intro {
+  margin: 0 0 0.8rem 0;
+  color: var(--lp-text);
+}
+
+.similar-recipe-countdown {
+  margin: -0.2rem 0 0.8rem 0;
+  color: var(--lp-text-muted, #666);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
+.similar-recipe-card {
+  border: 1px solid var(--lp-border);
+  border-radius: 6px;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.similar-recipe-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.similar-recipe-card--clickable:hover,
+.similar-recipe-card--clickable:focus-visible {
+  border-color: var(--lp-green);
+  box-shadow: 0 0 8px var(--lp-green-glow);
+  background: rgba(127, 255, 58, 0.04);
+  outline: none;
+}
+
+.similar-recipe-card-title {
+  margin: 0 0 0.5rem 0;
+  color: var(--lp-blue);
+  font-size: 1rem;
+}
+
+.similar-recipe-ingredients {
+  list-style: disc;
+  padding-left: 1.2rem;
+  margin: 0;
+  color: var(--lp-text-mute);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.similar-recipe-ingredients li {
+  padding: 0.1rem 0;
+  overflow-wrap: anywhere;
+}
+
+.similar-recipe-empty {
+  list-style: none;
+  font-style: italic;
+}
+
+.similar-recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.similar-recipe-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--lp-border);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.similar-recipe-actions .btn-primary {
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border-color: var(--lp-green);
+  font-weight: 700;
+}
+
+.similar-recipe-actions .btn-primary:hover {
+  background: var(--lp-green);
+  box-shadow: 0 0 8px var(--lp-green-glow);
+}
+
+.similar-recipe-actions .btn-secondary {
+  background: var(--lp-surface);
+  color: var(--lp-text);
+}
+
+.similar-recipe-actions .btn-secondary:hover {
+  background: var(--lp-bg-2);
 }
 

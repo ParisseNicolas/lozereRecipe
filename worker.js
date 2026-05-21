@@ -1,17 +1,26 @@
 // Cloudflare Worker — recipe-scanner.
-// Deploy this code via the Cloudflare dashboard. The Gemini API key lives as a
-// Worker Secret named GEMINI_API_KEY (do NOT commit it).
+// Deploy this code via le dashboard Cloudflare. Secret requis : GEMINI_API_KEY.
 //
-// Request body : { imageBase64, mimeType, knownIngredients?: string[] }
-// Response : { recipe: { name, ingredients: [...], steps: [...] } }
+// Deux modèles, par ordre de préférence : Gemini 2.5 Flash (meilleur),
+// puis Gemini 2.5 Flash Lite en fallback. On appelle directement Gemini ;
+// quand il renvoie 429, le corps d'erreur contient :
+//   - quotaId : GenerateRequestsPerDayPerProjectPerModel-FreeTier (RPD)
+//               GenerateRequestsPerMinutePerProjectPerModel-FreeTier (RPM)
+//   - quotaValue : la limite atteinte
+//   - retryDelay : le temps à attendre, format "XXs"
+// On classe le 429 en "rpd" ou "rpm" selon le quotaId, on bascule sur le
+// modèle suivant, et si tous les modèles sont KO on choisit le message :
+//   - "vacances"    → tous les modèles en RPD.
+//   - "indisponible" → au moins un modèle en RPM (on prend le retryDelay min).
 //
-// For each scanned ingredient, the model first tries to map it to one of the
-// names in knownIngredients (semantic match: "tomate cerise" → "cerise" if the
-// catalog only has "cerise"). Only when no good match exists does it return
-// `isNew: true` together with the metadata needed to create the ingredient
-// programmatically client-side (no user input required).
+// Request body : { imageBase64, mimeType, knownIngredients?: string[], knownTypes?: string[] }
+// Response succès : { recipe, model, quota: { headers, quotaId?, ... } }
+// Response 429    : { error, quota: { retryAfterSeconds, attempts: [...] } }
 
-const MODEL = 'gemini-2.5-flash-lite';
+const MODELS = [
+  { id: 'gemini-2.5-flash' },
+  { id: 'gemini-2.5-flash-lite' },
+];
 
 export default {
   async fetch(request, env) {
@@ -27,47 +36,173 @@ export default {
 
     const known = Array.isArray(knownIngredients) ? knownIngredients.filter(Boolean) : [];
     const types = Array.isArray(knownTypes) ? knownTypes.filter(Boolean) : [];
-
     const prompt = buildPrompt(known, types);
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
-    const payload = {
-      contents: [{
-        role: 'user',
-        parts: [
-          { text: prompt },
-          { inline_data: { mime_type: mimeType, data: imageBase64 } },
-        ],
-      }],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.1,
-      },
-    };
+    const attempts = [];
 
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    for (const model of MODELS) {
+      const result = await callGemini(env, model.id, prompt, mimeType, imageBase64);
 
-    const raw = await r.text();
-    if (!r.ok) {
-      return cors(json({ error: `Gemini ${r.status}: ${raw.slice(0, 500)}` }, 502));
+      if (result.ok) {
+        return cors(json({
+          recipe: result.recipe,
+          model: model.id,
+          quota: { headers: result.headers },
+        }));
+      }
+
+      if (result.status === 429) {
+        // On garde la trace pour décider du message global si tous les modèles tombent.
+        attempts.push({ model: model.id, kind: result.kind, retryAfterSeconds: result.retryAfterSeconds, quotaId: result.quotaId });
+        continue; // tentative du modèle suivant
+      }
+
+      // Erreur non-429 → on remonte tel quel, pas la peine d'essayer les autres modèles.
+      return cors(json({
+        error: result.error,
+        model: model.id,
+        quota: { headers: result.headers },
+      }, result.status || 502));
     }
 
-    let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch { return cors(json({ error: `Gemini réponse non-JSON : ${raw.slice(0, 500)}` }, 502)); }
+    // Tous les modèles ont renvoyé 429.
+    const allRpd = attempts.every((a) => a.kind === 'rpd');
+    if (allRpd) {
+      return cors(json({
+        error: 'Votre serviteur est en vacances aujourd\'hui, revenez demain.',
+        quota: { retryAfterSeconds: secondsUntilUtcMidnight(), attempts },
+      }, 429));
+    }
 
-    const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    let recipe;
-    try { recipe = JSON.parse(text); }
-    catch { return cors(json({ error: `Recette non-JSON : ${text.slice(0, 500)}` }, 502)); }
-
-    return cors(json({ recipe }));
+    // Sinon (au moins un RPM) → on attend selon le plus court retryDelay annoncé
+    // parmi les attempts RPM uniquement. Les retryDelay des attempts RPD sont
+    // trompeurs (Gemini renvoie un petit délai alors qu'il faut attendre minuit UTC).
+    const rpmDelays = attempts.filter((a) => a.kind === 'rpm').map((a) => a.retryAfterSeconds || 60);
+    const retryAfter = Math.max(1, Math.min(...rpmDelays));
+    return cors(json({
+      error: `Votre serviteur est indisponible. Réessayez dans ${retryAfter} s.`,
+      quota: { retryAfterSeconds: retryAfter, attempts },
+    }, 429));
   },
 };
+
+async function callGemini(env, modelId, prompt, mimeType, imageBase64) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const payload = {
+    contents: [{
+      role: 'user',
+      parts: [
+        { text: prompt },
+        { inline_data: { mime_type: mimeType, data: imageBase64 } },
+      ],
+    }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.1,
+    },
+  };
+
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const raw = await r.text();
+  const headers = extractQuotaHeaders(r.headers);
+
+  if (r.status === 429) {
+    const info = parseQuotaError(raw);
+    return {
+      ok: false,
+      status: 429,
+      kind: classifyQuota(info.quotaId),
+      retryAfterSeconds: info.retryAfterSeconds || null,
+      quotaId: info.quotaId || null,
+      quotaValue: info.quotaValue || null,
+      headers,
+    };
+  }
+
+  if (!r.ok) {
+    return { ok: false, status: r.status, error: `Gemini ${r.status}: ${raw.slice(0, 500)}`, headers };
+  }
+
+  let parsed;
+  try { parsed = JSON.parse(raw); }
+  catch { return { ok: false, status: 502, error: `Gemini réponse non-JSON : ${raw.slice(0, 500)}`, headers }; }
+
+  const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  let recipe;
+  try { recipe = JSON.parse(text); }
+  catch { return { ok: false, status: 502, error: `Recette non-JSON : ${text.slice(0, 500)}`, headers }; }
+
+  return { ok: true, recipe, headers };
+}
+
+// Distingue un 429 "RPD" (quota journalier épuisé) d'un 429 "RPM" (quota minute).
+// quotaId attendu :
+//   - GenerateRequestsPerDayPerProjectPerModel-FreeTier         → 'rpd'
+//   - GenerateRequestsPerMinutePerProjectPerModel-FreeTier      → 'rpm'
+// Fallback prudent : si le libellé ne matche pas, on considère 'rpm' (plus court).
+function classifyQuota(quotaId) {
+  const id = String(quotaId || '').toLowerCase();
+  if (id.includes('perday')) return 'rpd';
+  if (id.includes('perminute')) return 'rpm';
+  return 'rpm';
+}
+
+function secondsUntilUtcMidnight() {
+  const now = new Date();
+  const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+  return Math.ceil((tomorrow.getTime() - now.getTime()) / 1000);
+}
+
+// Capture les headers utiles pour le quota / rate-limit. Google n'expose quasi
+// rien sur succès — on ramasse tout ce qui est x-goog-*, retry-after, etc.,
+// pour pouvoir inspecter ce qui est réellement disponible côté client.
+function extractQuotaHeaders(headers) {
+  const out = {};
+  for (const [k, v] of headers.entries()) {
+    const key = k.toLowerCase();
+    if (
+      key.startsWith('x-goog-') ||
+      key.startsWith('x-ratelimit') ||
+      key === 'retry-after' ||
+      key === 'x-request-id'
+    ) {
+      out[key] = v;
+    }
+  }
+  return out;
+}
+
+// Parse le corps d'erreur 429 de Google pour quotaMetric/quotaValue/retryDelay.
+// Format type : { error: { details: [ { '@type': '.../QuotaFailure',
+//   violations: [{ quotaMetric, quotaId, quotaValue }] },
+//   { '@type': '.../RetryInfo', retryDelay: '27s' } ] } }
+function parseQuotaError(raw) {
+  const out = {};
+  try {
+    const body = JSON.parse(raw);
+    const details = body?.error?.details || [];
+    for (const d of details) {
+      const type = d['@type'] || '';
+      if (type.includes('QuotaFailure')) {
+        const v = (d.violations || [])[0];
+        if (v) {
+          out.quotaMetric = v.quotaMetric;
+          out.quotaId = v.quotaId;
+          out.quotaValue = v.quotaValue;
+        }
+      } else if (type.includes('RetryInfo') && d.retryDelay) {
+        const m = String(d.retryDelay).match(/^(\d+(?:\.\d+)?)s$/);
+        if (m) out.retryAfterSeconds = Number(m[1]);
+      }
+    }
+  } catch { /* ignore */ }
+  return out;
+}
 
 function buildPrompt(known, types) {
   const knownList = known.length

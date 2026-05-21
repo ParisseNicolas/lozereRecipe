@@ -32,16 +32,82 @@ async function runScan(file) {
   try {
     const { base64, mimeType } = await fileToCompressedBase64(file);
     const { knownIngredients, knownTypes } = await loadKnownData();
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64: base64, mimeType, knownIngredients, knownTypes }),
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(json.error || `Erreur ${res.status}`);
+    const body = JSON.stringify({ imageBase64: base64, mimeType, knownIngredients, knownTypes });
+
+    // === SCAN DEBUG LOGS ===
+    console.log('[SCAN] worker URL:', WORKER_URL);
+    console.log('[SCAN] mimeType:', mimeType);
+    console.log('[SCAN] base64 length:', base64.length, '(≈', Math.round(base64.length * 0.75 / 1024), 'KB image)');
+    console.log('[SCAN] body size (chars):', body.length);
+    console.log('[SCAN] knownIngredients (' + knownIngredients.length + ') :', knownIngredients);
+    console.log('[SCAN] knownTypes (' + knownTypes.length + ') :', knownTypes);
+    console.log('[SCAN] dataUrl (copie-colle pour rejouer la requête) :');
+    console.log('data:' + mimeType + ';base64,' + base64);
+    console.log('[SCAN] base64 (sans header) :');
+    console.log(base64);
+    window.__lastScan = { base64, mimeType, knownIngredients, knownTypes, body };
+    console.log('[SCAN] window.__lastScan posé (accès direct dans la console)');
+    // === FIN LOGS ===
+
+    // Gemini renvoie ponctuellement 502/503/504 sous charge. Retry avec backoff.
+    // 429 est géré côté worker (fallback de modèle) → on ne retry pas ici.
+    const delays = [0, 1500, 4000];
+    let json = null;
+    let lastErr = null;
+    for (let i = 0; i < delays.length; i++) {
+      if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
+      try {
+        console.log('[SCAN] tentative', i + 1, '/', delays.length);
+        const tStart = Date.now();
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+        const ms = Date.now() - tStart;
+        const data = await res.json().catch(() => ({}));
+        console.log('[SCAN] réponse status =', res.status, '(', ms, 'ms )');
+        console.log('[SCAN] réponse JSON :', data);
+        if (res.ok) {
+          console.log('[SCAN] recipe extraite :', JSON.stringify(data && data.recipe, null, 2));
+          if (data && data.quota) {
+            const q = data.quota;
+            if (q.used && q.limit) {
+              console.log(`[SCAN] usage ${q.used.rpm}/${q.limit.rpm} RPM, ${q.used.rpd}/${q.limit.rpd} RPD`);
+            }
+            console.log('[SCAN] quota Gemini (headers) :', q.headers);
+            window.__lastScanQuota = q;
+          }
+          json = data;
+          lastErr = null;
+          break;
+        }
+        if (res.status === 429) {
+          const quota = (data && data.quota) || {};
+          const secs = Number(quota.retryAfterSeconds) || Number(data.retryAfterSeconds) || 60;
+          console.warn('[SCAN] quota dépassé', quota.quotaMetric || '', '— retry dans', secs, 's');
+          window.__lastScanQuota = quota;
+          const err = new Error(data.error || 'Quota du serviteur dépassé.');
+          err.retryAfterSeconds = secs;
+          err.noRetry = true;
+          throw err;
+        }
+        const transient = res.status === 502 || res.status === 503 || res.status === 504;
+        console.warn('[SCAN] erreur', res.status, 'transient =', transient, 'payload =', data);
+        lastErr = new Error(data.error || `Erreur ${res.status}`);
+        if (!transient) { lastErr.noRetry = true; throw lastErr; }
+      } catch (e) {
+        console.warn('[SCAN] catch tentative', i + 1, ':', e);
+        lastErr = e;
+        if (e && e.noRetry) break;
+      }
     }
-    const recipe = json.recipe;
+    if (lastErr) {
+      console.error('[SCAN] échec final :', lastErr);
+      throw lastErr;
+    }
+
+    const recipe = json && json.recipe;
     if (!recipe || !Array.isArray(recipe.ingredients)) {
       throw new Error('Réponse invalide du service de scan.');
     }
@@ -49,7 +115,16 @@ async function runScan(file) {
     window.location.href = 'editer-recette.html?from=recettes&scan=1';
   } catch (err) {
     overlay.remove();
-    alert('Impossible de scanner la recette : ' + (err.message || err));
+    const msg = 'Impossible de scanner la recette : ' + (err.message || err);
+    const countdownSeconds = Number(err && err.retryAfterSeconds) || null;
+    if (window.Similar && typeof Similar.notify === 'function') {
+      const result = await Similar.notify(msg, { title: 'Scan impossible', countdownSeconds, retryLabel: countdownSeconds ? 'Réessayer' : null });
+      if (result === 'retry') {
+        await runScan(file);
+      }
+    } else {
+      alert(msg);
+    }
   }
 }
 

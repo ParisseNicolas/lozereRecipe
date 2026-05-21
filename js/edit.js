@@ -228,7 +228,8 @@ function renderEdit(data) {
     const draft = Scan.consumeDraft();
     if (draft) {
       if (draft.name) nameInput.value = String(draft.name);
-      portionsInput.value = '4';
+      const draftServings = Math.max(1, parseInt(draft.servings, 10) || 4);
+      portionsInput.value = String(draftServings);
       updateIngrTitle();
       // Sequentially open the new-ingredient modal pre-filled for each unknown
       // ingredient so the user can validate before the row is rendered.
@@ -572,7 +573,7 @@ function onPreview(data, nameInput, portionsInput, ingrList, decoupeWrap, cuisso
   openPreviewModal(built.name || '(sans nom)', built.recipe, built.mergedIngredients, data.unitScales || {});
 }
 
-function openPreviewModal(name, recipe, ingredientsSpec, unitScales) {
+function openPreviewModal(name, recipe, ingredientsSpec, unitScales, portionsOverride) {
   // Remove any previous preview.
   document.querySelectorAll('.preview-backdrop, .preview-modal').forEach((n) => n.remove());
 
@@ -594,7 +595,9 @@ function openPreviewModal(name, recipe, ingredientsSpec, unitScales) {
   inner.id = 'preview-root';
   modal.appendChild(inner);
 
-  const previewPortions = Number(recipe.portions) > 0 ? Number(recipe.portions) : 1;
+  const previewPortions = Number(portionsOverride) > 0
+    ? Number(portionsOverride)
+    : (Number(recipe.portions) > 0 ? Number(recipe.portions) : 1);
   renderRecipePreview(inner, name, recipe, previewPortions, ingredientsSpec, unitScales);
   document.body.appendChild(modal);
 }
@@ -729,7 +732,7 @@ function recipesEqual(r1, r2) {
   return true;
 }
 
-function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
+async function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients) {
   const errEl = document.getElementById('error');
   errEl.hidden = true;
   const built = buildRecipeFromForm(data, nameInput, portionsInput, ingrList, decoupeWrap, cuissonWrap, customIngredients, { requireName: true });
@@ -758,7 +761,49 @@ function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrLis
     }
   }
 
-  if (matchesYamlOriginal) {
+  // Semantic similarity check (creation only, not when editing an existing recipe).
+  // If a near-duplicate is found, ask the user how to proceed. On network/AI failure,
+  // ask the user whether to save anyway rather than silently bypassing.
+  let replaceTargetName = null; // when set, save under this name instead of built.name
+  if (!originalNom && window.Similar && typeof Similar.findMatch === 'function') {
+    let matched = null;
+    let bypassMatch = false;
+    while (true) {
+      const overlay = Similar.showOverlay('Recherche de recettes similaires…');
+      let lookupError = null;
+      try {
+        matched = await Similar.findMatch({ name: built.name, recipe: built.recipe }, data.recipes || {});
+      } catch (e) {
+        console.warn('Similar.findMatch failed', e);
+        lookupError = e;
+      } finally {
+        overlay.remove();
+      }
+      if (!lookupError) break;
+      const countdownSeconds = Number(lookupError && lookupError.retryAfterSeconds) || null;
+      const choice = await Similar.ask(
+        'Votre serviteur est indisponible pour comparer la recette aux existantes. Souhaites-tu enregistrer quand même ?',
+        { confirmLabel: 'Enregistrer', cancelLabel: 'Annuler', countdownSeconds, retryLabel: 'Réessayer' }
+      );
+      if (choice === 'cancel') return;
+      if (choice === 'confirm') { bypassMatch = true; break; }
+      // 'retry' → loop and re-attempt findMatch.
+    }
+    if (!bypassMatch && matched && matched !== built.name && (data.recipes || {})[matched]) {
+      const choice = await Similar.confirm(built.name, matched, data.recipes[matched], {
+        ingredientsSpec: data.ingredients || {},
+        unitScales: data.unitScales || {},
+      });
+      if (choice === 'cancel') return;
+      if (choice === 'replace') replaceTargetName = matched;
+      // 'add' → fall through to the normal save path.
+    }
+  }
+
+  if (replaceTargetName) {
+    // Override the existing recipe (perso or YAML) under its current name.
+    Store.saveCustomRecipe(replaceTargetName, built.recipe);
+  } else if (matchesYamlOriginal) {
     // The recipe is back to its original YAML form: it should not be perso.
     if (built.name in customRecipes) Store.deleteCustomRecipe(built.name);
   } else {
@@ -766,6 +811,7 @@ function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrLis
   }
 
   if (slot) {
+    const savedName = replaceTargetName || built.name;
     fetch('repas.yml')
       .then((r) => r.text())
       .then((text) => {
@@ -779,7 +825,7 @@ function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrLis
           const m = (yamlData.meals || []).find((x) => x.name === slot);
           current = (m && Array.isArray(m.recipes)) ? m.recipes.slice() : [];
         }
-        if (!current.includes(built.name)) current.push(built.name);
+        if (!current.includes(savedName)) current.push(savedName);
         Store.setMealOverride(slot, { recipes: current });
         window.location.href = `index.html?openPicker=${encodeURIComponent(slot)}`;
       })
@@ -891,3 +937,4 @@ async function queueScanIngredients(ings, data, customIngredients, ingrList) {
 }
 
 window.Edit = { renderEdit, createIngredientFromAi };
+window.Preview = { open: openPreviewModal };
