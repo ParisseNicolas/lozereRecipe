@@ -936,7 +936,7 @@ ingredients:
   melon:
     type: Fruits et légumes
   cumin:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -945,7 +945,7 @@ ingredients:
         cs: 6
         tube: 40
   paprika:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -954,7 +954,7 @@ ingredients:
         cs: 6
         tube: 40
   piment poudre:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -963,7 +963,7 @@ ingredients:
         cs: 6
         tube: 40
   piment d'espelette:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -972,7 +972,7 @@ ingredients:
         cs: 6
         tube: 40
   curry:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -981,7 +981,7 @@ ingredients:
         cs: 6
         tube: 40
   curcuma:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -990,7 +990,7 @@ ingredients:
         cs: 6
         tube: 40
   gingembre poudre:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -999,7 +999,7 @@ ingredients:
         cs: 6
         tube: 40
   zataar:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -1008,7 +1008,7 @@ ingredients:
         cs: 6
         tube: 40
   épices à couscous:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -1017,7 +1017,7 @@ ingredients:
         cs: 6
         tube: 40
   origan:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -1026,7 +1026,7 @@ ingredients:
         cs: 3
         tube: 25
   herbes de provence:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -1035,7 +1035,7 @@ ingredients:
         cs: 3
         tube: 25
   thym:
-    type: Épices
+    type: Épicerie
     preferred: g
     purchase: tube
     convert:
@@ -1044,7 +1044,7 @@ ingredients:
         cs: 3
         tube: 25
   laurier:
-    type: Épices
+    type: Épicerie
     preferred: sachet
     convert:
       sachet:

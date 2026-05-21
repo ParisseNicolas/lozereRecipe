@@ -61,6 +61,11 @@ function render(data) {
     });
   }
 
+  const scanBtn = document.getElementById('scan-recipe-btn');
+  if (scanBtn && window.Scan) {
+    Scan.attachButton(scanBtn);
+  }
+
   // Restore scroll after the grid is in the DOM (page is now tall enough).
   const saved = sessionStorage.getItem('recettes:scroll');
   if (saved !== null) {

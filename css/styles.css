@@ -2262,4 +2262,50 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   }
 }
 
+/* Scan recipe loading overlay */
+.scan-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.scan-overlay__box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 80vw;
+  text-align: center;
+}
+
+.scan-overlay__box p {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.scan-spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #4caf50;
+  border-radius: 50%;
+  animation: scan-spin 0.9s linear infinite;
+}
+
+@keyframes scan-spin {
+  to { transform: rotate(360deg); }
+}
+
+#scan-recipe-btn {
+  margin-left: 0.5rem;
+}
 

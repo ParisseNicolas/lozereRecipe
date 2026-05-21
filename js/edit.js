@@ -6,7 +6,12 @@
 
 function getParams() {
   const p = new URLSearchParams(window.location.search);
-  return { slot: p.get('slot') || '', nom: p.get('nom') || '', from: p.get('from') || '' };
+  return {
+    slot: p.get('slot') || '',
+    nom: p.get('nom') || '',
+    from: p.get('from') || '',
+    scan: p.get('scan') === '1',
+  };
 }
 
 function backUrl(from) {
@@ -112,7 +117,7 @@ function factorFromPreset(preset, from, to) {
 function renderEdit(data) {
   const root = document.getElementById('edit-root');
   root.innerHTML = '';
-  const { slot, nom, from } = getParams();
+  const { slot, nom, from, scan } = getParams();
 
   const customIngredients = Store.loadCustomIngredients();
   const customRecipes = Store.loadCustomRecipes();
@@ -213,6 +218,22 @@ function renderEdit(data) {
         ingrList.appendChild(buildIngredientRow(ingr, String(amount), unit, data, customIngredients));
       }
       const steps = (existing.steps || []).map(String);
+      const idx = steps.findIndex((s) => MARKER_RE.test(s));
+      const decoupe = idx === -1 ? steps : steps.slice(0, idx);
+      const cuisson = idx === -1 ? [] : steps.slice(idx + 1);
+      for (const s of decoupe) decoupeWrap.addStep(s);
+      for (const s of cuisson) cuissonWrap.addStep(s);
+    }
+  } else if (scan && window.Scan) {
+    const draft = Scan.consumeDraft();
+    if (draft) {
+      if (draft.name) nameInput.value = String(draft.name);
+      portionsInput.value = '4';
+      updateIngrTitle();
+      // Sequentially open the new-ingredient modal pre-filled for each unknown
+      // ingredient so the user can validate before the row is rendered.
+      queueScanIngredients(draft.ingredients || [], data, customIngredients, ingrList);
+      const steps = (draft.steps || []).map(String);
       const idx = steps.findIndex((s) => MARKER_RE.test(s));
       const decoupe = idx === -1 ? steps : steps.slice(0, idx);
       const cuisson = idx === -1 ? [] : steps.slice(idx + 1);
@@ -768,4 +789,105 @@ function onSave(data, slot, from, originalNom, nameInput, portionsInput, ingrLis
   }
 }
 
-window.Edit = { renderEdit };
+// Programmatic ingredient creation from AI-supplied fields.
+// `fields` shape (all strings unless noted):
+//   { type, preferred, purchase, convertFactor?: number, metricFactor?: number, metricUnit?: 'g'|'ml' }
+// Returns { ok: true, name, spec } on success or { ok: false, error } on failure.
+// Does NOT touch the DOM — caller is responsible for refreshing rows.
+function createIngredientFromAi(name, fields, data, customIngredients) {
+  if (!name || typeof name !== 'string') return { ok: false, error: 'Nom manquant.' };
+  name = name.trim();
+  if (!name) return { ok: false, error: 'Nom vide.' };
+  if ((data && data.ingredients && data.ingredients[name]) || (customIngredients && customIngredients[name])) {
+    return { ok: true, name, spec: (customIngredients && customIngredients[name]) || data.ingredients[name] };
+  }
+  if (!fields || typeof fields !== 'object') return { ok: false, error: 'Métadonnées manquantes.' };
+
+  const type = String(fields.type || '').trim();
+  const preferred = String(fields.preferred || '').trim();
+  const purchase = String(fields.purchase || '').trim();
+  if (!type || !preferred || !purchase) return { ok: false, error: 'Champs requis manquants (type/preferred/purchase).' };
+
+  const spec = { preferred, purchase, type };
+
+  if (preferred !== purchase) {
+    const unitScales = (data && data.unitScales) || {};
+    const derived = deriveConvertFactor(preferred, purchase, unitScales);
+    if (derived != null) {
+      spec.convert = { [preferred]: { [purchase]: derived } };
+    } else {
+      const f = Number(fields.convertFactor);
+      if (!isFinite(f) || f <= 0) return { ok: false, error: `Facteur de conversion ${purchase}→${preferred} manquant.` };
+      spec.convert = { [preferred]: { [purchase]: f } };
+    }
+  }
+
+  // Metric reference if neither pref nor purchase is an equiv unit.
+  const needMetric = !Parser.isEquivUnit(preferred) && !Parser.isEquivUnit(purchase);
+  if (needMetric) {
+    const mf = Number(fields.metricFactor);
+    const mu = String(fields.metricUnit || 'g').trim().toLowerCase();
+    const metricUnit = mu === 'ml' ? 'ml' : 'g';
+    if (!isFinite(mf) || mf <= 0) return { ok: false, error: 'Facteur métrique manquant.' };
+    spec.convert = spec.convert || {};
+    spec.convert[metricUnit] = spec.convert[metricUnit] || {};
+    spec.convert[metricUnit][preferred] = mf;
+  }
+
+  customIngredients[name] = spec;
+  if (window.Store && typeof Store.saveCustomIngredient === 'function') {
+    Store.saveCustomIngredient(name, spec);
+  }
+  return { ok: true, name, spec };
+}
+
+// Sequentially open the new-ingredient modal (pre-filled with AI metadata) for
+// each unknown ingredient in a scanned recipe, then append the row. Known
+// ingredients are appended directly. Modal opens are awaited so the user
+// validates one ingredient before the next modal appears, and so the row's
+// unit dropdown resolves correctly once the spec is in customIngredients.
+async function queueScanIngredients(ings, data, customIngredients, ingrList) {
+  for (const ing of ings) {
+    if (!ing || !ing.name) continue;
+    const ingName = String(ing.name).trim();
+    if (!ingName) continue;
+
+    const knownAlready = (data.ingredients && data.ingredients[ingName]) || customIngredients[ingName];
+    if (!knownAlready && typeof window.openNewIngredientModal === 'function') {
+      await new Promise((resolve) => {
+        window.openNewIngredientModal({
+          data,
+          customIngredients,
+          initialName: ingName,
+          prefill: {
+            type: ing.type,
+            preferred: ing.preferred || ing.unit,
+            purchase: ing.purchase || ing.preferred || ing.unit,
+            convertFactor: ing.convertFactor,
+            metricFactor: ing.metricFactor,
+            metricUnit: ing.metricUnit,
+          },
+          onSave: ({ name, spec }) => {
+            customIngredients[name] = spec;
+            if (window.Store && typeof Store.saveCustomIngredient === 'function') {
+              Store.saveCustomIngredient(name, spec);
+            }
+            if (data.ingredients) data.ingredients[name] = spec;
+            // Propagate option to any rows already on the page.
+            document.querySelectorAll('#edit-ingr-list .ingr-row').forEach((r) => {
+              if (typeof r._addIngredientOption === 'function') r._addIngredientOption(name);
+            });
+            resolve();
+          },
+          onCancel: () => resolve(),
+        });
+      });
+    }
+
+    const amount = Number(ing.quantity);
+    const amtStr = isFinite(amount) && amount > 0 ? String(amount) : '';
+    ingrList.appendChild(buildIngredientRow(ingName, amtStr, String(ing.unit || ''), data, customIngredients));
+  }
+}
+
+window.Edit = { renderEdit, createIngredientFromAi };

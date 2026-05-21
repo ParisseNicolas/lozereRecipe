@@ -111,6 +111,12 @@
     const prefSelect = document.createElement('select');
     prefSelect.className = 'new-ingr-pref';
     prefRow.appendChild(prefSelect);
+    const prefInput = document.createElement('input');
+    prefInput.type = 'text';
+    prefInput.placeholder = 'ex: pincée, gousse, brin';
+    prefInput.className = 'new-ingr-pref-input';
+    prefInput.hidden = true;
+    prefRow.appendChild(prefInput);
     root.appendChild(prefRow);
 
     // --- Step 3 : Purchase unit.
@@ -235,6 +241,7 @@
     });
     root.appendChild(typeRow);
 
+    let lastPopulatedMode = null; // 'none' | preset name
     function updateFlow() {
       const presetRaw = presetSelect.value;
       const presetChosen = presetRaw !== '';
@@ -256,23 +263,32 @@
       if (preset) {
         const units = presetUnitsOf(preset);
         const baseUnit = Object.keys(preset)[0] || '';
-        populateSelect(prefSelect, units, baseUnit);
+        if (lastPopulatedMode !== presetName) {
+          populateSelect(prefSelect, units, baseUnit);
+          populateSelect(purchaseSelect, units, '');
+          lastPopulatedMode = presetName;
+        }
         presetHint.hidden = false;
         const descLine = presetDesc ? `<em>${presetDesc}</em><br>` : '';
         presetHint.innerHTML = `${descLine}Preset <strong>${presetName}</strong> : ${formatPreset(preset)}`;
         purchaseSelect.hidden = false;
         purchaseInput.hidden = true;
-        populateSelect(purchaseSelect, units, '');
       } else {
-        populateSelect(prefSelect, allUnits, '');
+        if (lastPopulatedMode !== 'none') {
+          populateSelect(prefSelect, allUnits, '', { addNew: true });
+          populateSelect(purchaseSelect, allUnits, '', { addNew: true });
+          lastPopulatedMode = 'none';
+        }
+        if (prefSelect.value !== '__new__') prefInput.hidden = true;
         presetHint.hidden = true;
         purchaseSelect.hidden = false;
-        populateSelect(purchaseSelect, allUnits, '', { addNew: true });
         if (purchaseSelect.value !== '__new__') purchaseInput.hidden = true;
       }
       prefRow.hidden = false;
 
-      const pref = prefSelect.value.trim();
+      const pref = (!preset && prefSelect.value === '__new__')
+        ? prefInput.value.trim()
+        : prefSelect.value.trim();
       if (!pref) {
         purchaseRow.hidden = true;
         autoHint.hidden = true;
@@ -357,7 +373,17 @@
     }
 
     presetSelect.addEventListener('change', updateFlow);
-    prefSelect.addEventListener('change', updateFlow);
+    prefSelect.addEventListener('change', () => {
+      if (prefSelect.value === '__new__') {
+        prefInput.hidden = false;
+        prefInput.value = '';
+        prefInput.focus();
+      } else {
+        prefInput.hidden = true;
+      }
+      updateFlow();
+    });
+    prefInput.addEventListener('input', updateFlow);
     purchaseSelect.addEventListener('change', () => {
       if (purchaseSelect.value === '__new__') {
         purchaseInput.hidden = false;
@@ -391,7 +417,9 @@
       const presetEntry = presetName ? (presets[presetName] || null) : null;
       const preset = presetEntry ? (presetEntry.convert || presetEntry) : null;
 
-      const pref = prefSelect.value.trim();
+      const pref = (!preset && prefSelect.value === '__new__')
+        ? prefInput.value.trim()
+        : prefSelect.value.trim();
       if (!pref) return { error: 'Choisis une unité recette.' };
       const purchase = (!preset && purchaseSelect.value === '__new__')
         ? purchaseInput.value.trim()
@@ -442,8 +470,110 @@
     return { root, read, focusName: () => nameInput.focus() };
   }
 
+  // Pre-fill the form with AI-supplied fields. Goes through the "no preset"
+  // path, dispatching change events so updateFlow() recomputes visibility.
+  function applyPrefill(modal, prefill) {
+    if (!prefill) return;
+    const presetSelect = modal.querySelector('.new-ingr-preset');
+    const prefSelect = modal.querySelector('.new-ingr-pref');
+    const prefInput = modal.querySelector('.new-ingr-pref-input');
+    const purchaseSelect = modal.querySelector('.new-ingr-purchase-select');
+    const purchaseInput = modal.querySelector('.new-ingr-purchase');
+    const convFactor = modal.querySelector('.new-ingr-conv-factor');
+    const metricFactor = modal.querySelector('.new-ingr-metric-factor');
+    const metricSelect = modal.querySelector('.new-ingr-metric-select');
+    const typeSelect = modal.querySelector('.new-ingr-type-select');
+    const typeInput = modal.querySelector('.new-ingr-type');
+
+    presetSelect.value = '__none__';
+    presetSelect.dispatchEvent(new Event('change'));
+
+    const hasOption = (sel, val) => Array.from(sel.options).some((o) => o.value === val);
+    // Insert a unit option into a select if missing, before any sentinel option (__new__).
+    const ensureOption = (sel, val) => {
+      if (!val || hasOption(sel, val)) return;
+      const o = document.createElement('option');
+      o.value = val;
+      o.textContent = val;
+      const sentinel = Array.from(sel.options).find((opt) => opt.value === '__new__');
+      if (sentinel) sel.insertBefore(o, sentinel);
+      else sel.appendChild(o);
+    };
+
+    if (prefill.preferred) {
+      ensureOption(prefSelect, prefill.preferred);
+      if (hasOption(prefSelect, prefill.preferred)) {
+        prefSelect.value = prefill.preferred;
+        prefSelect.dispatchEvent(new Event('change'));
+      } else if (hasOption(prefSelect, '__new__')) {
+        prefSelect.value = '__new__';
+        prefSelect.dispatchEvent(new Event('change'));
+        prefInput.value = prefill.preferred;
+        prefInput.dispatchEvent(new Event('input'));
+      }
+    }
+
+    if (prefill.purchase) {
+      ensureOption(purchaseSelect, prefill.purchase);
+      if (hasOption(purchaseSelect, prefill.purchase)) {
+        purchaseSelect.value = prefill.purchase;
+        purchaseSelect.dispatchEvent(new Event('change'));
+      } else if (hasOption(purchaseSelect, '__new__')) {
+        purchaseSelect.value = '__new__';
+        purchaseSelect.dispatchEvent(new Event('change'));
+        purchaseInput.value = prefill.purchase;
+        purchaseInput.dispatchEvent(new Event('input'));
+      }
+    }
+
+    if (prefill.convertFactor != null && isFinite(Number(prefill.convertFactor))) {
+      convFactor.value = String(prefill.convertFactor);
+      convFactor.dispatchEvent(new Event('input'));
+    } else if (
+      prefill.metricFactor != null && isFinite(Number(prefill.metricFactor)) && Number(prefill.metricFactor) > 0
+      && prefill.metricUnit && prefill.purchase
+      && Parser.isMetricUnit(prefill.metricUnit) && Parser.isMetricUnit(prefill.purchase)
+    ) {
+      // AI gave metricFactor but purchase is already metric → derive convertFactor.
+      // Orientation: 1 purchase = X preferred. 1 preferred = metricFactor [metricUnit].
+      const SCALE = { mg: 0.001, g: 1, kg: 1000, ml: 1, cl: 10, L: 1000 };
+      const sP = SCALE[prefill.purchase];
+      const sM = SCALE[prefill.metricUnit];
+      // Same family (mass↔mass, volume↔volume): mg/g/kg are <=1000, ml/cl/L are 1..1000.
+      const massSet = new Set(['mg', 'g', 'kg']);
+      const volSet = new Set(['ml', 'cl', 'L']);
+      const sameFamily = (massSet.has(prefill.purchase) && massSet.has(prefill.metricUnit))
+        || (volSet.has(prefill.purchase) && volSet.has(prefill.metricUnit));
+      if (sameFamily && sP && sM) {
+        const derived = sP / (sM * Number(prefill.metricFactor));
+        convFactor.value = String(Math.round(derived * 1000) / 1000);
+        convFactor.dispatchEvent(new Event('input'));
+      }
+    }
+
+    if (prefill.metricUnit && hasOption(metricSelect, prefill.metricUnit)) {
+      metricSelect.value = prefill.metricUnit;
+      metricSelect.dispatchEvent(new Event('change'));
+    }
+    if (prefill.metricFactor != null && isFinite(Number(prefill.metricFactor))) {
+      metricFactor.value = String(prefill.metricFactor);
+      metricFactor.dispatchEvent(new Event('input'));
+    }
+
+    if (prefill.type) {
+      if (hasOption(typeSelect, prefill.type)) {
+        typeSelect.value = prefill.type;
+        typeSelect.dispatchEvent(new Event('change'));
+      } else {
+        typeSelect.value = '__new__';
+        typeSelect.dispatchEvent(new Event('change'));
+        typeInput.value = prefill.type;
+      }
+    }
+  }
+
   function openNewIngredientModal(opts) {
-    const { data, customIngredients, initialName, onSave, onCancel } = opts || {};
+    const { data, customIngredients, initialName, prefill, onSave, onCancel } = opts || {};
 
     // Clean any stale instance.
     document.querySelectorAll('.new-ingr-backdrop, .new-ingr-modal').forEach((n) => n.remove());
@@ -509,6 +639,8 @@
     document.body.appendChild(backdrop);
     document.body.appendChild(modal);
     document.addEventListener('keydown', onKey);
+
+    if (prefill) applyPrefill(modal, prefill);
 
     setTimeout(() => form.focusName(), 50);
   }
