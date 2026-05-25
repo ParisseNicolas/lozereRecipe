@@ -488,7 +488,7 @@
     presetSelect.value = '__none__';
     presetSelect.dispatchEvent(new Event('change'));
 
-    const hasOption = (sel, val) => Array.from(sel.options).some((o) => o.value === val);
+    const hasOption = (sel, val) => Array.from(sel.options).some((o) => App.eqCI(o.value, val));
     // Insert a unit option into a select if missing, before any sentinel option (__new__).
     const ensureOption = (sel, val) => {
       if (!val || hasOption(sel, val)) return;

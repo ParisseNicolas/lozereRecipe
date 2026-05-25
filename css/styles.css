@@ -838,7 +838,8 @@ main {
 }
 
 #export-yaml-btn,
-#import-yaml-btn {
+#import-yaml-btn,
+#share-yaml-btn {
   background: transparent;
   color: var(--lp-blue);
   border: 1px solid var(--lp-blue);
@@ -852,7 +853,8 @@ main {
 }
 
 #export-yaml-btn:hover,
-#import-yaml-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
+#import-yaml-btn:hover,
+#share-yaml-btn:hover { background: rgba(110, 195, 255, 0.1); box-shadow: 0 0 8px rgba(110, 195, 255, 0.3); }
 
 #reset-overrides-btn {
   background: transparent;
@@ -1282,6 +1284,27 @@ main {
 .qr-fab:hover { background: var(--lp-green); transform: scale(1.05); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px var(--lp-green-glow); }
 .qr-fab:focus-visible { outline: 2px solid var(--lp-blue); outline-offset: 2px; }
 
+/* Share FAB : même style que QR FAB, caché par défaut, affiché en mode smartphone (cf. media query) */
+.share-fab {
+  display: none;
+  position: fixed;
+  bottom: calc(1rem + 44px + 0.5rem);
+  right: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--lp-green-dark);
+  color: var(--lp-bg);
+  border: 1px solid var(--lp-green);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px var(--lp-green-glow);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+}
+.share-fab:hover { background: var(--lp-green); transform: scale(1.05); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px var(--lp-green-glow); }
+.share-fab:focus-visible { outline: 2px solid var(--lp-blue); outline-offset: 2px; }
+
 .qr-modal {
   text-align: center;
   min-width: 280px;
@@ -1468,6 +1491,7 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   #share-btn,
   #export-yaml-btn,
   #import-yaml-btn,
+  #share-yaml-btn,
   #reset-overrides-btn,
   #print-menu-btn,
   .print-btn {
@@ -1700,6 +1724,10 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
     right: 0.75rem;
   }
   .qr-wrap svg { width: 200px; height: 200px; }
+
+  /* Share FAB visible uniquement sur smartphone, juste au-dessus du QR */
+  #share-yaml-btn { display: none; }
+  .share-fab { display: flex; width: 40px; height: 40px; bottom: calc(0.75rem + 40px + 0.5rem); right: 0.75rem; }
 }
 
 /* === Print button === */
@@ -2447,5 +2475,97 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
 
 .similar-recipe-actions .btn-secondary:hover {
   background: var(--lp-bg-2);
+}
+
+/* --- YAML share / receive / merge modals --- */
+.yaml-share-modal,
+.yaml-recv-modal,
+.yaml-merge-modal {
+  max-width: 720px;
+  width: 92%;
+}
+
+.yaml-share-status {
+  margin: 8px 0;
+  color: var(--lp-text-muted, #aaa);
+}
+
+.yaml-merge-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.yaml-merge-col {
+  background: var(--lp-bg-2, #1c1c1c);
+  border: 1px solid var(--lp-border, #333);
+  border-radius: 6px;
+  padding: 8px;
+  min-width: 0;
+}
+
+.yaml-merge-col h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.95em;
+  color: var(--lp-green, #6dd47e);
+}
+
+.yaml-merge-col pre {
+  margin: 0;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.yaml-merge-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lp-surface, #222);
+  color: var(--lp-text, #eee);
+  border: 1px solid var(--lp-border, #333);
+  padding: 10px 16px;
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.yaml-merge-linefix {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+}
+.yaml-merge-linefix-amount {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--lp-bg-elev, #1c1c1c);
+  color: var(--lp-text, #eee);
+  border: 1px solid var(--lp-border, #333);
+  border-radius: 6px;
+  font-size: 1em;
+}
+.yaml-merge-linefix-unit {
+  padding: 8px 10px;
+  background: var(--lp-bg-elev, #1c1c1c);
+  color: var(--lp-text, #eee);
+  border: 1px solid var(--lp-border, #333);
+  border-radius: 6px;
+  font-size: 1em;
+}
+
+@media (max-width: 600px) {
+  .yaml-merge-cols {
+    grid-template-columns: 1fr;
+  }
+  .yaml-merge-col pre {
+    max-height: 30vh;
+  }
 }
 

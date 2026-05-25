@@ -100,7 +100,7 @@ function renderMenu(data) {
   const params = new URLSearchParams(window.location.search);
   const slotToOpen = params.get('openPicker');
   if (slotToOpen) {
-    const meal = (data.meals || []).find((m) => m.name === slotToOpen);
+    const meal = (data.meals || []).find((m) => App.eqCI(m.name, slotToOpen));
     if (meal) {
       openMealPicker(meal.name, meal.recipes || [], data);
     }
@@ -121,21 +121,14 @@ function renderMenuActions(data) {
   }
   actions.innerHTML = '';
 
-  const exportBtn = document.createElement('button');
-  exportBtn.type = 'button';
-  exportBtn.id = 'export-yaml-btn';
-  exportBtn.textContent = 'Exporter YAML';
-  exportBtn.addEventListener('click', exportYaml);
-  actions.appendChild(exportBtn);
-
-  const importBtn = document.createElement('button');
-  importBtn.type = 'button';
-  importBtn.id = 'import-yaml-btn';
-  importBtn.textContent = 'Importer YAML';
-  importBtn.addEventListener('click', () => {
-    if (window.YamlImport && window.YamlImport.open) window.YamlImport.open();
+  const shareBtn = document.createElement('button');
+  shareBtn.type = 'button';
+  shareBtn.id = 'share-yaml-btn';
+  shareBtn.textContent = '📤 Partager mes données';
+  shareBtn.addEventListener('click', () => {
+    if (window.YamlShare && YamlShare.openShareModal) YamlShare.openShareModal();
   });
-  actions.appendChild(importBtn);
+  actions.appendChild(shareBtn);
 
   const printBtn = document.createElement('button');
   printBtn.type = 'button';
@@ -168,50 +161,6 @@ function renderMenuActions(data) {
     });
     actions.appendChild(resetBtn);
   }
-}
-
-async function exportYaml() {
-  // Export an updated repas.yml that includes every local modification
-  // (custom recipes/ingredients, meal slot overrides, day portions).
-  // The output keeps the same shape as repas.yml so it can be used as a
-  // drop-in replacement (future import feature).
-  let data;
-  try {
-    data = await App.loadData();
-  } catch (e) {
-    alert('Impossible de charger repas.yml pour export : ' + e.message);
-    return;
-  }
-
-  // Apply per-day portions overrides onto each meal's `portions` field.
-  const portionsByDay = Store.loadPortionsByDay();
-  if (Array.isArray(data.meals)) {
-    for (const m of data.meals) {
-      const d = App.dayOf(m.name);
-      if (portionsByDay[d] != null) m.portions = Number(portionsByDay[d]);
-    }
-  }
-
-  // Re-order top-level keys to match the canonical repas.yml layout.
-  const order = ['unitScales', 'ingredientPresets', 'recipes', 'meals', 'ingredients'];
-  const ordered = {};
-  for (const k of order) {
-    if (data[k] !== undefined) ordered[k] = data[k];
-  }
-  for (const k of Object.keys(data)) {
-    if (!(k in ordered)) ordered[k] = data[k];
-  }
-
-  const yamlStr = jsyaml.dump(ordered, { lineWidth: 120, noRefs: true, sortKeys: false });
-  const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'repas.yml';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // --- Picker modal ---
@@ -327,7 +276,7 @@ function openMealPicker(slot, currentRecipes, data) {
   actions.appendChild(emptyBtn);
 
   const overrides = Store.loadMealOverrides();
-  if (slot in overrides) {
+  if (App.hasKeyCI(overrides, slot)) {
     const restoreBtn = document.createElement('button');
     restoreBtn.type = 'button';
     restoreBtn.textContent = 'Restaurer';
@@ -365,7 +314,7 @@ function reloadAndRender() {
 function reloadAndKeepPicker(slot) {
   App.loadData().then((data) => {
     renderMenu(data);
-    const meal = (data.meals || []).find((m) => m.name === slot);
+    const meal = (data.meals || []).find((m) => App.eqCI(m.name, slot));
     if (meal) openMealPicker(meal.name, meal.recipes || [], data);
   }).catch((err) => {
     const e = document.getElementById('error');

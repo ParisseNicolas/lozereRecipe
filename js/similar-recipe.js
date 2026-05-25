@@ -21,7 +21,7 @@
     if (!candidate || !candidate.name || !candidate.recipe) return null;
     const existing = [];
     for (const [n, r] of Object.entries(allRecipes || {})) {
-      if (n === candidate.name) continue;
+      if (window.App && App.eqCI ? App.eqCI(n, candidate.name) : n === candidate.name) continue;
       existing.push(summarize(n, r));
     }
     if (existing.length === 0) return null;

@@ -121,7 +121,7 @@ function renderEdit(data) {
 
   const customIngredients = Store.loadCustomIngredients();
   const customRecipes = Store.loadCustomRecipes();
-  const isCustom = !!nom && (nom in customRecipes);
+  const isCustom = !!nom && App.hasKeyCI(customRecipes, nom);
 
   // Adjust the back-link based on where the user came from.
   const backLink = document.getElementById('back-link');
@@ -386,8 +386,9 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
   nameInput.value = name;
   nameInput.hidden = true;
 
-  if (name && knownIngredientsList.includes(name)) {
-    nameSelect.value = name;
+  if (name && App.includesCI(knownIngredientsList, name)) {
+    const match = knownIngredientsList.find((x) => App.eqCI(x, name));
+    nameSelect.value = match != null ? match : name;
   } else if (name) {
     nameSelect.value = '__new__';
     nameInput.hidden = false;
@@ -466,7 +467,7 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
 
   // Helper to add a newly-created ingredient option to this row's select.
   const addIngredientOption = (n) => {
-    if (Array.from(nameSelect.options).some((o) => o.value === n)) return;
+    if (Array.from(nameSelect.options).some((o) => App.eqCI(o.value, n))) return;
     const o = document.createElement('option');
     o.value = n;
     o.textContent = n;
@@ -479,7 +480,8 @@ function buildIngredientRow(name, amount, unit, data, customIngredients) {
     if (v === '__new__') {
       // Revert select so the placeholder/previous value is visible while modal is open.
       const prev = nameInput.value.trim();
-      nameSelect.value = (prev && Array.from(nameSelect.options).some((o) => o.value === prev)) ? prev : '';
+      const match = prev ? Array.from(nameSelect.options).find((o) => App.eqCI(o.value, prev)) : null;
+      nameSelect.value = match ? match.value : '';
       if (typeof window.openNewIngredientModal === 'function') {
         window.openNewIngredientModal({
           data,
@@ -715,13 +717,15 @@ function recipesEqual(r1, r2) {
   if (base1 !== base2) return false;
   const i1 = r1.ingredients || {};
   const i2 = r2.ingredients || {};
-  const k1 = Object.keys(i1).sort();
-  const k2 = Object.keys(i2).sort();
+  const k1 = Object.keys(i1).map((k) => k.toLowerCase()).sort();
+  const k2 = Object.keys(i2).map((k) => k.toLowerCase()).sort();
   if (k1.length !== k2.length) return false;
   for (let i = 0; i < k1.length; i++) {
     if (k1[i] !== k2[i]) return false;
-    const p1 = Parser.parseQuantity(i1[k1[i]]);
-    const p2 = Parser.parseQuantity(i2[k2[i]]);
+    const v1 = App.getCI(i1, k1[i]);
+    const v2 = App.getCI(i2, k2[i]);
+    const p1 = Parser.parseQuantity(v1);
+    const p2 = Parser.parseQuantity(v2);
     if (Math.abs((p1.amount || 0) - (p2.amount || 0)) > 1e-9) return false;
     if ((p1.unit || '') !== (p2.unit || '')) return false;
   }
@@ -740,11 +744,11 @@ async function onSave(data, slot, from, originalNom, nameInput, portionsInput, i
 
   const customRecipes = Store.loadCustomRecipes();
   const yamlRecipes = data.recipesYaml || {};
-  const yamlOriginal = yamlRecipes[built.name];
+  const yamlOriginal = App.getCI(yamlRecipes, built.name);
   const matchesYamlOriginal = yamlOriginal && recipesEqual(built.recipe, yamlOriginal);
 
   // In create mode (no originalNom), a name collision with an existing recipe is a duplicate.
-  if (!originalNom && built.name in (data.recipes || {})) {
+  if (!originalNom && App.hasKeyCI(data.recipes || {}, built.name)) {
     errEl.hidden = false;
     errEl.textContent = 'Cette recette existe déjà.';
     return;
@@ -753,7 +757,7 @@ async function onSave(data, slot, from, originalNom, nameInput, portionsInput, i
   // Duplicate detection: identical content under a different name.
   // Only skip the recipe currently being edited (originalNom), never the new name itself.
   for (const [otherName, otherRecipe] of Object.entries(data.recipes || {})) {
-    if (originalNom && otherName === originalNom) continue;
+    if (originalNom && App.eqCI(otherName, originalNom)) continue;
     if (recipesEqual(built.recipe, otherRecipe)) {
       errEl.hidden = false;
       errEl.textContent = 'Cette recette existe déjà.';
@@ -805,7 +809,7 @@ async function onSave(data, slot, from, originalNom, nameInput, portionsInput, i
     Store.saveCustomRecipe(replaceTargetName, built.recipe);
   } else if (matchesYamlOriginal) {
     // The recipe is back to its original YAML form: it should not be perso.
-    if (built.name in customRecipes) Store.deleteCustomRecipe(built.name);
+    if (App.hasKeyCI(customRecipes, built.name)) Store.deleteCustomRecipe(built.name);
   } else {
     Store.saveCustomRecipe(built.name, built.recipe);
   }
@@ -818,14 +822,14 @@ async function onSave(data, slot, from, originalNom, nameInput, portionsInput, i
         const yamlData = jsyaml.load(text);
         const overrides = Store.loadMealOverrides();
         let current = [];
-        if (slot in overrides) {
-          const ov = overrides[slot];
+        if (App.hasKeyCI(overrides, slot)) {
+          const ov = App.getCI(overrides, slot);
           current = ov && Array.isArray(ov.recipes) ? ov.recipes.slice() : [];
         } else {
-          const m = (yamlData.meals || []).find((x) => x.name === slot);
+          const m = (yamlData.meals || []).find((x) => App.eqCI(x.name, slot));
           current = (m && Array.isArray(m.recipes)) ? m.recipes.slice() : [];
         }
-        if (!current.includes(savedName)) current.push(savedName);
+        if (!App.includesCI(current, savedName)) current.push(savedName);
         Store.setMealOverride(slot, { recipes: current });
         window.location.href = `index.html?openPicker=${encodeURIComponent(slot)}`;
       })

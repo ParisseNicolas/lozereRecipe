@@ -50,7 +50,7 @@
 
     const intro = document.createElement('p');
     intro.className = 'yaml-import-intro';
-    intro.innerHTML = 'Colle ton YAML ou charge un fichier. Le contenu remplacera <strong>toutes</strong> les modifications locales (recettes, ingrédients, repas, portions).';
+    intro.innerHTML = 'Colle ton YAML ou charge un fichier. <strong>Remplacer</strong> écrase toutes les données locales ; <strong>Fusionner</strong> propose de résoudre les conflits ingrédient par ingrédient.';
     modal.appendChild(intro);
 
     // Toolbar : load file + clear
@@ -131,10 +131,19 @@
     const importBtn = document.createElement('button');
     importBtn.type = 'button';
     importBtn.className = 'primary';
-    importBtn.textContent = 'Importer';
+    importBtn.textContent = 'Remplacer';
+    importBtn.title = 'Écrase toutes les données locales';
     importBtn.disabled = true;
     importBtn.addEventListener('click', () => doImport(textarea.value));
     footer.appendChild(importBtn);
+
+    const mergeBtn = document.createElement('button');
+    mergeBtn.type = 'button';
+    mergeBtn.textContent = 'Fusionner';
+    mergeBtn.title = 'Fusionne avec les données locales (résolution interactive des conflits)';
+    mergeBtn.disabled = true;
+    mergeBtn.addEventListener('click', () => doMerge(textarea.value));
+    footer.appendChild(mergeBtn);
 
     modal.appendChild(footer);
 
@@ -182,6 +191,7 @@
         issuesPanel.innerHTML = '<p class="yaml-issues-empty">Aucun contenu à valider.</p>';
         status.textContent = '';
         importBtn.disabled = true;
+        mergeBtn.disabled = true;
         return;
       }
 
@@ -194,13 +204,16 @@
       if (errorCount === 0 && warnCount === 0) {
         status.innerHTML = '<span class="ok">✔ YAML valide</span>';
         importBtn.disabled = false;
+        mergeBtn.disabled = false;
       } else if (errorCount === 0) {
         status.innerHTML = `<span class="warn">⚠ ${warnCount} avertissement${warnCount > 1 ? 's' : ''}</span> — import possible.`;
         importBtn.disabled = false;
+        mergeBtn.disabled = false;
       } else {
         status.innerHTML = `<span class="err">✖ ${errorCount} erreur${errorCount > 1 ? 's' : ''}</span>` +
           (warnCount ? `, ${warnCount} avertissement${warnCount > 1 ? 's' : ''}` : '') + '.';
         importBtn.disabled = true;
+        mergeBtn.disabled = true;
       }
 
       // Highlight gutter lines that have issues
@@ -318,12 +331,7 @@
     }
   }
 
-  function doImport(rawText) {
-    const result = window.YamlValidator.validate(rawText, window.RepasSchema);
-    if (window.YamlValidator.hasErrors(result.issues)) {
-      showToast('Import refusé : il reste des erreurs.', 'error');
-      return;
-    }
+  function applyReplace(parsedData, rawText) {
     try {
       // Clear all local overrides : "Replace all" semantics.
       localStorage.removeItem('customRecipes');
@@ -331,16 +339,41 @@
       localStorage.removeItem('mealOverrides');
       localStorage.removeItem('portionsByDay');
       localStorage.removeItem('checkedItems');
-      // Persist parsed object + original text
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(result.data));
-      localStorage.setItem(STORAGE_TEXT_KEY, rawText);
+      // Persist parsed object + original text (regenerate if not provided)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
+      const text = rawText != null ? rawText : jsyaml.dump(parsedData, { lineWidth: 120, noRefs: true, sortKeys: false });
+      localStorage.setItem(STORAGE_TEXT_KEY, text);
+      return true;
     } catch (e) {
-      showToast('Erreur stockage : ' + e.message, 'error');
+      if (typeof showToast === 'function') showToast('Erreur stockage : ' + e.message, 'error');
+      return false;
+    }
+  }
+
+  function doImport(rawText) {
+    const result = window.YamlValidator.validate(rawText, window.RepasSchema);
+    if (window.YamlValidator.hasErrors(result.issues)) {
+      showToast('Import refusé : il reste des erreurs.', 'error');
       return;
     }
+    if (!applyReplace(result.data, rawText)) return;
     showToast('YAML importé avec succès. Rechargement…', 'success');
     setTimeout(() => window.location.reload(), 800);
   }
 
-  window.YamlImport = { open, close, STORAGE_KEY, STORAGE_TEXT_KEY };
+  function doMerge(rawText) {
+    const result = window.YamlValidator.validate(rawText, window.RepasSchema);
+    if (window.YamlValidator.hasErrors(result.issues)) {
+      showToast('Fusion refusée : il reste des erreurs.', 'error');
+      return;
+    }
+    if (!window.YamlMerge || typeof window.YamlMerge.start !== 'function') {
+      showToast('Module de fusion indisponible.', 'error');
+      return;
+    }
+    close();
+    window.YamlMerge.start(result.data);
+  }
+
+  window.YamlImport = { open, close, STORAGE_KEY, STORAGE_TEXT_KEY, applyReplace };
 })();

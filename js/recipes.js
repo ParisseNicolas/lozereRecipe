@@ -49,7 +49,7 @@ function render(data) {
 
   for (const name of allNames) {
     const recipe = data.recipes[name];
-    const isCustom = name in customRecipes;
+    const isCustom = App.hasKeyCI(customRecipes, name);
     grid.appendChild(buildCard(name, recipe, isCustom, data));
   }
 

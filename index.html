@@ -46,6 +46,8 @@
   <script src="schema/repas-schema.js"></script>
   <script src="js/yaml-validator.js"></script>
   <script src="js/yaml-import.js"></script>
+  <script src="js/yaml-share.js"></script>
+  <script src="js/yaml-merge.js"></script>
   <script src="js/shopping.js"></script>
   <script src="js/popover.js"></script>
   <script src="js/recipe.js"></script>
@@ -54,13 +56,22 @@
   <script src="js/qr.js"></script>
   <script src="js/nav.js"></script>
   <script>
-    App.loadData()
-      .then(Menu.renderMenu)
-      .catch((err) => {
-        const e = document.getElementById('error');
-        e.hidden = false;
-        e.textContent = 'Erreur de chargement : ' + err.message + ' (ouvre via un serveur HTTP, pas en file://)';
-      });
+    (async () => {
+      try {
+        if (window.YamlShare && YamlShare.applySharedYaml) {
+          await YamlShare.applySharedYaml();
+        }
+      } catch (e) {
+        console.warn('YamlShare init failed', e);
+      }
+      App.loadData()
+        .then(Menu.renderMenu)
+        .catch((err) => {
+          const e = document.getElementById('error');
+          e.hidden = false;
+          e.textContent = 'Erreur de chargement : ' + err.message + ' (ouvre via un serveur HTTP, pas en file://)';
+        });
+    })();
   </script>
 </body>
 </html>
