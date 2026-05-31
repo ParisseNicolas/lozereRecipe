@@ -39,7 +39,7 @@ function renderCourses(data) {
 
   const resetBtn = document.createElement('button');
   resetBtn.id = 'reset-btn';
-  resetBtn.textContent = 'Réinitialiser la liste';
+  resetBtn.textContent = 'Décocher tout';
   resetBtn.addEventListener('click', () => {
     Store.clearCheckedItems();
     renderCourses(data);

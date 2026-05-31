@@ -253,6 +253,14 @@
     const { url } = info;
     status.remove();
 
+    if (url.length > 2000) {
+      const warn = document.createElement('p');
+      warn.className = 'yaml-share-warning';
+      warn.textContent = `⚠️ Lien très long (${url.length} caractères). Certaines applis (SMS, WhatsApp, Telegram…) peuvent le tronquer silencieusement. Préfère « Exporter YAML » pour les gros partages.`;
+      warn.style.cssText = 'color:#ffb1a3;border:1px solid var(--lp-red,#c0392b);background:rgba(192,57,43,0.12);padding:0.6rem 0.8rem;border-radius:4px;font-size:0.9rem;margin:0 0 0.75rem;';
+      modal.appendChild(warn);
+    }
+
     const buttons = document.createElement('div');
     buttons.className = 'share-menu-buttons';
     const shareTitle = 'Mes données menuCourses';

@@ -26,6 +26,21 @@
     return `${lan}#${HASH_KEY}=${encodeState(state)}`;
   }
 
+  function migratePortions(p) {
+    if (!p || typeof p !== 'object') return {};
+    const out = {};
+    for (const day of Object.keys(p)) {
+      const v = p[day];
+      if (v != null && typeof v !== 'object') {
+        const n = Number(v) || 0;
+        out[day] = { midi: n, soir: n };
+      } else {
+        out[day] = v;
+      }
+    }
+    return out;
+  }
+
   // Apply a shared state by monkey-patching Store getters for this page render.
   // Returns true if a shared state was detected and applied.
   function applySharedState() {
@@ -34,7 +49,10 @@
     if (!m) return false;
     try {
       const state = decodeState(m[1]);
-      if (state.p) Store.loadPortionsByDay = () => Object.assign({}, state.p);
+      if (state.p) {
+        const migrated = migratePortions(state.p);
+        Store.loadPortionsByDay = () => Object.assign({}, migrated);
+      }
       if (state.o) Store.loadMealOverrides = () => Object.assign({}, state.o);
       if (state.r) Store.loadCustomRecipes = () => Object.assign({}, state.r);
       if (state.i) Store.loadCustomIngredients = () => Object.assign({}, state.i);
