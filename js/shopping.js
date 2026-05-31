@@ -72,6 +72,8 @@ function aggregateIngredient(ingrName, totalsByUnit, ingredientsSpec, targetOver
 }
 
 // Build the full shopping list.
+// `portionsByDay` is the raw store shape : { day: { midi, soir } }. When a slot
+// has no saved value we fall back to the meal's own `portions` from the YAML.
 // Returns : { categoryName: [ { name, parts: [{amount, unit}, ...] }, ... ] }
 function buildShoppingList(data, portionsByDay) {
   const ingredientsSpec = data.ingredients || {};
@@ -84,7 +86,11 @@ function buildShoppingList(data, portionsByDay) {
   for (const meal of meals) {
     if (!meal.recipes) continue;
     const day = App.dayOf(meal.name);
-    const portions = Number(portionsByDay[day]) || 0;
+    const slot = App.slotOf(meal.name);
+    const fallback = Number(meal.portions) || 0;
+    const portions = (window.Store && Store.getSlotPortions)
+      ? Store.getSlotPortions(portionsByDay, day, slot, fallback)
+      : (portionsByDay[day] && portionsByDay[day][slot] != null ? Number(portionsByDay[day][slot]) : fallback);
     if (portions <= 0) continue;
 
     for (const recipeName of meal.recipes) {

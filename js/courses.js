@@ -10,16 +10,26 @@ function renderCourses(data) {
   const root = document.getElementById('courses-root');
   root.innerHTML = '';
 
-  const saved = Store.loadPortionsByDay();
-  const portions = App.effectivePortions(data, saved);
+  const portionsByDay = Store.loadPortionsByDay();
 
-  // Summary of portions per day at the top.
+  // Build a lookup { day: { midi, soir } } using saved values, else the
+  // meal's own YAML portions.
+  const days = App.listDays(data.meals);
+  const perDay = {};
+  for (const day of days) perDay[day] = { midi: 0, soir: 0 };
+  for (const meal of data.meals) {
+    const d = App.dayOf(meal.name);
+    const slot = App.slotOf(meal.name);
+    const fallback = Number(meal.portions) || 0;
+    perDay[d][slot] = Store.getSlotPortions(portionsByDay, d, slot, fallback);
+  }
+
+  // Summary of portions per day at the top (per-slot).
   const summary = document.createElement('div');
   summary.className = 'portions-summary';
   summary.innerHTML = '<strong>Personnes par jour :</strong> ';
-  const days = App.listDays(data.meals);
   summary.innerHTML += days
-    .map((d) => `${d} : ${portions[d]}`)
+    .map((d) => `${d} : midi ${perDay[d].midi} / soir ${perDay[d].soir}`)
     .join(' &middot; ');
   root.appendChild(summary);
 
@@ -46,7 +56,7 @@ function renderCourses(data) {
 
   root.appendChild(actions);
 
-  const byCategory = Shopping.buildShoppingList(data, portions);
+  const byCategory = Shopping.buildShoppingList(data, portionsByDay);
   const categories = Object.keys(byCategory).sort((a, b) => a.localeCompare(b, 'fr'));
 
   if (categories.length === 0) {

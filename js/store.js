@@ -1,6 +1,6 @@
 // store.js
 // Persist user state in localStorage.
-// - portionsByDay : nb de personnes par jour
+// - portionsByDay : nb de personnes par jour et par créneau  { day: { midi, soir } }
 // - checkedItems  : cases cochées sur la liste de courses
 // - customRecipes : recettes créées depuis l'UI (fusionnées dans data.recipes au runtime)
 // - customIngredients : ingrédients créés depuis l'UI (fusionnés dans data.ingredients)
@@ -26,17 +26,39 @@ function saveJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function loadPortionsByDay() { return loadJSON(STORAGE_KEY); }
+function loadPortionsByDay() {
+  const raw = loadJSON(STORAGE_KEY);
+  // One-shot migration : ancien format { day: number } -> { day: { midi, soir } }.
+  // On copie la valeur unique sur les deux créneaux.
+  // ATTENTION : on ne force PAS les slots manquants à 0 — un slot absent doit
+  // rester absent pour que getSlotPortions puisse retomber sur le fallback YAML.
+  let migrated = false;
+  for (const day of Object.keys(raw)) {
+    const v = raw[day];
+    if (v != null && typeof v !== 'object') {
+      const n = Number(v) || 0;
+      raw[day] = { midi: n, soir: n };
+      migrated = true;
+    }
+  }
+  if (migrated) savePortionsByDay(raw);
+  return raw;
+}
 function savePortionsByDay(portionsByDay) { saveJSON(STORAGE_KEY, portionsByDay); }
 
-function getDayPortions(portionsByDay, day, fallback) {
-  if (portionsByDay[day] != null) return Number(portionsByDay[day]);
+function getSlotPortions(portionsByDay, day, slot, fallback) {
+  const o = portionsByDay && portionsByDay[day];
+  if (o && o[slot] != null) return Number(o[slot]);
   return Number(fallback) || 0;
 }
 
-function setDayPortions(day, value) {
+function setSlotPortions(day, slot, value) {
   const current = loadPortionsByDay();
-  current[day] = Number(value) || 0;
+  // Ne pas matérialiser le slot opposé : il doit rester absent tant que
+  // l'utilisateur n'y a pas touché, sinon getSlotPortions ne peut plus
+  // retomber sur le fallback YAML pour ce slot (et le partage casse).
+  if (!current[day] || typeof current[day] !== 'object') current[day] = {};
+  current[day][slot] = Number(value) || 0;
   savePortionsByDay(current);
 }
 
@@ -92,7 +114,7 @@ function clearMealOverride(slot) {
 }
 
 window.Store = {
-  loadPortionsByDay, savePortionsByDay, getDayPortions, setDayPortions,
+  loadPortionsByDay, savePortionsByDay, getSlotPortions, setSlotPortions,
   loadCheckedItems, setItemChecked, clearCheckedItems,
   loadCustomRecipes, saveCustomRecipe, deleteCustomRecipe,
   loadCustomIngredients, saveCustomIngredient,

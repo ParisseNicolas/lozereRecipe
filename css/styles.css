@@ -184,12 +184,32 @@ main {
   font-style: italic;
 }
 
+.portions-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.portions-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portions-slot-label {
+  font-size: 0.8rem;
+  color: var(--lp-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 2.5rem;
+}
+
 .portions-input {
-  width: 70px;
-  padding: 0.4rem 0.5rem;
+  width: 48px;
+  padding: 0.2rem 0.3rem;
   border: 1px solid var(--lp-border);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-align: center;
   background: var(--lp-bg);
   color: var(--lp-text);
@@ -1532,13 +1552,16 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
     grid-column: 2;
     grid-row: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.4rem;
     font-size: 0.85rem;
     color: var(--lp-text-dim);
   }
-  #menu-table tr td.portions-cell::before {
-    content: 'Personnes :';
+  .portions-slot-row::after {
+    content: 'personnes';
+    font-size: 0.75rem;
+    color: var(--lp-text-dim);
+    text-transform: lowercase;
   }
   #menu-table tr td.meal-cell {
     grid-column: 1 / -1;
@@ -1564,8 +1587,10 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
     height: 32px;
   }
   .portions-input {
-    width: 60px;
-    min-height: 44px;
+    width: 40px;
+    min-height: 32px;
+    padding: 0.15rem 0.2rem;
+    font-size: 0.85rem;
   }
 
   /* Shopping list : larger touch targets */

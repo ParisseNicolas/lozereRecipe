@@ -23,7 +23,7 @@
   function open(data) {
     close();
     const days = App.listDays(data.meals);
-    const portions = App.effectivePortions(data, Store.loadPortionsByDay());
+    const portionsByDay = Store.loadPortionsByDay();
 
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
@@ -99,7 +99,7 @@
         return;
       }
       const includeDetails = detailsCb.checked;
-      buildAndPrint(data, selected, portions, includeDetails);
+      buildAndPrint(data, selected, portionsByDay, includeDetails);
       close();
     });
     actions.appendChild(printBtn);
@@ -112,12 +112,12 @@
     document.addEventListener('keydown', onKey);
   }
 
-  function buildAndPrint(data, selectedDays, portions, includeDetails) {
+  function buildAndPrint(data, selectedDays, portionsByDay, includeDetails) {
     // Group meals by day -> { day: { midi, soir } }
     const byDay = {};
     for (const meal of data.meals) {
       const d = App.dayOf(meal.name);
-      const slot = /soir/i.test(meal.name) ? 'soir' : 'midi';
+      const slot = App.slotOf(meal.name);
       if (!byDay[d]) byDay[d] = {};
       byDay[d][slot] = meal;
     }
@@ -138,17 +138,19 @@
       const block = document.createElement('section');
       block.className = 'print-day-block';
       const h2 = document.createElement('h2');
-      const dayPortions = portions[day];
-      h2.textContent = `${day} — ${dayPortions} personne${dayPortions > 1 ? 's' : ''}`;
+      h2.textContent = day;
       block.appendChild(h2);
 
       for (const slot of ['midi', 'soir']) {
         const meal = byDay[day] && byDay[day][slot];
         if (!meal) continue;
+        const fallback = Number(meal.portions) || 0;
+        const slotPortions = Store.getSlotPortions(portionsByDay, day, slot, fallback);
         const mealEl = document.createElement('div');
         mealEl.className = 'print-meal';
         const h3 = document.createElement('h3');
-        h3.textContent = slot === 'midi' ? 'Midi' : 'Soir';
+        const slotLabel = slot === 'midi' ? 'Midi' : 'Soir';
+        h3.textContent = `${slotLabel} — ${slotPortions} personne${slotPortions > 1 ? 's' : ''}`;
         mealEl.appendChild(h3);
         if (!meal.recipes || meal.recipes.length === 0) {
           const p = document.createElement('p');
@@ -175,10 +177,10 @@
                 : 1;
               const sub = document.createElement('p');
               sub.className = 'recipe-subtitle';
-              sub.textContent = `${dayPortions} portion${dayPortions > 1 ? 's' : ''}`
+              sub.textContent = `${slotPortions} portion${slotPortions > 1 ? 's' : ''}`
                 + (recipeBase > 1 ? ` (recette de base pour ${recipeBase} personnes)` : '');
               recipeWrapper.appendChild(sub);
-              const frag = Recipe.buildRecipeContent(data, recipeName, dayPortions, { interactive: false });
+              const frag = Recipe.buildRecipeContent(data, recipeName, slotPortions, { interactive: false });
               recipeWrapper.appendChild(frag);
               mealEl.appendChild(recipeWrapper);
             }

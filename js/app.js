@@ -35,6 +35,11 @@ function dayOf(mealName) {
   return mealName.replace(/\s+(midi|soir)$/i, '').trim();
 }
 
+// Extract the slot ('midi' | 'soir') from a meal name.
+function slotOf(mealName) {
+  return /soir/i.test(String(mealName || '')) ? 'soir' : 'midi';
+}
+
 // Build the ordered list of unique days, preserving the order from the YAML.
 function listDays(meals) {
   const seen = new Set();
@@ -45,27 +50,6 @@ function listDays(meals) {
       seen.add(d);
       out.push(d);
     }
-  }
-  return out;
-}
-
-// Default portions for a day = max(portions across the day's meals) from the YAML.
-function defaultPortionsByDay(meals) {
-  const out = {};
-  for (const meal of meals) {
-    const d = dayOf(meal.name);
-    const p = Number(meal.portions) || 0;
-    if (out[d] == null || p > out[d]) out[d] = p;
-  }
-  return out;
-}
-
-// Effective portions = saved value if any, else default from YAML.
-function effectivePortions(data, savedPortions) {
-  const defaults = defaultPortionsByDay(data.meals);
-  const out = {};
-  for (const day of Object.keys(defaults)) {
-    out[day] = savedPortions[day] != null ? Number(savedPortions[day]) : defaults[day];
   }
   return out;
 }
@@ -117,13 +101,17 @@ async function loadData() {
 async function buildFullExportData() {
   const data = await loadData();
 
-  // Apply per-day portions overrides onto each meal's `portions` field.
+  // Apply per-slot portions onto each meal's `portions` field. On émet
+  // toujours la valeur résolue par slot (override explicite si présent,
+  // sinon fallback YAML du repas), pour que le destinataire compare la
+  // même grandeur des deux côtés lors du merge (cf. yaml-merge.js Phase 5).
   if (window.Store) {
     const portionsByDay = Store.loadPortionsByDay();
     if (Array.isArray(data.meals)) {
       for (const m of data.meals) {
         const d = dayOf(m.name);
-        if (portionsByDay[d] != null) m.portions = Number(portionsByDay[d]);
+        const slot = slotOf(m.name);
+        m.portions = Number(Store.getSlotPortions(portionsByDay, d, slot, m.portions));
       }
     }
   }
@@ -143,4 +131,4 @@ async function buildFullExportData() {
   return ordered;
 }
 
-window.App = { loadData, dayOf, listDays, defaultPortionsByDay, effectivePortions, buildFullExportData, eqCI, findKeyCI, hasKeyCI, getCI, includesCI };
+window.App = { loadData, dayOf, slotOf, listDays, buildFullExportData, eqCI, findKeyCI, hasKeyCI, getCI, includesCI };

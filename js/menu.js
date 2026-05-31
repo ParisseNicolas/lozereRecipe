@@ -8,14 +8,13 @@ function renderMenu(data) {
   tbody.innerHTML = '';
 
   const saved = Store.loadPortionsByDay();
-  const portions = App.effectivePortions(data, saved);
   const days = App.listDays(data.meals);
 
   // Group meals by day -> { day: { midi: meal, soir: meal } }
   const byDay = {};
   for (const meal of data.meals) {
     const d = App.dayOf(meal.name);
-    const slot = /soir/i.test(meal.name) ? 'soir' : 'midi';
+    const slot = App.slotOf(meal.name);
     if (!byDay[d]) byDay[d] = {};
     byDay[d][slot] = meal;
   }
@@ -28,6 +27,14 @@ function renderMenu(data) {
     tdDay.className = 'day-cell';
     tr.appendChild(tdDay);
 
+    // Compute per-slot portion (saved value, else YAML default from the meal).
+    const slotPortions = { midi: 0, soir: 0 };
+    for (const slot of ['midi', 'soir']) {
+      const meal = byDay[day] && byDay[day][slot];
+      const fallback = meal ? Number(meal.portions) || 0 : 0;
+      slotPortions[slot] = Store.getSlotPortions(saved, day, slot, fallback);
+    }
+
     for (const slot of ['midi', 'soir']) {
       const td = document.createElement('td');
       td.className = 'meal-cell';
@@ -36,12 +43,13 @@ function renderMenu(data) {
       const recipesList = document.createElement('div');
       recipesList.className = 'recipe-list';
       if (meal && meal.recipes && meal.recipes.length > 0) {
-        const dayPortions = portions[day];
+        const slotPortion = slotPortions[slot];
         for (const recipeName of meal.recipes) {
           const link = document.createElement('a');
-          link.href = `recette.html?nom=${encodeURIComponent(recipeName)}&portions=${dayPortions}&jour=${encodeURIComponent(day)}&moment=${slot}`;
+          link.href = `recette.html?nom=${encodeURIComponent(recipeName)}&portions=${slotPortion}&jour=${encodeURIComponent(day)}&moment=${slot}`;
           link.textContent = recipeName;
           link.className = 'recipe-link';
+          link.dataset.slot = slot;
           recipesList.appendChild(link);
         }
       } else if (meal) {
@@ -71,24 +79,38 @@ function renderMenu(data) {
     const tdPortions = document.createElement('td');
     tdPortions.className = 'portions-cell';
     tdPortions.dataset.label = 'Personnes';
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '0';
-    input.value = portions[day];
-    input.dataset.day = day;
-    input.className = 'portions-input';
-    const saveAndSync = (e) => {
-      const v = Number(e.target.value) || 0;
-      Store.setDayPortions(day, v);
-      tr.querySelectorAll('a.recipe-link').forEach((a) => {
-        const u = new URL(a.href, window.location.href);
-        u.searchParams.set('portions', String(v));
-        a.href = u.toString();
-      });
-    };
-    input.addEventListener('input', saveAndSync);
-    input.addEventListener('change', saveAndSync);
-    tdPortions.appendChild(input);
+    const slotsWrap = document.createElement('div');
+    slotsWrap.className = 'portions-slots';
+    for (const slot of ['midi', 'soir']) {
+      const row = document.createElement('div');
+      row.className = 'portions-slot-row';
+      const label = document.createElement('span');
+      label.className = 'portions-slot-label';
+      label.textContent = slot;
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.value = slotPortions[slot];
+      input.dataset.day = day;
+      input.dataset.slot = slot;
+      input.className = 'portions-input';
+      const saveAndSync = (e) => {
+        const v = Number(e.target.value) || 0;
+        Store.setSlotPortions(day, slot, v);
+        tr.querySelectorAll(`a.recipe-link[data-slot="${slot}"]`).forEach((a) => {
+          const u = new URL(a.href, window.location.href);
+          u.searchParams.set('portions', String(v));
+          a.href = u.toString();
+        });
+        renderMenuActions(data);
+      };
+      input.addEventListener('input', saveAndSync);
+      input.addEventListener('change', saveAndSync);
+      row.appendChild(label);
+      row.appendChild(input);
+      slotsWrap.appendChild(row);
+    }
+    tdPortions.appendChild(slotsWrap);
     tr.appendChild(tdPortions);
 
     tbody.appendChild(tr);
@@ -144,6 +166,8 @@ function renderMenuActions(data) {
     Object.keys(Store.loadCustomRecipes()).length > 0 ||
     Object.keys(Store.loadCustomIngredients()).length > 0 ||
     Object.keys(Store.loadMealOverrides()).length > 0 ||
+    Object.keys(Store.loadPortionsByDay()).length > 0 ||
+    Object.keys(Store.loadCheckedItems()).length > 0 ||
     localStorage.getItem('importedYamlData') != null;
   if (hasOverrides) {
     const resetBtn = document.createElement('button');
@@ -151,10 +175,12 @@ function renderMenuActions(data) {
     resetBtn.id = 'reset-overrides-btn';
     resetBtn.textContent = 'Reset';
     resetBtn.addEventListener('click', () => {
-      if (!confirm('Effacer toutes les modifications locales (repas, recettes, ingrédients, YAML importé) ?')) return;
+      if (!confirm('Effacer toutes les modifications locales (repas, recettes, ingrédients, portions, liste de courses, YAML importé) ?')) return;
       localStorage.removeItem('customRecipes');
       localStorage.removeItem('customIngredients');
       localStorage.removeItem('mealOverrides');
+      localStorage.removeItem('portionsByDay');
+      localStorage.removeItem('checkedItems');
       localStorage.removeItem('importedYamlData');
       localStorage.removeItem('importedYamlText');
       window.location.reload();

@@ -1,6 +1,6 @@
 // yaml-merge.js
 // Merge an incoming shared dataset (from YamlShare) with the user's local
-// state via a 4-phase interactive flow :
+// state via a 5-phase interactive flow :
 //   1. Ingredient conflicts        — user picks keep/take per ingredient.
 //   2. Recipe-line fixups          — for every ingredient whose chosen version
 //                                    introduces unit incompatibilities, walk
@@ -10,11 +10,16 @@
 //                                    supported unit.
 //   3. Recipe conflicts            — remaining recipe-level disagreements.
 //   4. Meal conflicts              — meal-slot recipe lists.
+//   5. Slot-portion conflicts      — per-meal-slot portion counts (keyed by
+//                                    meal name, e.g. "Mardi midi" / "Mardi
+//                                    soir", since the UI exposes one value
+//                                    per slot).
 //
 // Persistence (after all phases) :
 //   - recipes      → Store.saveCustomRecipe
 //   - ingredients  → Store.saveCustomIngredient
 //   - meals        → Store.setMealOverride(name, { recipes })
+//   - portions     → Store.setSlotPortions(day, slot, value)
 //
 // We intentionally do NOT touch localStorage.importedYamlData : we only enrich
 // the "custom*" / "mealOverrides" layers which app.js merges at runtime.
@@ -98,10 +103,17 @@
     return rs.length ? rs.map((r) => `• ${r}`).join('\n') : '(vide / restes)';
   }
 
+  function summarizeSlotPortions(key, value) {
+    const n = Number(value);
+    if (!isFinite(n) || n <= 0) return '(non défini)';
+    return `${n} personne${n > 1 ? 's' : ''}`;
+  }
+
   function summarize(kind, key, value) {
     if (kind === 'recipe') return summarizeRecipe(key, value);
     if (kind === 'ingredient') return summarizeIngredient(key, value);
     if (kind === 'meal') return summarizeMeal(key, value);
+    if (kind === 'slotPortions') return summarizeSlotPortions(key, value);
     return JSON.stringify(value, null, 2);
   }
 
@@ -117,7 +129,10 @@
       modal.addEventListener('click', (e) => e.stopPropagation());
 
       const h = document.createElement('h3');
-      const kindFr = conflict.kind === 'recipe' ? 'Recette' : conflict.kind === 'ingredient' ? 'Ingrédient' : 'Repas';
+      const kindFr = conflict.kind === 'recipe' ? 'Recette'
+        : conflict.kind === 'ingredient' ? 'Ingrédient'
+        : conflict.kind === 'slotPortions' ? 'Portions'
+        : 'Repas';
       h.textContent = `Conflit ${index + 1}/${total} — ${kindFr} : ${conflict.key}`;
       modal.appendChild(h);
 
@@ -431,6 +446,32 @@
       mealDecisions[mealConflicts[i].key] = choice;
     }
 
+    // ---------- Phase 5 : slot-portion conflicts ----------
+    // Portions are exposed per slot (midi / soir) in the UI. The incoming
+    // payload carries the value directly on each meal entry; locally we
+    // resolve through Store.getSlotPortions (with a fallback to the meal's
+    // YAML portions). Conflicts are keyed by meal name (e.g. "Mardi midi").
+    const localPortionsByDay = (window.Store && Store.loadPortionsByDay) ? Store.loadPortionsByDay() : {};
+    const slotPortionConflicts = [];
+    for (const m of (incoming.meals || [])) {
+      const lmKey = findKeyCI(localMealsByName, m.name);
+      if (lmKey == null) continue;
+      const lm = localMealsByName[lmKey];
+      const day = App.dayOf(lm.name);
+      const slot = App.slotOf(lm.name);
+      const localFallback = Number(lm.portions) || 0;
+      const lv = Number(Store.getSlotPortions(localPortionsByDay, day, slot, localFallback));
+      const iv = Number(m.portions) || 0;
+      if (lv === iv) { skipped++; continue; }
+      slotPortionConflicts.push({ kind: 'slotPortions', key: lmKey, incomingKey: m.name, local: lv, incoming: iv });
+    }
+    const slotPortionDecisions = {};
+    for (let i = 0; i < slotPortionConflicts.length; i++) {
+      const choice = await askConflict(slotPortionConflicts[i], i, slotPortionConflicts.length);
+      if (choice === 'abort') { toast('Merge annulé. Aucune modification.'); return; }
+      slotPortionDecisions[slotPortionConflicts[i].key] = choice;
+    }
+
     // ---------- Apply ----------
     let replaced = 0;
     let kept = 0;
@@ -471,6 +512,14 @@
     for (const c of mealConflicts) {
       if (mealDecisions[c.key] === 'take') {
         Store.setMealOverride(c.key, { recipes: (c.incoming && c.incoming.recipes) || [] });
+        replaced++;
+      } else kept++;
+    }
+
+    // Slot portions.
+    for (const c of slotPortionConflicts) {
+      if (slotPortionDecisions[c.key] === 'take') {
+        Store.setSlotPortions(App.dayOf(c.key), App.slotOf(c.key), c.incoming);
         replaced++;
       } else kept++;
     }
