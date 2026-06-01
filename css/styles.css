@@ -1356,6 +1356,12 @@ main {
   word-break: break-all;
   margin: 0.5rem 0 0 0;
 }
+.qr-error {
+  font-size: 0.9rem;
+  color: var(--lp-text);
+  line-height: 1.4;
+  margin: 0.5rem 0 1rem 0;
+}
 
 /* === Print === */
 /* Shopping list print layout. These rules are activated by the
