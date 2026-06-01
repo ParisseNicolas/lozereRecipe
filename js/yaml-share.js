@@ -1,7 +1,7 @@
 // yaml-share.js
-// Share the full app state (YAML + custom recipes/ingredients + meal overrides
-// + per-day portions) as a URL fragment. The payload is JSON-stringified,
-// gzip-compressed when available, then base64url-encoded.
+// Share app data as a URL fragment. Normal shares only send local changes
+// (custom recipes/ingredients, meal overrides, per-day portions); full YAML
+// export is kept for users who imported a custom YAML base.
 //
 // URL shape : https://…/index.html#yaml=<v>.<base64url>
 //   v0 = raw JSON, base64url
@@ -13,6 +13,14 @@
 
 (function () {
   const HASH_KEY = 'yaml';
+  const LOCAL_STATE_KIND = 'menuCourses.localState';
+  const LOCAL_STATE_VERSION = 1;
+  const LOCAL_KEYS = {
+    customRecipes: 'customRecipes',
+    customIngredients: 'customIngredients',
+    mealOverrides: 'mealOverrides',
+    portionsByDay: 'portionsByDay',
+  };
 
   function base64UrlEncode(bytes) {
     let bin = '';
@@ -173,7 +181,12 @@
     const json = JSON.stringify(obj);
     const utf8 = new TextEncoder().encode(json);
     let version = 'v1';
-    let bytes = await gzip(utf8);
+    let bytes = null;
+    try {
+      bytes = await gzip(utf8);
+    } catch (e) {
+      console.warn('YamlShare : compression indisponible, lien non compressé', e);
+    }
     if (!bytes) {
       version = 'v0';
       bytes = utf8;
@@ -193,13 +206,115 @@
     return JSON.parse(json);
   }
 
+  function readJsonKey(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || '{}') || {};
+    } catch (e) {
+      console.warn('YamlShare : stockage local invalide', key, e);
+      return {};
+    }
+  }
+
+  function nonEmptyObject(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length > 0;
+  }
+
+  function addIfNonEmpty(target, key, value) {
+    if (nonEmptyObject(value)) target[key] = value;
+  }
+
+  function buildLocalStatePayload() {
+    const state = {};
+    addIfNonEmpty(state, 'r', window.Store ? Store.loadCustomRecipes() : readJsonKey(LOCAL_KEYS.customRecipes));
+    addIfNonEmpty(state, 'i', window.Store ? Store.loadCustomIngredients() : readJsonKey(LOCAL_KEYS.customIngredients));
+    addIfNonEmpty(state, 'o', window.Store ? Store.loadMealOverrides() : readJsonKey(LOCAL_KEYS.mealOverrides));
+    addIfNonEmpty(state, 'p', window.Store ? Store.loadPortionsByDay() : readJsonKey(LOCAL_KEYS.portionsByDay));
+    return { kind: LOCAL_STATE_KIND, version: LOCAL_STATE_VERSION, state };
+  }
+
+  function hasImportedYamlData() {
+    return localStorage.getItem((window.YamlImport && YamlImport.STORAGE_KEY) || 'importedYamlData') != null;
+  }
+
+  function isLocalStatePayload(data) {
+    return data
+      && data.kind === LOCAL_STATE_KIND
+      && data.version === LOCAL_STATE_VERSION
+      && data.state
+      && typeof data.state === 'object';
+  }
+
+  function writeJsonKey(key, value) {
+    if (nonEmptyObject(value)) localStorage.setItem(key, JSON.stringify(value));
+    else localStorage.removeItem(key);
+  }
+
+  function mergeObjects(key, incoming) {
+    if (!nonEmptyObject(incoming)) return;
+    localStorage.setItem(key, JSON.stringify(Object.assign({}, readJsonKey(key), incoming)));
+  }
+
+  function mergePortions(incoming) {
+    if (!nonEmptyObject(incoming)) return;
+    const current = readJsonKey(LOCAL_KEYS.portionsByDay);
+    const merged = Object.assign({}, current);
+    for (const [day, value] of Object.entries(incoming)) {
+      if (nonEmptyObject(value) && nonEmptyObject(merged[day])) {
+        merged[day] = Object.assign({}, merged[day], value);
+      } else {
+        merged[day] = value;
+      }
+    }
+    writeJsonKey(LOCAL_KEYS.portionsByDay, merged);
+  }
+
+  function applyLocalStateReplace(state) {
+    try {
+      localStorage.removeItem((window.YamlImport && YamlImport.STORAGE_KEY) || 'importedYamlData');
+      localStorage.removeItem((window.YamlImport && YamlImport.STORAGE_TEXT_KEY) || 'importedYamlText');
+      localStorage.removeItem('checkedItems');
+      writeJsonKey(LOCAL_KEYS.customRecipes, state.r);
+      writeJsonKey(LOCAL_KEYS.customIngredients, state.i);
+      writeJsonKey(LOCAL_KEYS.mealOverrides, state.o);
+      writeJsonKey(LOCAL_KEYS.portionsByDay, state.p);
+      return true;
+    } catch (e) {
+      alert('Import impossible : ' + e.message);
+      return false;
+    }
+  }
+
+  function applyLocalStateMerge(state) {
+    try {
+      mergeObjects(LOCAL_KEYS.customRecipes, state.r);
+      mergeObjects(LOCAL_KEYS.customIngredients, state.i);
+      mergeObjects(LOCAL_KEYS.mealOverrides, state.o);
+      mergePortions(state.p);
+      return true;
+    } catch (e) {
+      alert('Fusion impossible : ' + e.message);
+      return false;
+    }
+  }
+
+  function countLocalState(state) {
+    return {
+      recipes: Object.keys(state.r || {}).length,
+      ingredients: Object.keys(state.i || {}).length,
+      meals: Object.keys(state.o || {}).length,
+      portions: Object.keys(state.p || {}).length,
+    };
+  }
+
   function buildBaseUrl() {
     const base = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'index.html';
     return base.replace(/127\.0\.0\.1|localhost/, '192.168.1.128');
   }
 
   async function buildShareUrl() {
-    const data = await App.buildFullExportData();
+    const data = hasImportedYamlData()
+      ? await App.buildFullExportData()
+      : buildLocalStatePayload();
     const encoded = await encodePayload(data);
     const url = `${buildBaseUrl()}#${HASH_KEY}=${encoded}`;
     return { url, payloadSize: encoded.length };
@@ -444,6 +559,11 @@
   }
 
   function openChoiceModal(incoming) {
+    if (isLocalStatePayload(incoming)) {
+      openLocalStateChoiceModal(incoming.state);
+      return;
+    }
+
     document.querySelectorAll('.modal-backdrop.yaml-recv-backdrop, .modal.yaml-recv-modal').forEach((n) => n.remove());
 
     const backdrop = document.createElement('div');
@@ -515,6 +635,78 @@
       close();
       if (window.YamlMerge && YamlMerge.start) YamlMerge.start(stripRuntimeFields(incoming));
       else alert('Module de fusion indisponible.');
+    });
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+  }
+
+  function openLocalStateChoiceModal(state) {
+    document.querySelectorAll('.modal-backdrop.yaml-recv-backdrop, .modal.yaml-recv-modal').forEach((n) => n.remove());
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop yaml-recv-backdrop';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal yaml-recv-modal';
+    modal.addEventListener('click', (e) => e.stopPropagation());
+
+    const h = document.createElement('h3');
+    h.textContent = 'Données reçues';
+    modal.appendChild(h);
+
+    const counts = countLocalState(state);
+    const intro = document.createElement('p');
+    intro.textContent = `Tu viens de recevoir un partage compact : ${counts.recipes} recettes perso, ${counts.ingredients} ingrédients perso, ${counts.meals} repas modifiés, ${counts.portions} jours avec portions modifiées. Que veux-tu en faire ?`;
+    modal.appendChild(intro);
+
+    const actions = document.createElement('div');
+    actions.className = 'similar-recipe-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn-secondary';
+    cancelBtn.textContent = 'Annuler';
+
+    const mergeBtn = document.createElement('button');
+    mergeBtn.type = 'button';
+    mergeBtn.className = 'btn-secondary';
+    mergeBtn.textContent = 'Fusionner';
+
+    const replaceBtn = document.createElement('button');
+    replaceBtn.type = 'button';
+    replaceBtn.className = 'btn-primary';
+    replaceBtn.textContent = 'Remplacer';
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(mergeBtn);
+    actions.appendChild(replaceBtn);
+    modal.appendChild(actions);
+
+    function close() {
+      modal.remove();
+      backdrop.remove();
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    backdrop.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    document.addEventListener('keydown', onKey);
+
+    replaceBtn.addEventListener('click', async () => {
+      const ok = await confirmModal('Cela va écraser toutes tes données locales. Continuer ?');
+      if (!ok) return;
+      if (applyLocalStateReplace(state)) {
+        close();
+        setTimeout(() => window.location.reload(), 200);
+      }
+    });
+
+    mergeBtn.addEventListener('click', () => {
+      if (applyLocalStateMerge(state)) {
+        close();
+        setTimeout(() => window.location.reload(), 200);
+      }
     });
 
     document.body.appendChild(backdrop);
