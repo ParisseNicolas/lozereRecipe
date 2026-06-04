@@ -112,7 +112,47 @@
     document.addEventListener('keydown', onKey);
   }
 
-  function buildAndPrint(data, selectedDays, portionsByDay, includeDetails) {
+  // Self-contained CSS for the print iframe. Kept minimal and inlined so the
+  // iframe doc is fully standalone — this avoids Android Chrome's "Files" print
+  // tool dropping content that the parent page's @media print rules silently
+  // hid or collapsed.
+  const PRINT_IFRAME_CSS = `
+    @page { margin: 10mm; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: white; color: black; }
+    body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 11pt; line-height: 1.4; padding: 0; }
+    h1 { font-size: 18pt; margin: 0 0 6mm; }
+    h2 { font-size: 13pt; margin: 4mm 0 2mm; }
+    h3 { font-size: 11pt; margin: 3mm 0 1.5mm; }
+    p { margin: 0 0 2mm; }
+    ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+    li { margin: 0.5mm 0; }
+    .print-day-block { margin-bottom: 6mm; }
+    .print-day-block + .print-day-block { break-before: page; page-break-before: always; }
+    .print-day-block > h2 { border-bottom: 1px solid #888; padding-bottom: 1mm; }
+    .print-meal { margin-bottom: 4mm; }
+    .print-meal > h3 { font-weight: 600; break-after: avoid; page-break-after: avoid; }
+    .print-meal > ul { break-after: avoid; page-break-after: avoid; break-inside: avoid; page-break-inside: avoid; }
+    .print-meal > .print-recipe:first-of-type { break-before: avoid; page-break-before: avoid; }
+    .print-recipe { margin-top: 4mm; padding-top: 2mm; border-top: 1px dashed #bbb; break-inside: avoid; page-break-inside: avoid; }
+    .print-recipe > h2:first-child { margin-top: 0; }
+    .recipe-subtitle { font-size: 10pt; color: #555; margin: 0 0 2mm; font-style: italic; }
+    .recipe-block { margin-bottom: 3mm; break-inside: avoid; page-break-inside: avoid; }
+    .recipe-prep { break-inside: avoid; page-break-inside: avoid; }
+    .recipe-block h2 { font-size: 12pt; margin: 3mm 0 1.5mm; }
+    .recipe-block h3 { font-size: 11pt; margin: 2mm 0 1mm; }
+    .ingredients-list { list-style: none; padding: 0; margin: 0 0 3mm; }
+    .ingredients-list li { display: flex; justify-content: space-between; gap: 1rem; padding: 1mm 0; border-bottom: 1px dotted #ccc; }
+    .ingredients-list li:last-child { border-bottom: none; }
+    .ingr-name { font-weight: 500; }
+    .ingr-qtys { text-align: right; }
+    .ingr-qty-equiv { font-size: 9pt; color: #777; margin-left: 0.4rem; }
+    .steps-list { padding-left: 6mm; margin: 0 0 3mm; }
+    .steps-list li { margin: 1mm 0; padding: 0; }
+    .no-steps { font-style: italic; color: #777; }
+  `;
+
+  function buildPrintContent(data, selectedDays, portionsByDay, includeDetails) {
     // Group meals by day -> { day: { midi, soir } }
     const byDay = {};
     for (const meal of data.meals) {
@@ -122,13 +162,8 @@
       byDay[d][slot] = meal;
     }
 
-    let container = document.getElementById('print-menu-output');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'print-menu-output';
-      document.querySelector('main').appendChild(container);
-    }
-    container.innerHTML = '';
+    const container = document.createElement('div');
+    container.id = 'print-menu-output';
 
     const heading = document.createElement('h1');
     heading.textContent = 'Menu de la semaine';
@@ -180,8 +215,22 @@
               sub.textContent = `${slotPortions} portion${slotPortions > 1 ? 's' : ''}`
                 + (recipeBase > 1 ? ` (recette de base pour ${recipeBase} personnes)` : '');
               recipeWrapper.appendChild(sub);
-              const frag = Recipe.buildRecipeContent(data, recipeName, slotPortions, { interactive: false });
-              recipeWrapper.appendChild(frag);
+              try {
+                const frag = Recipe.buildRecipeContent(data, recipeName, slotPortions, { interactive: false });
+                recipeWrapper.appendChild(frag);
+                // When the recipe has a Préparation wrapper (split into
+                // Découpe/Cuisson), make its h2 self-contained so that if the
+                // whole block bascule sur une nouvelle page, the reader still
+                // sees the recipe name + portions at the top of that page.
+                const prepH2 = recipeWrapper.querySelector('.recipe-prep .recipe-block > h2');
+                if (prepH2) {
+                  prepH2.textContent = `Préparation — ${recipeName} (${slotPortions} personne${slotPortions > 1 ? 's' : ''})`;
+                }
+              } catch (err) {
+                const errP = document.createElement('p');
+                errP.textContent = '(Erreur lors de la génération du détail de la recette : ' + (err && err.message ? err.message : err) + ')';
+                recipeWrapper.appendChild(errP);
+              }
               mealEl.appendChild(recipeWrapper);
             }
           }
@@ -191,14 +240,62 @@
       container.appendChild(block);
     }
 
-    document.body.classList.add('print-menu-selection');
+    return container;
+  }
+
+  function buildAndPrint(data, selectedDays, portionsByDay, includeDetails) {
+    const container = buildPrintContent(data, selectedDays, portionsByDay, includeDetails);
+
+    // Print via a dedicated same-origin iframe with its own minimal stylesheet.
+    // This bypasses the parent page's @media print rules entirely and works
+    // reliably with Android Chrome's "Files" / "Save as PDF" print tool, which
+    // was silently dropping the recipe detail sections under the original
+    // approach.
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Menu de la semaine</title></head><body></body></html>');
+    doc.close();
+
+    const style = doc.createElement('style');
+    style.textContent = PRINT_IFRAME_CSS;
+    doc.head.appendChild(style);
+
+    // Deep-import the constructed DOM into the iframe document.
+    doc.body.appendChild(doc.importNode(container, true));
+
+    let printed = false;
     const cleanup = () => {
-      document.body.classList.remove('print-menu-selection');
-      window.removeEventListener('afterprint', cleanup);
+      if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
     };
-    window.addEventListener('afterprint', cleanup);
-    // Slight delay so the layout settles before opening the print dialog.
-    setTimeout(() => window.print(), 50);
+
+    const triggerPrint = () => {
+      if (printed) return;
+      printed = true;
+      try {
+        const win = iframe.contentWindow;
+        win.focus();
+        win.print();
+      } catch (err) {
+        console.warn('Iframe print failed, falling back to window.print()', err);
+        window.print();
+      }
+      // Keep the iframe around long enough for the print pipeline to finish
+      // reading from it (Android in particular needs a generous delay).
+      setTimeout(cleanup, 3000);
+    };
+
+    // Double rAF + small delay so the iframe has applied styles and laid out
+    // its content before we trigger the print dialog.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(triggerPrint, 150);
+      });
+    });
   }
 
   window.PrintMenu = { open };
