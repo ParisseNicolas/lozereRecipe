@@ -1834,6 +1834,20 @@ body.print-courses .done-title { font-size: 1rem; margin: 4mm 0 2mm 0; }
   .print-meal > h3 { margin: 0 0 1mm; break-after: avoid-page; page-break-after: avoid; }
   .print-recipe { break-inside: auto; }
   .print-recipe > h2:first-child { margin-top: 2mm; break-after: avoid-page; page-break-after: avoid; }
+  /* When recipe details are included, the meal blocks can become much taller
+     than a page. Mobile browsers (iOS Safari, Android Chrome) tend to drop
+     content that overflows a page when `break-inside: avoid` is set, instead
+     of paginating it. Force every break-* property inside the print container
+     to auto so recipe details flow normally across pages. */
+  body.print-menu-details #print-menu-output,
+  body.print-menu-details #print-menu-output * {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    break-before: auto !important;
+    page-break-before: auto !important;
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
 }
 
 /* === Menu print chooser modal === */

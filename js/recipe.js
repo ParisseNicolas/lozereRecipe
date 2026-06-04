@@ -165,9 +165,12 @@ function buildRecipeContent(data, nom, portions, opts) {
     renderList(stepsSection, recipe.steps);
     frag.appendChild(stepsSection);
   } else {
-    // "Préparation" wrapper holds the h2; sub-blocks "Découpe" / "Cuisson" each
-    // get their own .recipe-block so the sub-title stays with its list on print.
-    frag.appendChild(stepsSection);
+    // Wrap Préparation header + Découpe + Cuisson in a single block so that,
+    // on print, a page break before Préparation moves the whole prep onto a
+    // new page instead of splitting between Découpe and Cuisson.
+    const prepWrapper = document.createElement('section');
+    prepWrapper.className = 'recipe-prep';
+    prepWrapper.appendChild(stepsSection);
     const renderSubBlock = (title, items) => {
       if (!items || items.length === 0) return;
       const sub = document.createElement('section');
@@ -176,10 +179,11 @@ function buildRecipeContent(data, nom, portions, opts) {
       h3.textContent = title;
       sub.appendChild(h3);
       renderList(sub, items);
-      frag.appendChild(sub);
+      prepWrapper.appendChild(sub);
     };
     renderSubBlock('Découpe', recipe.steps.slice(0, splitIdx));
     renderSubBlock('Cuisson', recipe.steps.slice(splitIdx + 1));
+    frag.appendChild(prepWrapper);
   }
   return frag;
 }
