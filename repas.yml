@@ -257,31 +257,31 @@ recipes:
       tomate: 125g
       mais en boîte: 30g
       oignon: 50g
-      lentilles: 20g
-      poivron: 0.2
-      ail: 0.5 gousse
+      poivron: 0.2u
+      ail: 0.5gousse
       cumin: 1cc
       paprika: 1cc
       piment poudre: 0.5cc
-      chocolat: 0.33 carré
       origan: 1cc
+      protéine de soja texturée: 20g
     steps:
       - 'La veille : faire tremper les haricots rouges dans un grand volume d''eau froide pendant 12h.'
       - >-
         Le jour J : égoutter et rincer les haricots. Les faire cuire dans une grande marmite d'eau non salée 1h à 1h30
         jusqu'à ce qu'ils soient tendres. Égoutter.
       - Émincer les oignons, hacher l'ail.
-      - Épépiner et couper les poivrons en petits dés.
-      - Couper les tomates en dés (ou utiliser de la tomate concassée en boîte).
+      - Couper les poivrons en lanières (recouper en 2 si les lanières sont trop grosses)
+      - Couper les tomates en dés
       - '--- cuisson ---'
-      - Dans une très grande marmite, faire revenir oignons + ail dans un peu d'huile 5 min.
-      - Ajouter poivrons, cuire 5 min.
-      - Ajouter cumin + paprika + piment + origan, remuer 1 min.
-      - Ajouter tomates + haricots cuits + lentilles + maïs égoutté. Couvrir d'eau ou de bouillon.
-      - Saler. Laisser mijoter 40 min à feu doux.
-      - Râper / casser le chocolat noir et l'incorporer en fin de cuisson (apporte profondeur).
-      - En parallèle, cuire le riz dans une grande marmite (2 volumes d'eau salée pour 1 de riz, 12 min couvert).
-      - Servir le chili sur le riz.
+      - >-
+        Dans une cocotte, faire revenir l'ail et l'oignon dans un peu d'huile d'olive. Faire revenir jusqu'à ce que
+        l'oignon devienne translucide.
+      - Ajouter les tomates et les épices, saler et poivrer.
+      - Ajouter les lentilles et le chocolat pas trop c’est méga subtil
+      - Laisser mijoter 20/30 minutes. Ajouter un peu d'eau si besoin.
+      - Ajoutez les haricots 5 min avant la fin de cuisson
+      - Ajoutez le mais a la toute fin
+      - Servir bien chaud avec du riz.
   entrée melon:
     ingredients:
       melon: 0.2
@@ -335,19 +335,19 @@ recipes:
       - Servir immédiatement à la sortie du four avec le pain pour tremper.
   chorba:
     ingredients:
-      pois chiches: 50g
-      lentilles: 50g
-      pois cassés: 50g
-      vermicelle: 50g
+      pois chiches: 40g
+      lentilles: 40g
+      pois cassés: 40g
+      vermicelle: 40g
       concassé tomates: 100g
       cumin: 0.5cc
       harissa: 0.5cc
       paprika: 0.5cc
       herbes de provence: 0.5cc
-      ail: 0.33 gousse
-      oignon: 0.25
-      courgette: 0.25
-      pomme de terre: 0.33
+      ail: 0.33gousse
+      oignon: 0.25u
+      courgette: 0.25u
+      pomme de terre: 0.25u
     steps:
       - 'La veille : faire tremper les pois chiches dans un grand volume d''eau froide pendant 12h.'
       - 'Le jour J : émincer oignons et ail. Couper courgettes et pommes de terre en petits dés (~1 cm).'
@@ -499,9 +499,8 @@ recipes:
       - Parsemer de persil ciselé au service.
   omelette:
     ingredients:
-      oeuf: 1.5
-      poivron: 0.15
-      oignon: 0.25
+      oeuf: 1.5u
+      oignon: 0.25u
       parmesan: 10g
     steps:
       - Casser tous les œufs dans une très grande bassine. Saler, poivrer, battre énergiquement au fouet.
@@ -572,7 +571,7 @@ recipes:
     ingredients:
       olive noire: 40g
       huile d'olive: 3cl
-      ail: 2 gousse
+      ail: 0.3gousse
     steps:
       - Dénoyauter les olives noires (si pas déjà fait).
       - Éplucher les gousses d'ail, retirer le germe central.
@@ -585,17 +584,87 @@ recipes:
       - Servir en tartinade sur du pain grillé.
   base journée:
     ingredients:
-      pain: 100g
-      fruit: 150g
-      fromage: 30g
-      confiture: 20g
-      café moulu: 15g
-      chips: 30g
-      cacahuète: 20g
+      pain: 80g
+      fruit: 100g
+      fromage: 20g
+      confiture: 10g
+      café moulu: 20g
+      chips: 25g
+      cacahuète: 10g
+      Bière: 1L
     steps:
       - Couper le pain frais en tranches au moment du repas.
       - Disposer fromages, fruits, confitures, chips et cacahuètes sur la table en libre-service.
       - Préparer le café en cafetière (filtre ou italienne) selon les habitudes.
+  Curry de légumes:
+    ingredients:
+      ail: 0.1tête
+      oignon: 40g
+      cumin: 2g
+      curcuma: 1g
+      curry: 4g
+      courgette: 50g
+      gingembre: 10g
+      tomate: 100g
+      lait de coco: 0.06L
+      pois chiches: 20g
+      pomme de terre: 50g
+      protéine de soja texturée: 15g
+      carotte: 30g
+      riz: 70g
+      huile d'olive: 0.002L
+      bouillon cube légume: 0.4u
+    steps:
+      - Hacher l'ail, le gingembre
+      - Couper les oignons en lamelles (relativement fines mais c'est pas super important)
+      - Couper les patates, courgettes et carottes en cubes moyens
+      - '--- cuisson ---'
+      - Mettre le riz à cuire
+      - Faire reposer les protéines de soja dans du bouillon (~1/3 des cubes) pendant une dizaine/quinzaine de minutes
+      - >-
+        Faire revenir oignon ail & gingembre ensemble dans l'huile d'olive jusqu'à ce que les oignons soient dorés
+        (viteuf)
+      - ajouter les carottes et les patates, faire revenir 2 ou 3 minutes de plus
+      - Ajouter le reste (sauf le riz) plus les protéines
+      - Laisser mijoter tout ça 20 à 30 minutes
+  Dahl de lentilles corail:
+    ingredients:
+      ail: 1tête
+      oignon: 500g
+      gingembre: 100g
+      lentilles corail: 500g
+      tomate: 1000g
+      lait de coco: 1L
+      garam massala: 20g
+      cumin: 30g
+      curry: 30g
+      curcuma: 5g
+      bouillon cube légume: 3u
+      coriandre fraîche: 1botte
+    steps:
+      - Hacher les oignons, l'ail et le gingembre
+      - Hacher la coriandre et la mettre de côté
+      - Couper les tomates en dés
+      - '--- cuisson ---'
+      - Faire revenir l'oignon, l'ail et le gingembre jusqu'à ce que les oignons soient dorés
+      - Ajouter les tomates, le lait de coco, le bouillon et les épices
+      - Laisser mijoter 20 minutes environ
+      - '! Vérifier que les lentilles sont cuites'
+      - >-
+        ! Le plat doit être crémeux et épais, pas de liquide à la surface (mais bon attention à ce que ça attache pas
+        quand même)
+    portions: 10
+  Houmous:
+    ingredients:
+      ail: 0.5tête
+      pois chiches: 800g
+      citron: 40g
+      huile d'olive: 0.1L
+      huile de sésame: 0.1L
+      cumin: 5g
+    steps:
+      - bla
+    portions: 10
 meals:
   - name: Mardi midi
     portions: 15
@@ -603,71 +672,72 @@ meals:
       - base journée
       - pates champignon roquefort
   - name: Mardi soir
-    portions: 40
+    portions: 20
     recipes:
       - velouté de courgette
       - omelette
+      - Houmous
   - name: Mercredi midi
-    portions: 40
+    portions: 20
     recipes:
       - base journée
-      - purée patate carotte
-      - camembert au four
+      - Dahl de lentilles corail
   - name: Mercredi soir
-    portions: 45
+    portions: 23
     recipes:
       - piperade poivrons
   - name: Jeudi midi
-    portions: 45
+    portions: 24
     recipes:
       - base journée
       - chèvres chauds
       - salade de tomates
   - name: Jeudi soir
-    portions: 60
+    portions: 27
     recipes:
       - ratatouille
   - name: Vendredi midi
-    portions: 65
+    portions: 30
     recipes:
       - base journée
-      - malak panner
+      - purée patate carotte
+      - camembert au four
   - name: Vendredi soir
-    portions: 80
+    portions: 44
     recipes:
       - chorba
   - name: Samedi midi
     recipes:
       - base journée
       - taboulé
-    portions: 80
+    portions: 45
   - name: Samedi soir
-    portions: 80
+    portions: 50
     recipes:
-      - aubergine curry
+      - chili végé
   - name: Dimanche midi
-    portions: 80
+    portions: 48
     recipes:
       - base journée
       - salade de pates
   - name: Dimanche soir
-    portions: 45
+    portions: 35
     recipes:
-      - chili végé
+      - Curry de légumes
   - name: Lundi midi
-    portions: 40
+    portions: 22
     recipes:
       - base journée
       - couscous
   - name: Lundi soir
-    portions: 35
+    portions: 21
     recipes:
       - pates à l'oignon
       - tapenade
   - name: Re-Mardi midi
-    portions: 30
+    portions: 16
   - name: Re-Mardi soir
-    portions: 15
+    portions: 16
 ingredients:
   semoule:
     type: Sec
@@ -1242,3 +1312,35 @@ ingredients:
     convert:
       g:
         paquet: 200
+  protéine de soja texturée:
+    preferred: g
+    purchase: g
+    type: Sec
+  gingembre:
+    preferred: g
+    purchase: g
+    type: Épicerie
+  lentilles corail:
+    preferred: g
+    purchase: g
+    type: Sec
+  garam massala:
+    preferred: g
+    purchase: g
+    type: Épicerie
+  coriandre fraîche:
+    preferred: botte
+    purchase: g
+    convert:
+      botte:
+        feuille: 0.0333
+        g: 0.04
+    type: Frais
+  huile de sésame:
+    preferred: L
+    purchase: L
+    type: Épicerie
+  Bière:
+    preferred: L
+    purchase: L
+    type: Boissons
